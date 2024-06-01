@@ -1,23 +1,78 @@
-<template>
-    <div class="w-full h-15 flex items-center fixed top-0 left-0 bg-white" style="box-shadow: rgba(0, 0, 0, 0.05) 0px 6px 24px 0px, rgba(0, 0, 0, 0.08) 0px 0px 0px 1px; z-index:20">
-        <HeaderServer></HeaderServer>
-    </div>
-    <aside class="h-full w-40 fixed top-0 left-0 bg-white flex-1" style="box-shadow: rgba(0, 0, 0, 0.05) 0px 6px 24px 0px, rgba(0,  0, 0, 0.08) 0px 0px 0px 1px; z-index:30">
-        <NavbarComponent></NavbarComponent>
-    </aside>
-    <main class="flex flex-col items-center flex-grow ml-40 mt-15" style="z-index: 10;">
-        <slot/>
-    </main>
-    <footer class="flex-grow h-10 ml-40 mt-2 flex justify-center items-center gap-1">
-        <FooterComponent></FooterComponent>
-    </footer>
-    <Loading></Loading>
-    <Popup></Popup>
-</template>
 <script setup>
-import HeaderServer from '~/components/Header.server.vue';
-import NavbarComponent from '~/components/Navbar.server.vue';
-import FooterComponent from '~/components/Footer.server.vue';
-import Loading from '~/components/Loading.vue';
-import Popup from '~/components/Popup.vue';
+import { computed, watch, ref } from 'vue';
+import AppTopbar from './AppTopbar.vue';
+import AppFooter from './AppFooter.vue';
+import AppSidebar from './AppSidebar.vue';
+import AppConfig from './AppConfig.vue';
+import { useLayout } from '@/layouts/composables/layout';
+
+const { layoutConfig, layoutState, isSidebarActive } = useLayout();
+
+const outsideClickListener = ref(null);
+
+watch(isSidebarActive, (newVal) => {
+    if (newVal) {
+        bindOutsideClickListener();
+    } else {
+        unbindOutsideClickListener();
+    }
+});
+
+const containerClass = computed(() => {
+    return {
+        'layout-theme-light': layoutConfig.darkTheme.value === 'light',
+        'layout-theme-dark': layoutConfig.darkTheme.value === 'dark',
+        'layout-overlay': layoutConfig.menuMode.value === 'overlay',
+        'layout-static': layoutConfig.menuMode.value === 'static',
+        'layout-static-inactive': layoutState.staticMenuDesktopInactive.value && layoutConfig.menuMode.value === 'static',
+        'layout-overlay-active': layoutState.overlayMenuActive.value,
+        'layout-mobile-active': layoutState.staticMenuMobileActive.value,
+        'p-ripple-disabled': layoutConfig.ripple.value === false
+    };
+});
+const bindOutsideClickListener = () => {
+    if (!outsideClickListener.value) {
+        outsideClickListener.value = (event) => {
+            if (isOutsideClicked(event)) {
+                layoutState.overlayMenuActive.value = false;
+                layoutState.staticMenuMobileActive.value = false;
+                layoutState.menuHoverActive.value = false;
+            }
+        };
+        document.addEventListener('click', outsideClickListener.value);
+    }
+};
+const unbindOutsideClickListener = () => {
+    if (outsideClickListener.value) {
+        document.removeEventListener('click', outsideClickListener);
+        outsideClickListener.value = null;
+    }
+};
+const isOutsideClicked = (event) => {
+    const sidebarEl = document.querySelector('.layout-sidebar');
+    const topbarEl = document.querySelector('.layout-menu-button');
+
+    return !(sidebarEl.isSameNode(event.target) || sidebarEl.contains(event.target) || topbarEl.isSameNode(event.target) || topbarEl.contains(event.target));
+};
 </script>
+
+<template>
+    <div class="layout-wrapper" :class="containerClass">
+        <app-topbar></app-topbar>
+        <div class="layout-sidebar">
+            <app-sidebar></app-sidebar>
+        </div>
+        <div class="layout-main-container">
+            <div class="layout-main">
+                <slot/>
+                <!-- <NuxtPage></NuxtPage> -->
+            </div>
+            <app-footer></app-footer>
+        </div>
+        <app-config></app-config>
+        <div class="layout-mask"></div>
+    </div>
+    <Toast />
+</template>
+
+<style lang="scss" scoped></style>
