@@ -1,118 +1,162 @@
 <?php
 namespace App\Http\Middleware;
-
-use Closure;
-
+use App\Http\Controllers\Auth\JwtController;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\URL;
-use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Cookie;
-use Illuminate\Http\Response;
 use App\Models\User;
-Use Illuminate\Routing\UrlGenerator;
-use Illuminate\Console\Command;
+use Closure;
 class Authenticate
 {
-    protected $response;
-    public function __construct(Response $response){
-        $this->response = $response;
-    }
     public function handle(Request $request, Closure $next){
-        // $previousUrl = $request->header('referer');
-        $link = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https" : "http") . "://$_SERVER[HTTP_HOST]";
-        $pathh = $request->path();
-        echo "dahlahh  $pathh <br>";
+        $jwtController = app()->make(JwtController::class);
+        $currentPath = '/'.$request->path();
         $previousUrl = url()->previous();
         $path = parse_url($previousUrl, PHP_URL_PATH);
-        $path = ltrim($path, '/');
-        $page = ['dashboard','digital','pengaturan','analog'];
-        if($request->hasCookie("id") && $request->hasCookie("key")){
-            echo "coookie ada <br>";
-            if(($request->path() === 'login' || 'register') && $request->isMethod("get")){
-                echo "coookie11 ada <br>";
-                $c_id = $request ->cookie("id");
-                $c_key = $request ->cookie("key");
-                // echo "id $c_id<br>";
-                // echo "key $c_key<br>";
-                if(!User::select("email")->where('username','=',$c_id)->limit(1)->exists()){
-                    // echo "cookie username salah";
-                    return redirect("/login")->withCookies([cookie('id','',time()-3600),cookie('key','',time()-3600)]);
-                    // return redirect('/login');
-                }else{
-                    $id1 = json_decode(json_encode(DB::table("users")->select("email")->where('username','=', $c_id)->limit(1)->get()));
-                    echo $id1[0]->email."<br>";
-                    if(!hash_equals($c_key, hash("sha512",$id1[0]->email))){
-                        echo "cookie key salah";
-                        return redirect("/login")->withCookies([cookie('id','',time()-3600),cookie('key','',time()-3600)]);
-                    }else{
-                        echo "cookie key benar <br>";
-                        //digunakan untuk redirect
-                        $page = ['login','register'];
-                        if(in_array($request->path(),$page)){
-                            return redirect('/dashboard');
+        if($request->hasCookie("token1") && $request->hasCookie("token2") && $request->hasCookie("token3")){
+            $token1 = $request->cookie('token1');
+            $token2 = $request->cookie('token2');
+            $token3 = $request->cookie('token3');
+            $tokenDecode1 = json_decode(base64_decode($token1),true);
+            $email = $tokenDecode1['email'];
+            $number = $tokenDecode1['number'];
+            $authPage = ['/login','/','/artikel'];
+            if ((in_array($currentPath, $authPage) || strpos($currentPath, '/artikel/') === 0) && $request->isMethod('get')) {
+                if (in_array(ltrim($path), $authPage)) {
+                    $response = redirect('/dashboard');
+                } else {
+                    $response = redirect($path);
+                }
+                $cookies = $response->headers->getCookies();
+                foreach ($cookies as $cookie) {
+                    if ($cookie->getName() === 'token1') {
+                        $expiryTime = $cookie->getExpiresTime();
+                        $currentTime = time();
+                        if ($expiryTime && $expiryTime < $currentTime) {
+                            $response->withCookie(Cookie::forget('token1'));
+                            $response->withCookie(Cookie::forget('token2'));
                         }
-                        // if($request->path() === '/dashboard' && $request->isMethod('get')){
-                        //     if($path == 'dashboard'){
-                        //     }else{
-                        //         return redirect('/dashboard');
-                        //     }
-                        // }
-                        //digunkan untuk menangani looping redirect
-                        if($path == 'login'){
-                            if($request->path === '/login' && $request->isMethod('get')){
-                                // return back()->with('error', 'You cannot access this page.');
-                            }
-                        }
-                        //untuk login
-                        if(($request->path() === 'login-form' || 'register-form') && $request->isMethod('post')){
-                            if($path === 'dashboard'){
-                                return back()->with('error', 'You cannot access this page.');
-                            }else{
-                                return redirect('/dashboard');
-                            }
-                        }
-                        if(!in_array('login' || 'register',$page)){
-                            //
+                    } else if ($cookie->getName() === 'token3') {
+                        $expiryTime = $cookie->getExpiresTime();
+                        $currentTime = time();
+                        if ($expiryTime && $expiryTime < $currentTime) {
+                            $response->withCookie(Cookie::forget('token3'));
                         }
                     }
                 }
+                return $response;
             }
-            if($request -> path() === 'logout' && $request->isMethod('post')){
-                echo "logouut <br>";
-                return $this->logout($request, $next);
+            $decode = [
+                'email'=>$email,
+                'token'=>$token2,
+                'opt'=>'token'
+            ];
+            $decodeRefresh = [
+                'email'=>$email,
+                'token'=>$token3,
+                'opt'=>'refresh'
+            ];
+            //check user is exist in database
+            if(!User::select('email')->whereRaw("BINARY email = ?",[$email])->limit(1)->exists()){
+                return redirect('/login')->withCookies([Cookie::forget('token1'),Cookie::forget('token2'),Cookie::forget('token3')]);
             }
+            //check token if exist in database
+            if(!$jwtController->checkExistRefreshToken($token3, 'website')){
+                //if token is not exist in database
+                $delete = $jwtController->deleteRefreshToken($email,$number, 'website');
+                if($delete['status'] == 'error'){
+                    return redirect('/login')->withCookies([Cookie::forget('token1'),Cookie::forget('token2'),Cookie::forget('token3')]);
+                }
+                return redirect('/login')->withCookies([Cookie::forget('token1'),Cookie::forget('token2'),Cookie::forget('token3')]);
+            }
+            //if token exist
+            $decodedRefresh = $jwtController->decode($decodeRefresh);
+            if($decodedRefresh['status'] == 'error'){
+                if($decodedRefresh['message'] == 'Expired token'){
+                    return redirect('/login')->withCookies([Cookie::forget('token1'),Cookie::forget('token2'),Cookie::forget('token3')]);
+                }else if($decodedRefresh['message'] == 'invalid email'){
+                    return redirect('/login')->withCookies([Cookie::forget('token1'), Cookie::forget('token2'),Cookie::forget('token3')]);
+                }
+                return redirect('/login')->withCookies([Cookie::forget('token1'),Cookie::forget('token2'),Cookie::forget('token3')]);
+            }
+            //if token refresh success decoded and not expired
+            $decoded = $jwtController->decode($decode);
+            if($decoded['status'] == 'error'){
+                if($decoded['message'] == 'Expired token'){
+                    $updated = $jwtController->updateTokenWebsite($decodedRefresh['data']['data']);
+                    if($updated['status'] == 'error'){
+                        return response()->json(['status'=>'error','message'=>'update token error'],500);
+                    }
+                    //when working using this
+                    $userAuth = $decodedRefresh['data']['data'];
+                    $userAuth['number'] = $decodedRefresh['data']['data']['number'];
+                    $userAuth['exp'] = $decodedRefresh['data']['exp'];
+                    unset($decodedRefresh);
+                    $request->merge(['user_auth' => $userAuth]);
+                    $response = $next($request);
+                    $cookies = $response->headers->getCookies();
+                    foreach ($cookies as $cookie) {
+                        if ($cookie->getName() === 'token1') {
+                            $response->cookie('token1',$token1,$cookie->getExpiresTime());
+                        }else if ($cookie->getName() === 'token3') {
+                            $response->cookie('token3',$token3,$cookie->getExpiresTime());
+                        }
+                    }
+                    Cookie::forget('token2');
+                    $response->cookie('token2', $updated['data'], time() + intval(env('JWT_ACCESS_TOKEN_EXPIRED')));
+                    return $response;
+                    //when error using this
+                    // $userAuth = $decoded['data']['data'];
+                    // $userAuth['number'] = $decoded['data']['data']['number'];
+                    // $userAuth['exp'] = $decoded['data']['exp'];
+                    // unset($decoded);
+                    // $request->merge(['user_auth'=>$userAuth]);
+                    // return $next($request);
+                }
+                return response()->json(['status'=>'error','message'=>$decoded['message']],500);
+            }
+            //if success decode
+            if($request->path() === 'users/google' && $request->isMethod("get")){
+                $data = [$decoded['data'][0][0]];
+                $request->request->add($data);
+                return response()->json($request->all());
+            }
+            //when working using this
+            $userAuth = $decoded['data']['data'];
+            $userAuth['number'] = $decoded['data']['data']['number'];
+            $userAuth['exp'] = $decoded['data']['exp'];
+            unset($decoded);
+            $request->merge(['user_auth' => $userAuth]);
+            $response = $next($request);
+            return $response;
+            //when error using this
+            // $userAuth = $decoded['data']['data'];
+            // $userAuth['number'] = $decoded['data']['data']['number'];
+            // $userAuth['exp'] = $decoded['data']['exp'];
+            // unset($decoded);
+            // $request->merge(['user_auth'=>$userAuth]);
+            // return $next($request); 
         }else{
-            echo "cookie hilangg<br>";
-            // var_dump($request->hasCookie('id'));
-            // var_dump($request->hasCookie('key'));
-            // $previousUrl = $request->header('referer');
-            if($request->hasCookie("id") || $request->hasCookie("key")){
-                $this->response->withCookie(cookie()->forget('id'));
-                $this->response->withCookie(cookie()->forget('key'));
-                // echo "kosongg <br>";
-                $pathh = $request->path();
-                echo "patthh $pathh  <br>";
-                $page = ['dashboard','digital','pengaturan','analog'];
-                if(in_array($request->path(),$page)){
-                    return redirect('/login');
-                }
-                $previousUrl = url()->previous();
-                echo "sebelumnya $previousUrl<br>";
-                $path = parse_url($previousUrl, PHP_URL_PATH);
-                $path = ltrim($path, '/');
-                echo "patthhh  $path<br>";
-                //digunakan untuk menangani looping redirect
-                if($path == 'login'){
-                    if($request->path === '/login' && $request->isMethod('get')){
-                        // return back()->with('error', 'You cannot access this page.');
+            //if cookie gone
+            $page = ['/dashboard', '/profile', '/article', '/article/tambah', '/article/edit', '/disi', '/disi/tambah', '/emotal', '/emotal/tambah', '/nutrisi', '/nutrisi/tambah', '/pengasuhan', '/pengasuhan/tambah', '/konsultasi', '/konsultasi/tambah', '/admin', '/admin/tambah', '/acara', '/acara/tambah'];
+            $pagePrefix = ['/disi/edit', '/emotal/edit', '/nutrisi/edit', '/pengasuhan/edit', '/konsultasi/edit', '/admin/edit', '/acara/edit'];
+            if(Str::startsWith($currentPath, $pagePrefix) || in_array($currentPath,$page)){
+                if($request->hasCookie("token1")){
+                    $token1 = $request->cookie('token1');
+                    $token1 = json_decode(base64_decode($token1),true);
+                    $email = $token1['email'];
+                    $number = $token1['number'];
+                    $delete = $jwtController->deleteRefreshToken($email,$number, 'website');
+                    if($delete['status'] == 'error'){
+                        return response()->json(['status'=>'error','message'=>'delete token error'],500);
+                    }else{
+                        return redirect('/login')->withCookies([Cookie::forget('token1'),Cookie::forget('token2'),Cookie::forget('token3')]);
                     }
+                }else{
+                    return redirect('/login')->withCookies([Cookie::forget('token1'),Cookie::forget('token2'),Cookie::forget('token3')]);
                 }
             }
+            return $next($request); 
         }
-        return $next($request);
-    }
-    protected function logout($request,Closure $next){
-        return redirect('/login')->withCookies([Cookie::forget('id'),Cookie::forget('key')]);
     }
 }
