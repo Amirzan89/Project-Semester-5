@@ -19,24 +19,27 @@ module.exports = {
     },
     extend: {
       colors: {
-        primary: {
-          100: '#3F51B5',
-          200: '#757de8',
-          300: '#dedeff',
-        },
-        accent: {
-          100: '#2196F3',
-          200: '#003f8f',
-        },
-        text: {
-          100: '#333333',
-          200: '#5c5c5c',
-        },
-        bg: {
-          100: '#FFFFFF',
-          200: '#f5f5f5',
-          300: '#cccccc',
-        },
+        // primary: {
+        //   100: '#3F51B5',
+        //   200: '#757de8',
+        //   300: '#dedeff',
+        // },
+        // accent: {
+        //   100: '#2196F3',
+        //   200: '#003f8f',
+        // },
+        // text: {
+        //   100: '#333333',
+        //   200: '#5c5c5c',
+        // },
+        // bg: {
+        //   100: '#FFFFFF',
+        //   200: '#f5f5f5',
+        //   300: '#cccccc',
+        // },
+        primary: '#2C8C54',
+        compliment: '#A967FE',
+        bold: '#FF0202',
         // pallet:'#2E3137',
         // black_palette: '#2F4858',
         // white_palette: '#CDEDF6',
