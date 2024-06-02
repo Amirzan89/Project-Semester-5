@@ -14,21 +14,7 @@ use app\Http\Controllers\Register;
 |
 */
 
-// Route::get('/', function () {
-//     return view('welcome');
-// });
-
-Route::get('/terserah','LoginController@Login');
-$router->get('/',function() use ($router){
-    return view('home');
-});
-$router->get('/mboh',function() use ($router){
-    // return view('home');
-});
 Route::group(['middleware'=>'auth'],function(){
-    Route::post('/logout',function(){
-        // return view('login');
-    });
     Route::get('/login',function(){
         return view('login');
     });
@@ -38,10 +24,13 @@ Route::group(['middleware'=>'auth'],function(){
     Route::get('/dashboard',function(){
         return view('dashboard');
     });
-    // Route::post('/login-form','Login@Login');
-    Route::post('/login-form','LoginController@Login');
-    Route::post('/register-form','RegisterController@Register');
-    Route::group(["prefix"=>"/user"],function(){
+    Route::get('/csrf-token', function() {
+        return response()->json(['token' => csrf_token()]);
+    });
+    Route::group(["prefix"=>"/users"],function(){
+        Route::post('/login','Auth\LoginController@login');
+        Route::post('/register','Auth\RegisterController@register');
+        Route::post('/logout','UserController@logout');
         Route::get('/pengaturan',function(){
             return view('pengaturan');
         });

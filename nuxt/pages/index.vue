@@ -27,10 +27,11 @@
 }
 </style>
 <script setup>
+    const publicConfig = useRuntimeConfig().public;
+    useHead({
+        title:`Home | ${publicConfig.appName}`
+    });
 definePageMeta({
     layout:'home',
-});
-useHead({
-    title:'Home | TOkoKU'
 });
 </script>

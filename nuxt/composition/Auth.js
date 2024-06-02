@@ -9,7 +9,7 @@ export async function Login(data){
         },{
             headers: {
                 'X-CSRF-TOKEN': csrfToken,
-            }
+            },
         });
         return { status:'success', message: response.data.message};
     }catch(err){

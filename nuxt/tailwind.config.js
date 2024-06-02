@@ -37,7 +37,7 @@ module.exports = {
         //   200: '#f5f5f5',
         //   300: '#cccccc',
         // },
-        primary: '#2C8C54',
+        primary1: '#2C8C54',
         compliment: '#A967FE',
         bold: '#FF0202',
         // pallet:'#2E3137',

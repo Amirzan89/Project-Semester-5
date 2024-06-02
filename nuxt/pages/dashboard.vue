@@ -113,6 +113,10 @@ watch(
     { immediate: true }
 );
 import AppLayout from '~/layouts/authenticated.vue';
+const publicConfig = useRuntimeConfig().public;
+useHead({
+    title:`Dashboard | ${publicConfig.appName}`
+});
 definePageMeta({
     layout: 'authenticated',
 });
