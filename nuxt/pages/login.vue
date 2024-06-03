@@ -7,12 +7,12 @@
             </div>
             <div class="row relative mt-5 flex flex-col w-7/8">
                 <label class="relative left-3 xl:text-2xl lg:text-xl md:text-md sm:text-lg">Email</label>
-                <input ref="inpEmail" type="text" class="relative top-1 border-black lg:border-2 md:border-1 hover:border-4 md:hover:border-2 focus:outline-none rounded-xl w-full xl:h-10 lg:h-8 md:h-7 sm:h-5 pl-3 font-medium 2xl:text-2xl xl:text-2xl lg:text-2xl md:text-xl sm:text-lg" @input="inpChange('email')" v-model="input.email">
+                <input ref="inpEmail" type="email" class="relative top-1 border-black lg:border-2 md:border-1 hover:border-4 md:hover:border-2 focus:outline-none rounded-xl w-full xl:h-10 lg:h-8 md:h-7 sm:h-5 pl-3 font-medium 2xl:text-2xl xl:text-2xl lg:text-2xl md:text-xl sm:text-lg" required @input="inpChange('email')" v-model="input.email">
             </div>
             <div class="row relative mt-5 flex flex-col w-7/8">
                 <label class="relative left-3 xl:text-2xl lg:text-xl md:text-md sm:text-lg">Password</label>
                 <div class="relative flex items-center top-1">
-                    <input ref="inpPassword" type="password" class="relative border-black lg:border-2 md:border-1 hover:border-4 md:hover:border-2 focus:outline-none rounded-xl w-full xl:h-10 lg:h-8 md:h-7 sm:h-5 pl-3 font-medium 2xl:text-2xl xl:text-2xl lg:text-2xl md:text-xl sm:text-lg pr-8" @input="inpChange('password')" v-model="input.password">
+                    <input ref="inpPassword" type="password" class="relative border-black lg:border-2 md:border-1 hover:border-4 md:hover:border-2 focus:outline-none rounded-xl w-full xl:h-10 lg:h-8 md:h-7 sm:h-5 pl-3 font-medium 2xl:text-2xl xl:text-2xl lg:text-2xl md:text-xl sm:text-lg pr-8" required @input="inpChange('password')" v-model="input.password">
                     <div class="eye absolute top-1/2 -translate-y-1/2 right-3 cursor-pointer" @click="showPass">
                         <img src="~assets/icon/eye-slash.svg" alt="" class="xl:!w-8 lg:!w-7" :class="input.password === '' || (input.password !== '' && input.isPasswordShow) ? 'hidden' : ''">
                         <img src="~assets/icon/eye.svg" alt="" class="xl:!w-8 lg:!w-7" :class="input.password === '' || (input.password !== '' && !input.isPasswordShow) ? 'hidden' : ''">
@@ -103,12 +103,22 @@ const inpChange = (div) => {
         inpPassword.value.classList.add('border-black','hover:border-black','focus:border-black');
     }
 };
+const isValidEmail = (email) => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+};
 const loginForm = async (event) => {
     event.preventDefault();
     if(input.email === null || input.email === ''){
         inpEmail.value.classList.remove('border-black','hover:border-black','focus:border-black');
         inpEmail.value.classList.add('border-popup_error','hover:border-popup_error','focus:border-popup_error');
         errMessage.value = 'Email Harus diisi !';
+    }else{
+        if (!isValidEmail(input.email)) {
+            inpEmail.value.classList.remove('border-black','hover:border-black','focus:border-black');
+            inpEmail.value.classList.add('border-popup_error','hover:border-popup_error','focus:border-popup_error');
+            errMessage.value = 'Masukkan email dengan benar !';
+        }
     }
     if(input.password === null || input.password === ''){
         inpPassword.value.classList.remove('border-black','hover:border-black','focus:border-black');
@@ -121,8 +131,6 @@ const loginForm = async (event) => {
     }
     eventBus.emit('showLoading');
     let login = await Login({email: input.email, password: input.password});
-    // console.log(login);
-    // return
     if(login.status === 'success'){
         eventBus.emit('closeLoading');
         eventBus.emit('showGreenPopup', login.message);
