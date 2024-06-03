@@ -6,26 +6,22 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
         Schema::create('device', function (Blueprint $table) {
-            $table->id();
-            $table->string('id_device');
+            $table->id('id_device');
+            $table->uuid('uuid');
             $table->string('nama_device');
-            $table->string('token');
-            $table->string('gps');
-            $table->string('email');
+            $table->string('device_id');
+            $table->string('device_token');
             $table->boolean('actived');
+            $table->string('email');
             $table->timestamps();
+            $table->unsignedBigInteger('id_user');
+            $table->foreign('id_user')->references('id_user')->on('users')->onDelete('cascade');
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
         Schema::dropIfExists('device');
