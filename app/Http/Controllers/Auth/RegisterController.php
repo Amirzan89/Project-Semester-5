@@ -1,17 +1,17 @@
 <?php
 namespace App\Http\Controllers\Auth;
 use App\Http\Controllers\Controller;
-use App\Http\Controllers\Mail\MailController;
+use App\Http\Controllers\Services\MailController;
 use App\Http\Controllers\UserController;
 use App\Models\User;
-use App\Models\Verify;
+use App\Models\Verifikasi;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Http\JsonResponse;
 class RegisterController extends Controller
 {
-    public function Register(Request $request, User $user, UserController $userController,MailController $mailController, Verify $verify){
+    public function Register(Request $request, User $user, UserController $userController,MailController $mailController, Verifikasi $verify){
         $validator = Validator::make($request->all(), [
             'email'=>'required | email',
             'password' => [
@@ -57,12 +57,7 @@ class RegisterController extends Controller
         }else if($pass !== $pass1){
             return response()->json(['status'=>'error','message'=>'Password Harus Sama'],400);
         }else{
-            $result = $userController->createUser($request, $mailController,$user, $verify);
-            if($result['status'] == 'error'){
-                return response()->json(['status'=>'error','message'=>$result['message']],400);
-            }else{
-                return response()->json(['status'=>'success','message'=>$result['message'],'data'=>$result['data']]);
-            }
+            return $userController->createUser($request, $mailController, $verify);
         }
     }
 }

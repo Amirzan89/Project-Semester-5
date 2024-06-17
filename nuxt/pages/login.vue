@@ -63,10 +63,6 @@ useHead({
 });
 useAsyncData(async () => {
 });
-let portString = '';
-if (window.location.port && window.location.port !== '80' && window.location.port !== '443') {
-    portString = `:${window.location.port}`;
-}
 const errMessage = ref('');
 const input = reactive({
     email:'',

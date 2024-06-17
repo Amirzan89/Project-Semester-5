@@ -31,16 +31,16 @@ class MailController extends Controller
             foreach ($validator->errors()->toArray() as $field => $errorMessages) {
                 $errors = $errorMessages[0];
             }
-            return ['status' => 'error', 'message' => $errors,'code' => 400];
+            return response()->json(['status' => 'error', 'message' => $errors], 400);
         }
         $email = $request->input('email');
         //check email on table user
         $user = User::select('id_user', 'nama_lengkap')->whereRaw("BINARY email = ?",[$request->input('email')])->first();
         if ($user === null) {
             if($request->path() === 'verify/create/email' && $request->isMethod("get")){
-                return ['status'=>'error','message'=>'email invalid'];
+                return response()->json(['status'=>'error','message'=>'email invalid'], 400);
             }else{
-                return ['status'=>'error','message'=>'email invalid','code'=>400];
+                return response()->json(['status'=>'error','message'=>'email invalid','code'=>400]);
             }
         }
         //check if user have create verify email
@@ -57,11 +57,11 @@ class MailController extends Controller
             $verify->send = 1;
             $verify->id_user = $user['id_user'];
             if(!$verify->save()){
-                return ['status'=>'error','message'=>'fail create verify email','code'=>400];
+                return response()->json(['status'=>'error','message'=>'fail create verify email'], 400);
             }
             $data = ['name'=>$user->nama_lengkap,'email'=>$email,'code'=>$verificationCode,'link'=>urldecode($verificationLink)];
             dispatch(new SendVerifyEmail($data));
-            return ['status'=>'Success','message'=>'Akun Berhasil Dibuat Silahkan verifikasi email','code'=>200,'data'=>['waktu'=>Carbon::now()->addMinutes(self::$conditionOTP[0])]];
+            return response()->json(['status'=>'Success','message'=>'Akun Berhasil Dibuat Silahkan verifikasi email','code'=>200,'data'=>['waktu'=>Carbon::now()->addMinutes(self::$conditionOTP[0])]]);
         }
         //checking if user have create verify email
         $expTime = self::$conditionOTP[($verifyDb['send'] - 1)];
@@ -100,10 +100,6 @@ class MailController extends Controller
         $user = User::select('id_user', 'nama_lengkap', 'role')->whereRaw("BINARY email = ?",[$request->input('email')])->first();
         if (is_null($user)) {
             return response()->json(['status'=>'error','message'=>'Email tidak terdaftar !'], 400);
-        }
-        //check role for reset password
-        if((Str::startsWith('/'.$request->path(), '/api') && strpos($user['role'], 'admin')) || (!Str::startsWith('/'.$request->path(), '/api') && $user['role'] === 'user')){
-            return response()->json(['status'=>'error','message'=>'User Unauthorized'], 403);
         }
         //checking process if user have create verify email or not
         $verifyDb = Verifikasi::select('send','updated_at')->whereRaw("BINARY email = ?",[$request->input('email')])->where('deskripsi', 'password')->first();

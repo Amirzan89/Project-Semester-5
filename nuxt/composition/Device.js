@@ -1,5 +1,5 @@
 import axios from './axios';
-export async function Login(data){
+export async function TambahDevice(data){
     try{
         const response = await axios.post('/users/login', {
             email: data.email,
@@ -10,7 +10,7 @@ export async function Login(data){
         return { status:'error', message: err.response.data.message };
     }
 }
-export async function Register(data){
+export async function EditDevice(data){
     try{
         const response = await axios.post('/users/register',{
             nama: data.nama,
@@ -23,7 +23,7 @@ export async function Register(data){
         return { status:'error', message: err.response.data.message };
     }
 }
-export async function ForgotPassword(data){
+export async function DeleteDevice(data){
     try{
         const response = await axios.post('/verify/create/password',{
             email: data.email,

@@ -9,7 +9,7 @@
             </template>
         </div>
         <div class="flex flex-row gap-2 mt-10" style="caret-color: transparent;">
-            <input v-for="(input, index) in inpOtp" :key="index" type="text" class="w-10 h-10 border-gray-400 focus:border-black border-2 rounded-xl text-center text-2xl font-medium" :ref="'input' + index" v-model="inpOtp[index]" @input="handleInput(index, $event)" @keyup="handleKeyUp(index, $event)" @keypress="inpChange">
+            <input v-for="(input, index) in inpOtp" :key="index" type="text" class="w-10 h-10 border-gray-400 focus:border-black border-2 rounded-xl text-center text-2xl font-medium" ref="inpOtpRefs" v-model="inpOtp[index]" @input="handleInput(index, $event)" @keyup="handleKeyUp(index, $event)" @keypress="inpChange">
         </div>
         <button class="bg-green-700 mt-10 w-50 h-10 rounded-2xl font-semibold text-white text-xl" @click.prevent="otpForm"> 
             <template v-if="props.data.condition == 'email'">
@@ -39,18 +39,18 @@
 <script setup>
 import { ref, defineEmits } from "vue";
 import { eventBus } from '../app/eventBus';
-import { SendOtp } from "../../composition/Auth";
-// import { SendOtp, VerifyOtp } from '../composition/Auth';
+import { SendOtp, VerifyOtp } from '../composition/Auth';
 const emit = defineEmits(['change-popup', 'red-popup', 'green-popup', 'countdown']);
 const props = defineProps({
     data: Object,
     timer: Object,
 })
+const inpOtpRefs = ref(null);
 const inpOtp = ref(Array(6).fill(''));
 const errMessage = ref('');
 const div = ref('');
 const inpChange = () => {
-    emit('change-popup');
+    // emit('change-popup');
 };
 const handleInput = (index, event) => {
     let val = event.target.value;
@@ -64,8 +64,9 @@ const handleInput = (index, event) => {
     }
     if (val !== "") {
         const nextIndex = index + 1;
+        console.log(inpOtpRefs);
         if (nextIndex < inpOtp.value.length) {
-            this.$refs['input' + nextIndex][0].focus();
+            inpOtpRefs.value[nextIndex].focus()
         }
     }
 };
@@ -75,16 +76,17 @@ const handleKeyUp = (index, event) => {
         inpOtp.value[index] = "";
         const prevIndex = index - 1;
         if (prevIndex >= 0) {
-            this.$refs['input' + prevIndex][0].focus();
+            inpOtpRefs.value[prevIndex].focus()
         }
         return;
     }
     if (key === "arrowleft" || key === "arrowright") {
         const direction = key === "arrowleft" ? "previousElementSibling" : "nextElementSibling";
-        const nextInput = this.$refs['input' + index][0][direction];
-        if (nextInput) {
-            nextInput.focus();
-        }
+            const nextInput = inpOtpRefs.value[index][direction];
+            console.log(inpOtpRefs.value[index]);
+            if (nextInput) {
+                nextInput.focus();
+            }
     }
 };
 const showTimerPopup = () => {
@@ -100,7 +102,7 @@ const showTimerPopup = () => {
 };
 const sendOtp = async () => {
     if (props.data.email && props.data.email.trim() !== '') {
-        emit('red-popup', 'Email harus diisi');
+        // emit('red-popup', 'Email harus diisi');
         return;
     }
     if(props.timer.timer){
@@ -112,9 +114,9 @@ const sendOtp = async () => {
     let sendOTP = await SendOtp({email: props.data.email, link: link});
     if(sendOTP.status === 'success'){
         eventBus.emit('closeLoading');
-        eventBus.emit('showGreenPopup', sendOTP.message);
-        emit('countdown',new Date(sendOTP.data.waktu).getTime());
-        emit('green-popup', 'success verifikasi otp');
+        // eventBus.emit('showGreenPopup', sendOTP.message);
+        // emit('countdown',new Date(sendOTP.data.waktu).getTime());
+        // emit('green-popup', 'success verifikasi otp');
     }else if(sendOTP.status === 'error'){
         eventBus.emit('closeLoading');
         popup.value.classList.remove('invisible');
@@ -127,23 +129,24 @@ const otpForm = async (event) => {
     inpOtp.value.forEach(function(inpotp){
         if(inpotp === '' || inpotp === null){
             hasError = true;
-            emit('red-popup', 'kode OTP harus diisi');
+            // emit('red-popup', 'kode OTP harus diisi');
             return;
         }
     });
     if(hasError){
         return;
     }
+    console.log(props.data);
     let link = props.data.condition === 'email' ? '/verify/otp/email' : '/verify/otp/password';
     eventBus.emit('showLoading');
     let verifyOTP = await VerifyOtp({email: props.data.email, otp: inpOtp.value.join(''), link: link});
     if(verifyOTP.status === 'success'){
         eventBus.emit('closeLoading');
-        emit('green-popup', 'success verifikasi otp', inpOtp.value.join(''));
+        // emit('green-popup', 'success verifikasi otp', inpOtp.value.join(''));
         return;
     }else if(verifyOTP.status === 'error'){
         eventBus.emit('closeLoading');
-        emit('red-popup', err.response.data.message);
+        // emit('red-popup', err.response.data.message);
         return
     }
 };

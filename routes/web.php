@@ -1,8 +1,8 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use app\Http\Controllers\LoginController;
-use app\Http\Controllers\Register;
+// use app\Http\Controllers\LoginController;
+// use app\Http\Controllers\Register;
 /*
 |--------------------------------------------------------------------------
 | Web Routes2
@@ -35,11 +35,23 @@ Route::group(['middleware'=>'auth'],function(){
             return view('pengaturan');
         });
     });
-    Route::group(["prefix"=>"/api"],function(){
-        Route::post("/logout",function(){
-            // return view('dashboard');
+    Route::group(["prefix"=>"/verify"],function(){
+        Route::group(['prefix'=>'/create'],function(){
+            Route::post('/password','Services\MailController@createForgotPassword');
+            Route::post('/email','Services\MailController@createVerifyEmail');
         });
-        Route::post("/weather","TestController@weather");
+        Route::group(['prefix'=>'/password'],function(){
+            Route::get('/{any?}','UserController@getChangePass')->where('any','.*');
+            Route::post('/','UserController@changePassEmail');
+        });
+        Route::group(['prefix'=>'/email'],function(){
+            Route::get('/{any?}','UserController@verifyEmail')->where('any','.*');
+            Route::post('/','UserController@verifyEmail');
+        });
+        Route::group(['prefix'=>'/otp'],function(){
+            Route::post('/password','UserController@getChangePass');
+            Route::post('/email','UserController@verifyEmail');
+        });
     });
 });
 ?>
