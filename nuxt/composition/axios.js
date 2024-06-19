@@ -1,6 +1,11 @@
 import axios from 'axios';
 import Cookies from 'js-cookie';
-const baseURL = useRuntimeConfig().public.baseURL;
+let baseURL = '';
+try{
+    baseURL = useRuntimeConfig().public.baseURL;
+}catch(err){
+    baseURL = 'http://localhost:7000';
+}
 const instance = axios.create({
     baseURL: baseURL,
     withCredentials: true

@@ -56,12 +56,11 @@
 <script setup>
 import { ref, reactive } from "vue";
 import { eventBus } from '~/app/eventBus';
+import { CheckAuth } from '../../composition/Auth';
 import { Login } from '../../composition/Auth';
 const publicConfig = useRuntimeConfig().public;
 useHead({
     title:`Login | ${publicConfig.appName}`
-});
-useAsyncData(async () => {
 });
 const errMessage = ref('');
 const input = reactive({

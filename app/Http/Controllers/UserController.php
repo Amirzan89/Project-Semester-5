@@ -58,20 +58,25 @@ class UserController extends Controller
         if(Str::startsWith($request->path(), 'verify/password') && $request->isMethod('get')){
             $email = $request->query('email');
             if (!Verifikasi::whereRaw("BINARY link = ?", [$any])->exists()) {
-                return Inertia::render('app', ['title' => 'Reset Password', 'message' => 'Link invalid', 'code' => 400, 'div' => 'red']);
+                return response()->json(['title' => 'Reset Password', 'message' => 'Link invalid', 'code' => 400, 'div' => 'red']);
+                // return Inertia::render('app', ['title' => 'Reset Password', 'message' => 'Link invalid', 'code' => 400, 'div' => 'red']);
             }
             if (!Verifikasi::whereRaw("BINARY email = ?", [$email])->exists()) {
-                return Inertia::render('app', ['title' => 'Reset Password', 'message' => 'Email invalid', 'code' => 400, 'div' => 'red']);
+                return response()->json(['title' => 'Reset Password', 'message' => 'Email invalid', 'code' => 400, 'div' => 'red']);
+                // return Inertia::render('app', ['title' => 'Reset Password', 'message' => 'Email invalid', 'code' => 400, 'div' => 'red']);
             }
             if (!Verifikasi::whereRaw("BINARY email = ? AND BINARY link = ?", [$email, $any])->exists()) {
-                return Inertia::render('app', ['title' => 'Reset Password', 'message' => 'Link invalid', 'code' => 400, 'div' => 'red']);
+                return response()->json(['title' => 'Reset Password', 'message' => 'Link invalid', 'code' => 400, 'div' => 'red']);
+                // return Inertia::render('app', ['title' => 'Reset Password', 'message' => 'Link invalid', 'code' => 400, 'div' => 'red']);
             }
             $currentDateTime = Carbon::now();
             if (!Verifikasi::whereRaw("BINARY email = ?", [$email])->where('updated_at', '>=', $currentDateTime->subMinutes(1))->exists()) {
                 Verifikasi::whereRaw("BINARY email = ? AND deskripsi = 'password'", [$email])->delete();
-                return Inertia::render('app', ['title' => 'Reset Password', 'message' => 'Link Expired', 'code' => 400, 'div' => 'red']);
+                return response()->json(['title' => 'Reset Password', 'message' => 'Link Expired', 'code' => 400, 'div' => 'red']);
+                // return Inertia::render('app', ['title' => 'Reset Password', 'message' => 'Link Expired', 'code' => 400, 'div' => 'red']);
             }
-            return Inertia::render('app', ['email' => $email, 'title' => 'Reset Password', 'link' => $any, 'code' => '', 'div' => 'verifyDiv', 'deskripsi' => 'password']);
+            return response()->json(['email' => $email, 'title' => 'Reset Password', 'link' => $any, 'code' => '', 'div' => 'verifyDiv', 'deskripsi' => 'password']);
+            // return Inertia::render('app', ['email' => $email, 'title' => 'Reset Password', 'link' => $any, 'code' => '', 'div' => 'verifyDiv', 'deskripsi' => 'password']);
         }else{
             $email = $request->input('email');
             $code = $request->input('otp');
@@ -344,7 +349,7 @@ class UserController extends Controller
         }
         return $mailController->createVerifyEmail($request,$verify);
     }
-    public function logout(Request $request, JWTController $jwtController){
+    public function logout(Request $request){
         $userAuth = $request->input('user_auth');
         if (!RefreshToken::whereRaw("BINARY email = ?",[$userAuth['email']])->where('number',$userAuth['number'])->delete()) {
             return response()->json(['status' => 'error', 'message' => 'Gagal Logout'], 500);

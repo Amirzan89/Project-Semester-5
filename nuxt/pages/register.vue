@@ -79,18 +79,13 @@
 </style>
 <script setup>
 import { ref, reactive } from "vue";
+import OTPComponent from '~/components/OTP.vue';
 import { eventBus } from '~/app/eventBus';
 import { Register } from '../../composition/Auth';
-import OTPComponent from '~/components/OTP.vue';
 const publicConfig = useRuntimeConfig().public;
 useHead({
     title:`Register | ${publicConfig.appName}`
 });
-useAsyncData(async () => {
-});
-const components = {
-    OTPComponent: OTPComponent,
-};
 const errMessage = ref('');
 const input = reactive({
     nama: '',

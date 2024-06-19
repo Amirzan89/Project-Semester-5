@@ -88,9 +88,6 @@ definePageMeta({
 });
 useAsyncData(async () => {
 });
-const components = {
-    OTPComponent:OTPComponent,
-};
 const input = reactive({
     email: '',
     nama: '',

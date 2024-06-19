@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use Illuminate\Http\Request;
 // use app\Http\Controllers\LoginController;
 // use app\Http\Controllers\Register;
 /*
@@ -15,17 +16,20 @@ use Illuminate\Support\Facades\Route;
 */
 
 Route::group(['middleware'=>'auth'],function(){
-    Route::get('/login',function(){
+    Route::get('/login',function(Request $request){
+        if($request->wantsJson()){
+            return response()->json(['status' => 'success', 'message' => 'OK']);
+        }
         return view('login');
     });
-    Route::get('/register',function(){
+    Route::get('/register',function(Request $request){
+        if($request->wantsJson()){
+            return response()->json(['status' => 'success', 'message' => 'OK']);
+        }
         return view('register');
     });
     Route::get('/dashboard',function(){
         return view('dashboard');
-    });
-    Route::get('/csrf-token', function() {
-        return response()->json(['token' => csrf_token()]);
     });
     Route::group(["prefix"=>"/users"],function(){
         Route::post('/login','Auth\LoginController@login');
@@ -51,6 +55,14 @@ Route::group(['middleware'=>'auth'],function(){
         Route::group(['prefix'=>'/otp'],function(){
             Route::post('/password','UserController@getChangePass');
             Route::post('/email','UserController@verifyEmail');
+        });
+    });
+    Route::group(["prefix"=>"/password"],function(){
+        Route::get('/reset',function(Request $request){
+            if($request->wantsJson()){
+                return response()->json(['status' => 'success', 'message' => 'OK']);
+            }
+            return view();
         });
     });
 });

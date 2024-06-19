@@ -8,6 +8,12 @@ use App\Models\User;
 use Closure;
 class Authenticate
 {
+    private function handleRedirect($request, $cond, $link = ''){
+        if($cond == 'error'){
+            return $request->wantsJson() ? response()->json(['status' => 'error', 'message' => 'Unauthorized'], 401)->withCookie(Cookie::forget('token1'))->withCookie(Cookie::forget('token2'))->withCookie(Cookie::forget('token3')) : redirect('/login')->withCookies([Cookie::forget('token1'),Cookie::forget('token2'),Cookie::forget('token3')]);
+        }
+        return $request->wantsJson() ? response()->json(['status' => 'error', 'message' => 'redirect', 'link' => $link], 302) : redirect($link);
+    }
     public function handle(Request $request, Closure $next){
         $jwtController = app()->make(JwtController::class);
         $currentPath = '/'.$request->path();
@@ -20,12 +26,12 @@ class Authenticate
             $tokenDecode1 = json_decode(base64_decode($token1),true);
             $email = $tokenDecode1['email'];
             $number = $tokenDecode1['number'];
-            $authPage = ['/login','/','/artikel'];
+            $authPage = ['/','/login','/register','/password/reset'];
             if ((in_array($currentPath, $authPage) || strpos($currentPath, '/artikel/') === 0) && $request->isMethod('get')) {
                 if (in_array(ltrim($path), $authPage)) {
-                    $response = redirect('/dashboard');
+                    $response = $this->handleRedirect($request, 'success', '/dashboard');
                 } else {
-                    $response = redirect($path);
+                    $response = $this->handleRedirect($request, 'success', $path);
                 }
                 $cookies = $response->headers->getCookies();
                 foreach ($cookies as $cookie) {
@@ -58,26 +64,26 @@ class Authenticate
             ];
             //check user is exist in database
             if(!User::select('email')->whereRaw("BINARY email = ?",[$email])->limit(1)->exists()){
-                return redirect('/login')->withCookies([Cookie::forget('token1'),Cookie::forget('token2'),Cookie::forget('token3')]);
+                return $this->handleRedirect($request, 'error');
             }
             //check token if exist in database
             if(!$jwtController->checkExistRefreshToken($token3, 'website')){
                 //if token is not exist in database
                 $delete = $jwtController->deleteRefreshToken($email,$number, 'website');
                 if($delete['status'] == 'error'){
-                    return redirect('/login')->withCookies([Cookie::forget('token1'),Cookie::forget('token2'),Cookie::forget('token3')]);
+                    return $this->handleRedirect($request, 'error');
                 }
-                return redirect('/login')->withCookies([Cookie::forget('token1'),Cookie::forget('token2'),Cookie::forget('token3')]);
+                return $this->handleRedirect($request, 'error');
             }
             //if token exist
             $decodedRefresh = $jwtController->decode($decodeRefresh);
             if($decodedRefresh['status'] == 'error'){
                 if($decodedRefresh['message'] == 'Expired token'){
-                    return redirect('/login')->withCookies([Cookie::forget('token1'),Cookie::forget('token2'),Cookie::forget('token3')]);
+                    return $this->handleRedirect($request, 'error');
                 }else if($decodedRefresh['message'] == 'invalid email'){
-                    return redirect('/login')->withCookies([Cookie::forget('token1'), Cookie::forget('token2'),Cookie::forget('token3')]);
+                    return $this->handleRedirect($request, 'error');
                 }
-                return redirect('/login')->withCookies([Cookie::forget('token1'),Cookie::forget('token2'),Cookie::forget('token3')]);
+                return $this->handleRedirect($request, 'error');
             }
             //if token refresh success decoded and not expired
             $decoded = $jwtController->decode($decode);
@@ -138,8 +144,8 @@ class Authenticate
             // return $next($request); 
         }else{
             //if cookie gone
-            $page = ['/dashboard', '/profile', '/article', '/article/tambah', '/article/edit', '/disi', '/disi/tambah', '/emotal', '/emotal/tambah', '/nutrisi', '/nutrisi/tambah', '/pengasuhan', '/pengasuhan/tambah', '/konsultasi', '/konsultasi/tambah', '/admin', '/admin/tambah', '/acara', '/acara/tambah'];
-            $pagePrefix = ['/disi/edit', '/emotal/edit', '/nutrisi/edit', '/pengasuhan/edit', '/konsultasi/edit', '/admin/edit', '/acara/edit'];
+            $page = ['/dashboard', '/profile', '/article', '/article/tambah', '/article/edit', '/users/check', '/emotal', '/emotal/tambah', '/nutrisi', '/nutrisi/tambah', '/pengasuhan', '/pengasuhan/tambah', '/konsultasi', '/konsultasi/tambah', '/admin', '/admin/tambah', '/acara', '/acara/tambah'];
+            $pagePrefix = ['/emotal/edit', '/konsultasi/edit', '/admin/edit', '/acara/edit'];
             if(Str::startsWith($currentPath, $pagePrefix) || in_array($currentPath,$page)){
                 if($request->hasCookie("token1")){
                     $token1 = $request->cookie('token1');
@@ -150,10 +156,10 @@ class Authenticate
                     if($delete['status'] == 'error'){
                         return response()->json(['status'=>'error','message'=>'delete token error'],500);
                     }else{
-                        return redirect('/login')->withCookies([Cookie::forget('token1'),Cookie::forget('token2'),Cookie::forget('token3')]);
+                        return $this->handleRedirect($request, 'error');
                     }
                 }else{
-                    return redirect('/login')->withCookies([Cookie::forget('token1'),Cookie::forget('token2'),Cookie::forget('token3')]);
+                    return $this->handleRedirect($request, 'error');
                 }
             }
             return $next($request); 
