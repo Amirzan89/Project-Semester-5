@@ -142,7 +142,7 @@ const inpChangePopup= () => {
         }, 750);
     }
 };
-const showPass = () =>{
+const showPass = () => {
     if(input.isPasswordShow){
         inpPassword.value.type = 'password';
         input.isPasswordShow = false;

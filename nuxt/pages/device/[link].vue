@@ -13,7 +13,7 @@ const route = useRoute();
 definePageMeta({
     name: 'ProjectsDetail',
     layout: 'home',
-    validate: async(route) => { 
+    validate: async(route) => {
         return true;
         // if(route.params.link === ''){
         //     navigateTo('/projects');
@@ -25,6 +25,13 @@ definePageMeta({
 useHead({
     title: route.params.link + ' | Amirzan Portfolio'
 });
+onBeforeRouteLeave((to, from) => {
+    const answer = window.confirm(
+        'Do you really want to leave? you have unsaved changes!'
+    )
+    // cancel the navigation and stay on the same page
+    if (!answer) return false
+})
 useLazyAsyncData(async () => {
     const res = await  projectDetailPage(route.params.link);
     if(res.status == 'success'){

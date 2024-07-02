@@ -27,11 +27,14 @@
 }
 </style>
 <script setup>
-    const publicConfig = useRuntimeConfig().public;
-    useHead({
-        title:`Home | ${publicConfig.appName}`
-    });
+const publicConfig = useRuntimeConfig().public;
 definePageMeta({
     layout:'home',
+});
+useHead({
+    title:`Home | ${publicConfig.appName}`
+});
+onMounted(() => {
+    if (route.hash) document.querySelector(route.hash)?.scrollIntoView({ behavior: "smooth" });
 });
 </script>
