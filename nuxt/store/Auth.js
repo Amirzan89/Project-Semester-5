@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia';
-import { CheckAuth } from '~/composition/Auth';
+import { CheckAuth } from '~/composables/api/Auth';
 export const useAuthStore = defineStore('auth', {
     state: () => ({
         user: null,

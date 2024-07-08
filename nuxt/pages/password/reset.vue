@@ -78,7 +78,7 @@
 import { ref, reactive, defineProps, onMounted } from "vue";
 import { eventBus } from '~/app/eventBus';
 import OTPComponent from '~/components/OTP.vue';
-import { ForgotPassword, VerifyChange  } from '../../composition/Auth';
+import { ForgotPassword, VerifyChange  } from '../../composables/api/Auth';
 const publicConfig = useRuntimeConfig().public;
 useHead({
     title:`Reset Password | ${publicConfig.appName}`

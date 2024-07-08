@@ -39,7 +39,7 @@
 <script setup>
 import { ref, defineEmits } from "vue";
 import { eventBus } from '../app/eventBus';
-import { SendOtp, VerifyOtp } from '../composition/Auth';
+import { SendOtp, VerifyOtp } from '../composables/api/Auth';
 const emit = defineEmits(['change-popup', 'red-popup', 'green-popup', 'countdown']);
 const props = defineProps({
     data: Object,
