@@ -286,7 +286,9 @@ const items = ref([
 ]);
 const lineOptions = ref(null);
 const productService = new ProductService();
-
+onBeforeRouteUpdate(() => {
+    useFetchDataStore().resetFetchData();
+});
 onMounted(() => {
     productService.getProductsSmall().then((data) => (products.value = data));
 });

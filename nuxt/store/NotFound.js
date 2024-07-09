@@ -1,24 +1,20 @@
 import { defineStore } from "pinia";
 export const useNotFoundStore = defineStore('notfound', {
-    state: () => {
-        isNotFound: false;
-        messageNotFound: '';
-        linkBack:'/';
-    },
+    state: () => ({
+        isNotFound: false,
+        messageNotFound: '',
+        linkBack: '/',
+    }),
     actions: {
-        setIsNotFound(value = false, linkBack = '') {
+        setIsNotFound(value, linkBack, message) {
             this.isNotFound = value;
-            if(this.isNotFound){
-                this.linkBack = linkBack;
-            }
-        },
-        setMessageNotFound(message = '') {
+            this.linkBack = linkBack;
             this.messageNotFound = message;
         },
-        resetState() {
+        async resetState() {
             this.isNotFound = false;
             this.messageNotFound = '';
             this.linkBack = '/';
-        }
+        },
     },
 });

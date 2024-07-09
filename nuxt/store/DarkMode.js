@@ -1,10 +1,16 @@
+const delayConst = 20;
 import { defineStore } from "pinia";
 export const useDarkModeStore = defineStore('darkMode', {
     state: () => {
-        darkMode: false
+        return {
+            transitionTime: 0,
+            preDarkMode: false,
+            darkMode: false,
+        };
     },
     actions: {
-        initializeDarkMode() {
+        initializeDarkMode(timing) {
+            this.transitionTime = timing;
             const storedPreference = localStorage.getItem('dark-mode');
             if (storedPreference !== null) {
                 this.darkMode = storedPreference === 'enabled';
@@ -25,6 +31,10 @@ export const useDarkModeStore = defineStore('darkMode', {
             } else {
                 document.documentElement.classList.remove('dark');
             }
+            this.preDarkMode = true;
+            setTimeout(() => {
+                this.preDarkMode = false;
+            }, (this.transitionTime * 1000) + delayConst);
         },
         watchSystemPreference() {
             if (window.matchMedia) {
