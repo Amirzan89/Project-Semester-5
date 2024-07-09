@@ -6,17 +6,23 @@ const fetchCsrfToken = async () => {
 export const useFetchDataStore = defineStore('fetchData', {
     state: () => ({
         processFetch: { isDone: 'loading'},
-        cache: [],
+        cache: {
+            device:[],
+            admin:[],
+            random:[],
+        },
         retryCount: 0,
     }),
     actions: {
         async fetchData() {
             try{
                 const routePath = useRoute().fullPath;
-                if(this.cache){
-                    for (const item of this.cache) {
-                        if (item.url === routePath) return { status: 'success', data: item.data };
-                    }
+                //search cache
+                let keyC = Object.keys(this.cache).find(key => key == routePath.split('/')[1]) || 'random';
+                let lenghtK = this.cache[keyC].length;
+                if(this.cache[keyC] != [] && lenghtK > 0){
+                    let data = this.cache[keyC].find(item => item.url == routePath);
+                    if(data) return { status: 'success', data: data }
                 }
                 const res = await axios.get(`${routePath}?_=${Date.now()}`, {
                     headers: {
@@ -24,7 +30,11 @@ export const useFetchDataStore = defineStore('fetchData', {
                     }
                 });
                 this.processFetch = { isDone: 'success', message: ''}
-                this.cache.push({ url: routePath, data: res.data });
+                //delete old cache
+                if(lenghtK >= 3){
+                    this.cache[keyC].pop();
+                }
+                this.cache[keyC].push({ url: routePath, data: res.data });
                 return { status:'success', data: res.data};
             }catch(err){
                 if (err.response){

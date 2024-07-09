@@ -13,6 +13,16 @@ definePageMeta({
 useHead({
     title:`List Device | ${publicConfig.appName}`
 });
+onBeforeRouteUpdate(() => {
+    if(local.isUpdated){
+        const answer = window.confirm(
+            'Do you really want to leave? you have unsaved changes!'
+        )
+        // cancel the navigation and stay on the same page
+        if (!answer) return false
+    }
+    useFetchDataStore().resetFetchData();
+});
 useAsyncData(async () => {
     const res = await  projectPage();   
     local.fetchedViewData = res.data.viewData;
