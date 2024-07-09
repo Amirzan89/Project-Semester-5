@@ -21,6 +21,92 @@
         </div>
     </div>
 </template>
+<style scoped>
+    header{
+        z-index: 999;
+        height: var(--paddTop);
+        scroll-padding-top: var(--paddTop);
+    }
+    a{
+        transition: color 0.2s ease-in;
+    }
+</style>
 <script setup>
-const publicConfig = useRuntimeConfig().public;
+import { reactive } from "vue";
+import { useDarkModeStore } from '~/store/DarkMode';
+const route = useRoute();
+const linkHref = ['#me', '#about', '#project', '#contact'];
+const isActive = reactive([false, false, false, false]);
+const isHover = reactive([false, false, false, false]);
+const darkModeStore = useDarkModeStore();
+const { $gsap } = useNuxtApp();
+let header = null;
+const changeHover = (item) => {
+    isHover[item] = !isHover[item];
+};
+const changeActive = (item) => {
+    isActive.forEach((active, index) => {
+        if (active) isActive[index] = false;
+    });
+    isActive[item] = true;
+};
+const changeIcon = (cond = '') => {
+    if(cond == 'light'){
+        $gsap.set(header('img#modeLight'), { display: !darkModeStore.darkMode ? 'block':'none' });
+    }else if(cond == 'dark'){
+        $gsap.set(header('img#modeDark'), { display: darkModeStore.darkMode ? 'block':'none' });
+    }else{
+        $gsap.set(header('img#modeLight'), { display: !darkModeStore.darkMode ? 'block':'none' });
+        $gsap.set(header('img#modeDark'), { display: darkModeStore.darkMode ?'block':'none' });
+    }
+}
+onMounted(() => {
+    header = $gsap.utils.selector('header');
+    changeIcon();
+    const index = linkHref.indexOf(route.hash);
+    isActive[index === -1 ? 0 : index] = true;
+});
+const changeMode = () => {
+    darkModeStore.toggleDarkMode();
+    const tl = $gsap.timeline();
+    if(darkModeStore.darkMode){
+        tl.to(header('img#modeLight'), {
+            onComplete: () => {
+                changeIcon('light');
+                changeIcon('dark');
+                $gsap.set(header('img#modeLight'), { y: '0%', autoAlpha: 1 });
+            },
+            y:'50%',
+            autoAlpha: 0,
+            duration: darkModeStore.transitionTime/2,
+        });
+        tl.from(header('img#modeDark'), {
+            onComplete: () => {
+                $gsap.set(header('img#modeDark'), { y: '0%', autoAlpha: 1 });
+            },
+            y:'50%',
+            autoAlpha: 0,
+            duration: darkModeStore.transitionTime/2,
+        })
+    }else{
+        tl.to(header('img#modeDark'), {
+            onComplete: () => {
+                changeIcon('light');
+                changeIcon('dark');
+                $gsap.set(header('img#modeDark'), { y: '0%', autoAlpha: 1 });
+            },
+            y:'50%',
+            autoAlpha: 0,
+            duration: darkModeStore.transitionTime/2,
+        });
+        tl.from(header('img#modeLight'), {
+            onComplete: () => {
+                $gsap.set(header('img#modeLight'), { y: '0%', autoAlpha: 1 }); 
+            },
+            y:'50%',
+            autoAlpha: 0,
+            duration: darkModeStore.transitionTime/2,
+        });
+    }
+};
 </script>

@@ -18,7 +18,8 @@ export const useFetchDataStore = defineStore('fetchData', {
             try{
                 const routePath = useRoute().fullPath;
                 //search cache
-                let keyC = Object.keys(this.cache).find(key => key == routePath.split('/')[1]) || 'random';
+                const sp = routePath.split('/');
+                let keyC = sp.length > 1 ? Object.keys(this.cache).find(key => key == sp[1]) || 'random' : 'random';
                 let lenghtK = this.cache[keyC].length;
                 if(this.cache[keyC] != [] && lenghtK > 0){
                     let data = this.cache[keyC].find(item => item.url == routePath);

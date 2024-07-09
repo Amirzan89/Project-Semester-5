@@ -243,10 +243,9 @@
 import { onMounted, reactive, ref, watch } from 'vue';
 import { ProductService } from '@/service/ProductService';
 import { useLayout } from '@/layouts/composables/layout';
+import { useFetchDataStore } from '~/store/FetchData';
 import AppLayout from '~/layouts/authenticated.vue';
-import { fetchData } from '../../composition/FetchData';
 const publicConfig = useRuntimeConfig().public;
-const route = useRoute();
 useHead({
     title:`Dashboard | ${publicConfig.appName}`
 });
@@ -255,7 +254,7 @@ definePageMeta({
 });
 const { isDarkTheme } = useLayout();
 useLazyAsyncData(async () => {
-    await fetchData(route.fullPath);
+    await useFetchDataStore().fetchData();
 });
 
 const products = ref(null);
