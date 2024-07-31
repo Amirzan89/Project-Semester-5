@@ -1,5 +1,5 @@
 /** @type {import('tailwindcss').Config} */
-module.exports = {
+export default {
   darkMode: 'class',
   content: [
     "./components/**/*.{js,vue,ts}",
@@ -10,51 +10,47 @@ module.exports = {
     "./error.vue",
   ],
   theme: {
-    screens: {
-      'sm': '640px',
-      'md': '768px',
-      'lg': '1024px',
-      'xl': '1280px',
-      '2xl': '1536px',
+    screens:{
+      '3xsphone': '320px', // iPhone 5/SE, small Android devices
+      '2xsphone': '375px', // iPhone 8, medium Android devices
+      'xsphone': '400px',  // smaller phones, phablets
+      'phone': '480px', // larger phones
+      'sm': '640px', // small tablets
+      'md': '768px', // medium tablets, laptops
+      'lg': '1024px', // larger laptops, desktops
+      'xl': '1280px', // large desktops
+      '2xl': '1536px', // extra large desktops
     },
     extend: {
       colors: {
+        primary:'#4227DA',
+        primary_text:'#3521AA',
+        second:'#E14646',
+        third:'#E9950D',
+
+        dark_bg:'#0E1528',
+        primary_dark:'#FF1CF4',
+        primary_dark_text:'#31F7FE',
+        second_dark:'#E14646',
+        third_dark:'#E9950D',
         // primary: {
-        //   100: '#3F51B5',
-        //   200: '#757de8',
-        //   300: '#dedeff',
+        //   100:'#00cffe',
+        //   200:'#fe7000',
+        //   300:'#b24e00#E14646',
+        //   400:'#2510b2',
+        //   500:'#3517fe',
         // },
-        // accent: {
-        //   100: '#2196F3',
-        //   200: '#003f8f',
-        // },
-        // text: {
-        //   100: '#333333',
-        //   200: '#5c5c5c',
-        // },
-        // bg: {
-        //   100: '#FFFFFF',
-        //   200: '#f5f5f5',
-        //   300: '#cccccc',
-        // },
-        primary1: '#2C8C54',
-        compliment: '#A967FE',
-        bold: '#FF0202',
-        // pallet:'#2E3137',
-        // black_palette: '#2F4858',
-        // white_palette: '#CDEDF6',
-        // blue_palette: '#00B2FF',
-        // red_palette: '#F45B69',
-        // bg_btn_light: '#2F4858',
-        // bg_btn_dark: '#2F4858',
         popup_success: '#29A867',
         popup_error:'#FF4051'
       },
       spacing: {
         '1/10':'10%',
         '1/8':'12.5%',
+        '1/7':'14.28%',
         '1/6':'16.6%',
+        '1/5':'20%',
         '7/8':'87.5%',
+        '9/10':'90%',
         '1.5': '0.375rem',
         '3': '0.75rem',
         '10': '2.5rem',
@@ -65,29 +61,45 @@ module.exports = {
         '21': '5.25rem',
         '22': '5.5rem',
         '25': '6.25rem',
+        '27': '6.75rem',
         '30': '7.5rem',
+        '33': '8.25rem',
         '35': '8.75rem',
         '37': '9.25rem',
-        '40': '10.00rem',
+        '38': '9.5rem',
+        '42': '10.5rem',
         '45': '11.25rem',
+        '47': '11.75rem',
         '50': '12.5rem',
         '55': '13.75rem',
         '57': '14.25rem',
-        '60': '17.5rem',
-        '70': '20rem',
-        '75': '21.75rem',
+        '60': '15rem',
+        '65': '16.25rem',
+        '67': '16.75rem',
+        '70': '17.5rem',
+        '75': '18.75rem',
+        '77': '19.25rem',
+        '85': '21.25rem',
         '90': '22.5rem',
         '95': '23.75rem',
         '100': '25rem',
         '110': '27.5rem',
         '115': '28.75rem',
         '120': '30rem',
-        '125': '32.5rem',
-        '130': '35rem',
+        '125': '31.25rem',
+        '130': '32.5rem',
+        '135': '33.75rem',
+        '140': '35rem',
+        '145': '36.25rem',
         '150': '37.5rem',
         '160': '40rem',
+        '165': '41.25rem',
         '170': '42.5rem',
         '175': '43.75rem',
+        '180': '45rem',
+        '185': '46.25rem',
+        '190': '47,5rem',
+        '195': '48,75rem',
         '200': '50rem',
         '225': '56.25rem',
         '250': '62.5rem',
@@ -123,8 +135,12 @@ module.exports = {
         '5': '5px',
         '6': '6px',
         '7': '7px',
+        '8': '8px',
         '9': '9px',
         '10': '10px',
+      },
+      margin:{
+
       },
       fontSize:{
         '2xs': ['0.625rem', { lineHeight:'0.875rem'}],
@@ -137,4 +153,3 @@ module.exports = {
   },
   plugins: [],
 }
-

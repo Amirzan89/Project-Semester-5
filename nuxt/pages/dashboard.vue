@@ -239,12 +239,12 @@
         </div>
     </div>
 </template>
-<script setup>
+<script setup lang="ts">
 import { onMounted, reactive, ref, watch } from 'vue';
-import { ProductService } from '@/service/ProductService';
-import { useLayout } from '@/layouts/composables/layout';
+import { ProductService } from '~/service/ProductService';
+import { useLayout } from '~/layouts/composables/layout';
 import { useFetchDataStore } from '~/store/FetchData';
-import AppLayout from '~/layouts/authenticated.vue';
+// import AppLayout from '~/layouts/authenticated.vue';
 const publicConfig = useRuntimeConfig().public;
 useHead({
     title:`Dashboard | ${publicConfig.appName}`
@@ -252,10 +252,12 @@ useHead({
 definePageMeta({
     layout: 'authenticated',
 });
-const { isDarkTheme } = useLayout();
-useLazyAsyncData(async () => {
-    await useFetchDataStore().fetchData();
+const local = reactive({
+    fetchedUserAuth: null,
+    fetchedShopData: null,
+    fetchedRandomData: null,
 });
+const { isDarkTheme } = useLayout();
 
 const products = ref(null);
 const lineData = reactive({
@@ -283,8 +285,11 @@ const items = ref([
     { label: 'Add New', icon: 'pi pi-fw pi-plus' },
     { label: 'Remove', icon: 'pi pi-fw pi-minus' }
 ]);
-const lineOptions = ref(null);
+const lineOptions: Ref = ref(null);
 const productService = new ProductService();
+useLazyAsyncData(async () => {
+    await useFetchDataStore().fetchData();
+});
 onBeforeRouteUpdate(() => {
     useFetchDataStore().resetFetchData();
 });
@@ -292,7 +297,7 @@ onMounted(() => {
     productService.getProductsSmall().then((data) => (products.value = data));
 });
 
-const formatCurrency = (value) => {
+const formatCurrency = (value: ) => {
     return value.toLocaleString('en-US', { style: 'currency', currency: 'USD' });
 };
 const applyLightTheme = () => {

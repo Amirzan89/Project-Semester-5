@@ -81,7 +81,7 @@
 import { ref, reactive } from "vue";
 import OTPComponent from '~/components/OTP.vue';
 import { eventBus } from '~/app/eventBus';
-import { Register } from '../../composition/Auth';
+import { Register } from '~/composables/api/auth';
 const publicConfig = useRuntimeConfig().public;
 useHead({
     title:`Register | ${publicConfig.appName}`

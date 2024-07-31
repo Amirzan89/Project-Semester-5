@@ -39,6 +39,7 @@ const linkHref = ['#me', '#about', '#project', '#contact'];
 const isActive = reactive([false, false, false, false]);
 const isHover = reactive([false, false, false, false]);
 const darkModeStore = useDarkModeStore();
+const publicConfig = useRuntimeConfig().public;
 const { $gsap } = useNuxtApp();
 let header = null;
 const changeHover = (item) => {
@@ -61,6 +62,7 @@ const changeIcon = (cond = '') => {
     }
 }
 onMounted(() => {
+    console.log('gsappp', $gsap)
     header = $gsap.utils.selector('header');
     changeIcon();
     const index = linkHref.indexOf(route.hash);

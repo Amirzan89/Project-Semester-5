@@ -1,4 +1,5 @@
-import { resolve } from 'path';
+import { version } from "vue";
+
 export default defineNuxtConfig({
     devtools: {
         enabled: true,
@@ -14,9 +15,12 @@ export default defineNuxtConfig({
         },
     },
     ssr: false,
+    typescript:{
+
+    },
     css: [
-        '~/assets/css/global.css',
-        '~/assets/css/tailwind.css',
+        '~/assets/style/global.scss',
+        '~/assets/style/tailwind.scss',
         '~/assets/styles.scss',
         '@fortawesome/fontawesome-svg-core/styles.css'
     ],
@@ -32,7 +36,17 @@ export default defineNuxtConfig({
             extensions: ['.vue'],
         }
     ],
-    modules: [
-        '@pinia/nuxt',
-    ],
+    modules: ['@pinia/nuxt', '@hypernym/nuxt-gsap', "@nuxt/image", ],
+    gsap:{
+        extraPlugins:{
+            scrollTrigger: true,
+            draggable:true,
+        }
+    },
+    image:{
+        providers:{
+            
+        },
+        dir: 'assets/images',
+    }
 })

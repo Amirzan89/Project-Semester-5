@@ -3,13 +3,13 @@ import { defineStore } from "pinia";
 export const useDarkModeStore = defineStore('darkMode', {
     state: () => {
         return {
-            transitionTime: 0,
-            preDarkMode: false,
-            darkMode: false,
+            transitionTime: 0 as number,
+            preDarkMode: false as boolean,
+            darkMode: false as boolean,
         };
     },
     actions: {
-        initializeDarkMode(timing) {
+        initializeDarkMode(timing: number) {
             this.transitionTime = timing;
             const storedPreference = localStorage.getItem('dark-mode');
             if (storedPreference !== null) {

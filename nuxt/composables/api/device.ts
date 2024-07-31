@@ -1,16 +1,17 @@
-import axios from '../axios';
-export async function TambahAdmin(data){
+import createAxios from './axios';
+const { axios, axiosJson } = createAxios();
+export async function TambahDevice(data: { email: string, password: string }){
     try{
         const response = await axios.post('/users/login', {
             email: data.email,
             password: data.password,
         });
         return { status:'success', message: response.data.message};
-    }catch(err){
+    }catch(err: any){
         return { status:'error', message: err.response.data.message };
     }
 }
-export async function EditAdmin(data){
+export async function EditDevice(data: { nama: string, email: string, password: string, ulangiPassword: string }){
     try{
         const response = await axios.post('/users/register',{
             nama: data.nama,
@@ -19,21 +20,21 @@ export async function EditAdmin(data){
             password_confirm: data.ulangiPassword,
         });
         return { status:'success', message: response.data.message, data: response.data.data};
-    }catch(err){
+    }catch(err: any){
         return { status:'error', message: err.response.data.message };
     }
 }
-export async function DeleteAdmin(data){
+export async function DeleteDevice(data: { email: string }){
     try{
         const response = await axios.post('/verify/create/password',{
             email: data.email,
         });
         return { status:'success', message: response.data.message, data: response.data.data };
-    }catch(err){
+    }catch(err: any){
         return { status:'error', message: err.response.data.message };
     }
 }
-export async function VerifyChange(data){
+export async function VerifyChange(data: { nama: string, email: string, password: string, ulangiPassword: string, description: string}){
     try{
         const response = await axios.post('/verify/password',{
             nama: data.nama,
@@ -43,39 +44,39 @@ export async function VerifyChange(data){
             description: data.description,
         });
         return { status:'success', message: response.data.message, data: response.data.data};
-    }catch(err){
+    }catch(err: any){
         return { status:'error', message: err.response.data.message };
     }
 }
-export async function SendOtp(data){
+export async function SendOtp(data: { link: string, email:string }){
     try{
         const response = await axios.post(data.link,{
             email: data.email,
         });
         return { status:'success', message: response.data.message, data: response.data.data };
-    }catch(err){
+    }catch(err: any){
         return { status:'error', message: err.response.data.message };
     }
 }
-export async function VerifyOtp(data){
+export async function VerifyOtp(data: { link: string, email: string, otp: string, }){
     try{
         const response = await axios.post(data.link,{
             email: data.email,
             otp: data.otp
         });
         return { status:'success', message: response.data.message};
-    }catch(err){
+    }catch(err: any){
         return { status:'error', message: err.response.data.message };
     }
 }
-export async function Logout(data){
+export async function Logout(data: { email: string, number: string, }){
     try{
         const response = await axios.post('/users/logout',{
             email: data.email,
             number: data.number,
         });
         return { status:'success', message: response.data.message};
-    }catch(err){
+    }catch(err: any){
         return { status:'error', message: err.response.data.message };
     }
 }

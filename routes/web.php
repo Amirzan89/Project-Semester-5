@@ -65,5 +65,6 @@ Route::group(['middleware'=>'auth'],function(){
             return view();
         });
     });
+    // Route::get('/','Pages\HomeController@getHome')->where('any','.*');
 });
 ?>

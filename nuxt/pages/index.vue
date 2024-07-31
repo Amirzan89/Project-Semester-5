@@ -27,12 +27,18 @@
 }
 </style>
 <script setup>
+import { ref, reactive, onMounted, watch } from "vue";
+import { useFetchDataStore } from "~/store/FetchData";
 const publicConfig = useRuntimeConfig().public;
+const route = useRoute();
 definePageMeta({
     layout:'home',
 });
 useHead({
     title:`Home | ${publicConfig.appName}`
+});
+const local = reactive({
+    fetchedData: null,
 });
 onMounted(() => {
     if (route.hash) document.querySelector(route.hash)?.scrollIntoView({ behavior: "smooth" });

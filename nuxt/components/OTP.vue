@@ -11,7 +11,7 @@
         <div class="flex flex-row gap-2 mt-10" style="caret-color: transparent;">
             <input v-for="(input, index) in inpOtp" :key="index" type="text" class="w-10 h-10 border-gray-400 focus:border-black border-2 rounded-xl text-center text-2xl font-medium" ref="inpOtpRefs" v-model="inpOtp[index]" @input="handleInput(index, $event)" @keyup="handleKeyUp(index, $event)" @keypress="inpChange">
         </div>
-        <button class="bg-green-700 mt-10 w-50 h-10 rounded-2xl font-semibold text-white text-xl" @click.prevent="otpForm"> 
+        <button class="bg-green-700 mt-10 w-50 h-10 rounded-2xl font-semibold text-white text-xl" @click.prevent="otpForm">
             <template v-if="props.data.condition == 'email'">
                 Verifikasi Email
             </template>
@@ -39,7 +39,7 @@
 <script setup>
 import { ref, defineEmits } from "vue";
 import { eventBus } from '../app/eventBus';
-import { SendOtp, VerifyOtp } from '../composables/api/Auth';
+import { SendOtp, VerifyOtp } from '~/composables/api/auth';
 const emit = defineEmits(['change-popup', 'red-popup', 'green-popup', 'countdown']);
 const props = defineProps({
     data: Object,

@@ -1,20 +1,21 @@
 import { defineStore } from "pinia";
-import axios from "~/composables/api/axios";
+import createAxios from "~/composables/api/axios";
+const { axios, axiosJson } = createAxios();
 const fetchCsrfToken = async () => {
     return await axios.get('/sanctum/csrf-cookie');
 }
 export const useFetchDataStore = defineStore('fetchData', {
     state: () => ({
-        processFetch: { isDone: 'loading'},
+        processFetch: { isDone: 'loading' as string, message: '' as string},
         cache: {
-            device:[],
-            admin:[],
-            random:[],
-        },
-        retryCount: 0,
+            device: [],
+            admin: [],
+            random: [],
+        } as Record<string, []>,
+        retryCount: 0 as number,
     }),
     actions: {
-        async fetchData() {
+        async fetchData(): Promise<object> {
             try{
                 const routePath = useRoute().fullPath;
                 //search cache
@@ -22,10 +23,10 @@ export const useFetchDataStore = defineStore('fetchData', {
                 let keyC = sp.length > 1 ? Object.keys(this.cache).find(key => key == sp[1]) || 'random' : 'random';
                 let lenghtK = this.cache[keyC].length;
                 if(this.cache[keyC] != [] && lenghtK > 0){
-                    let data = this.cache[keyC].find(item => item.url == routePath);
+                    let data = this.cache[keyC].find((item: string) => item.url == routePath);
                     if(data) return { status: 'success', data: data }
                 }
-                const res = await axios.get(`${routePath}?_=${Date.now()}`, {
+                const res: Record<string, []> = await axios.get(`${routePath}?_=${Date.now()}`, {
                     headers: {
                         'Accept': 'application/json',
                     }
@@ -37,7 +38,7 @@ export const useFetchDataStore = defineStore('fetchData', {
                 }
                 this.cache[keyC].push({ url: routePath, data: res.data });
                 return { status:'success', data: res.data};
-            }catch(err){
+            }catch(err: any){
                 if (err.response){
                     if(err.response.status === 404){
                         this.processFetch = { isDone: 'error', message: 'not found'};
@@ -61,7 +62,7 @@ export const useFetchDataStore = defineStore('fetchData', {
         },
         resetFetchData(cond = false) {
             if(cond) {
-                this.cache.forEach((item, index) => {
+                this.cache.forEach((item: object, index: number) => {
                     if (item.link === useRoute().fullPath) {
                         this.cache.splice(index, 1);
                     }

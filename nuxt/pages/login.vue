@@ -53,12 +53,13 @@
     }
 }
 </style>
-<script setup>
+<script setup lang="ts">
 import { ref, reactive } from "vue";
+import { useReCaptcha } from 'vue-recaptcha-v3';
 import { eventBus } from '~/app/eventBus';
-import { CheckAuth } from '../../composition/Auth';
-import { Login } from '../../composition/Auth';
+import { Login } from '~/composables/api/auth';
 const publicConfig = useRuntimeConfig().public;
+
 useHead({
     title:`Login | ${publicConfig.appName}`
 });
