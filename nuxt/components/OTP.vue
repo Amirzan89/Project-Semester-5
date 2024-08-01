@@ -36,23 +36,24 @@
     }
 }
 </style>
-<script setup>
+<script setup lang="ts">
 import { ref, defineEmits } from "vue";
 import { eventBus } from '../app/eventBus';
 import { SendOtp, VerifyOtp } from '~/composables/api/auth';
+import type { Props } from "nuxt/dist/head/runtime/types";
 const emit = defineEmits(['change-popup', 'red-popup', 'green-popup', 'countdown']);
-const props = defineProps({
+const props: Props = defineProps({
     data: Object,
     timer: Object,
-})
-const inpOtpRefs = ref(null);
-const inpOtp = ref(Array(6).fill(''));
-const errMessage = ref('');
-const div = ref('');
+});
+const inpOtpRefs: Ref = ref(null);
+const inpOtp: Ref = ref(Array(6).fill(''));
+const errMessage: Ref = ref('');
+const div: Ref = ref('');
 const inpChange = () => {
     // emit('change-popup');
 };
-const handleInput = (index, event) => {
+const handleInput = (index: number, event: Event) => {
     let val = event.target.value;
     if (isNaN(val[val.length - 1])) {
         inpOtp.value[index] = val.slice(0, -1);
@@ -70,7 +71,7 @@ const handleInput = (index, event) => {
         }
     }
 };
-const handleKeyUp = (index, event) => {
+const handleKeyUp = (index: number, event: Event) => {
     const key = event.key.toLowerCase();
     if (key == "backspace" || key == "delete") {
         inpOtp.value[index] = "";
@@ -119,14 +120,14 @@ const sendOtp = async () => {
         // emit('green-popup', 'success verifikasi otp');
     }else if(sendOTP.status === 'error'){
         eventBus.emit('closeLoading');
-        popup.value.classList.remove('invisible');
+        // popup.value.classList.remove('invisible');
         errMessage.value = sendOTP.message;
     }
 };
-const otpForm = async (event) => {
+const otpForm = async (event: Event) => {
     let hasError = false;
     event.preventDefault();
-    inpOtp.value.forEach(function(inpotp){
+    inpOtp.value.forEach(function(inpotp: string){
         if(inpotp === '' || inpotp === null){
             hasError = true;
             // emit('red-popup', 'kode OTP harus diisi');

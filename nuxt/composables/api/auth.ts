@@ -69,7 +69,7 @@ export async function VerifyOtp(data: { link: string, email: string, otp:string 
         return { status:'error', message: err.response.data.message };
     }
 }
-export async function CheckAuth(link: string){
+export async function CheckAuth(link: string): Promise<{ status: string, data?: any, message: string, code?: number, link?:string }>{
     try{
         const response = await axiosJson.get(link);
         return { status:'success', message: response.data.message, data: response.data.data};

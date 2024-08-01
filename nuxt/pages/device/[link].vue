@@ -4,7 +4,7 @@
         <form action=""></form>
     </div>
 </template>
-<script setup>
+<script setup lang="ts">
 import { ref } from "vue";
 import CarouselSlide from '~/composition/CarouselSlide';
 import { useNotFoundStore } from '~/store/NotFound';

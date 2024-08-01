@@ -32,7 +32,7 @@
     }
 }
 </style>
-<script setup>
+<script setup lang="ts">
 import { onMounted, reactive, ref,  } from 'vue';
 import { eventBus } from '../app/eventBus';
 const publicConfig = useRuntimeConfig().public;
@@ -40,41 +40,41 @@ const local = reactive({
     state:'',
     message:'',
 });
-const greenPopup = ref(null);
-const redPopup = ref(null);
+const greenPopup: Ref = ref(null);
+const redPopup: Ref = ref(null);
 onMounted(()=> {
-    eventBus.on('showGreenPopup',function(message){
+    eventBus.on('showGreenPopup',function(message: any){
         showGreenPopup(message);
     });
-    eventBus.on('showRedPopup',function(message){
+    eventBus.on('showRedPopup',function(message: any){
         showRedPopup(message);
     });
-    eventBus.on('showCountDown',function(message){
+    eventBus.on('showCountDown',function(message: any){
         showCountDown(message);
     });
-    eventBus.on('closePopup',function(opt){
+    eventBus.on('closePopup',function(opt: any){
         closePopup(opt);
     });
 });
-const showCountDown = (data) => {
+const showCountDown = (data: string) => {
     local.message = data;
     local.state = 'red';
 };
-const showRedPopup = (data, div = null) => {
+const showRedPopup = (data: string, div = null) => {
     local.message = data;
     local.state = 'red';
     setTimeout(function(){
         closePopup('red');
     }, 3000);
 };
-const showGreenPopup = (data, div = null) => {
+const showGreenPopup = (data: string, div = null) => {
     local.message = data;
     local.state = 'green';
     setTimeout(function(){
         closePopup('green');
     }, 3000);
 };
-const closePopup = (opt, click = false, divInp = null) => {
+const closePopup = (opt: string, click = false, divInp = null) => {
     if(click){
         if (opt == 'green') {
             local.state = '';

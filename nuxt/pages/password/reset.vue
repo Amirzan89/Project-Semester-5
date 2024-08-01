@@ -74,7 +74,7 @@
     }
 }
 </style>
-<script setup>
+<script setup lang="ts">
 import { ref, reactive, defineProps, onMounted } from "vue";
 import { eventBus } from '~/app/eventBus';
 import OTPComponent from '~/components/OTP.vue';

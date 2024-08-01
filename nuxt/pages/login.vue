@@ -70,9 +70,9 @@ const input = reactive({
     isPasswordShow:false,
     checkboxValue: '',
 });
-const popup = ref(null);
-const inpEmail = ref(null);
-const inpPassword = ref(null);
+const popup: Ref = ref(null);
+const inpEmail: Ref = ref(null);
+const inpPassword: Ref = ref(null);
 const showPass = () => {
     if(input.isPasswordShow){
         inpPassword.value.type = 'password';
@@ -82,7 +82,7 @@ const showPass = () => {
         input.isPasswordShow = true;
     }
 };
-const inpChange = (div) => {
+const inpChange = (div: string) => {
     if(!popup.value.classList.contains('invisible')){
         popup.value.classList.add('fade-out');
         setTimeout(function(){
@@ -99,11 +99,11 @@ const inpChange = (div) => {
         inpPassword.value.classList.add('border-black','hover:border-black','focus:border-black');
     }
 };
-const isValidEmail = (email) => {
+const isValidEmail = (email: string) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return emailRegex.test(email);
 };
-const loginForm = async (event) => {
+const loginForm = async (event: Event) => {
     event.preventDefault();
     if(input.email === null || input.email === ''){
         inpEmail.value.classList.remove('border-black','hover:border-black','focus:border-black');

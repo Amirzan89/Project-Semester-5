@@ -3,5 +3,6 @@
         
     </div>
 </template>
-<script setup>
+<style scoped lang="scss"></style>
+<script setup lang="ts">
 </script>

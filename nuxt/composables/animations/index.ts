@@ -4,7 +4,7 @@ import { header } from './header';
 import { footer } from './footer';
 export default () => {
     const gsap = getGsap();
-    const gsapContext = ref(null);
+    const gsapContext: Ref = ref(null);
     const isAnimateComplete = ref(false);
     gsapContext.value =  gsap.context(() => {
         const rootTl = gsap.timeline({

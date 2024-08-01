@@ -6,7 +6,7 @@ export const useNotFoundStore = defineStore('notfound', {
         linkBack: '/',
     }),
     actions: {
-        setIsNotFound(value, linkBack, message) {
+        setIsNotFound(value: boolean, linkBack: string, message: string) {
             this.isNotFound = value;
             this.linkBack = linkBack;
             this.messageNotFound = message;

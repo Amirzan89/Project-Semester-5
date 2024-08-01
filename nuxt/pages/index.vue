@@ -26,7 +26,7 @@
     }
 }
 </style>
-<script setup>
+<script setup lang="ts">
 import { ref, reactive, onMounted, watch } from "vue";
 import { useFetchDataStore } from "~/store/FetchData";
 const publicConfig = useRuntimeConfig().public;

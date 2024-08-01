@@ -21,7 +21,7 @@
         </form>
     </div>
 </template>
-<script setup>
+<script setup lang="ts">
 import { TambahDevice } from '../composition/Device';
 const baseURL = useRuntimeConfig().public.baseURL;
 definePageMeta({

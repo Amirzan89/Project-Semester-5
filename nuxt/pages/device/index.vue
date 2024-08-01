@@ -3,15 +3,20 @@
         iki list device
     </div>
 </template>
-<script setup>
-import { TambahDevice } from '../composition/Device';
-const baseURL = useRuntimeConfig().public.baseURL;
+<script setup lang="ts">
+import { TambahDevice } from '~/composables/api/device';
+const publicConfig = useRuntimeConfig().public;
 definePageMeta({
     name: 'Projects',
     layout: 'home',
 });
 useHead({
     title:`List Device | ${publicConfig.appName}`
+});
+const local = reactive({
+    isUpdated: false,
+    fetchedViewData: null,
+
 });
 onBeforeRouteUpdate(() => {
     if(local.isUpdated){
@@ -24,7 +29,7 @@ onBeforeRouteUpdate(() => {
     useFetchDataStore().resetFetchData();
 });
 useAsyncData(async () => {
-    const res = await  projectPage();   
+    const res = await projectPage();
     local.fetchedViewData = res.data.viewData;
 });
 watch(() => local.fetchedViewData, () => {

@@ -1,6 +1,6 @@
 import { defineStore } from "pinia";
 import createAxios from "~/composables/api/axios";
-const { axios, axiosJson } = createAxios();
+const { axios } = createAxios();
 const fetchCsrfToken = async () => {
     return await axios.get('/sanctum/csrf-cookie');
 }
@@ -11,7 +11,7 @@ export const useFetchDataStore = defineStore('fetchData', {
             device: [],
             admin: [],
             random: [],
-        } as Record<string, []>,
+        } as { [key: string]: Array<{url: string, [key: string]: any}> },
         retryCount: 0 as number,
     }),
     actions: {
@@ -22,8 +22,8 @@ export const useFetchDataStore = defineStore('fetchData', {
                 const sp = routePath.split('/');
                 let keyC = sp.length > 1 ? Object.keys(this.cache).find(key => key == sp[1]) || 'random' : 'random';
                 let lenghtK = this.cache[keyC].length;
-                if(this.cache[keyC] != [] && lenghtK > 0){
-                    let data = this.cache[keyC].find((item: string) => item.url == routePath);
+                if(lenghtK > 0){
+                    let data = (this.cache[keyC] as {url: string}[]).find((item) => item.url == routePath);
                     if(data) return { status: 'success', data: data }
                 }
                 const res: Record<string, []> = await axios.get(`${routePath}?_=${Date.now()}`, {
@@ -36,7 +36,7 @@ export const useFetchDataStore = defineStore('fetchData', {
                 if(lenghtK >= 3){
                     this.cache[keyC].pop();
                 }
-                this.cache[keyC].push({ url: routePath, data: res.data });
+                (this.cache[keyC]).push({ url: routePath, data: res.data });
                 return { status:'success', data: res.data};
             }catch(err: any){
                 if (err.response){
@@ -55,17 +55,19 @@ export const useFetchDataStore = defineStore('fetchData', {
                             return { status: 'error', message: 'Request failed' };
                         }
                     }
+                    this.processFetch = { isDone: 'error', message: err.response.data.message };
                 }
-                this.processFetch = { isDone: 'error', message: res.message};
                 return { status:'error', message: err.response.data.message };
             }
         },
         resetFetchData(cond = false) {
             if(cond) {
-                this.cache.forEach((item: object, index: number) => {
-                    if (item.link === useRoute().fullPath) {
-                        this.cache.splice(index, 1);
-                    }
+                Object.keys(this.cache).forEach(key => {
+                    this.cache[key].forEach((item: { url: string}, index: number) => {
+                        if (item.url === useRoute().fullPath) {
+                            this.cache[key].splice(index, 1);
+                        }
+                    });
                 });
             }
             this.processFetch = { isDone:'loading', message: ''};
