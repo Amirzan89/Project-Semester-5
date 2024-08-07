@@ -44,7 +44,12 @@ class DeviceController extends Controller
             'token.required'=>'Token device wajib di isi',
         ]);
         if ($validator->fails()) {
-            return response()->json(['status'=>'error','message'=>$validator->errors()->toArray()],400);
+            $errors = [];
+            foreach ($validator->errors()->toArray() as $field => $errorMessages) {
+                $errors[$field] = $errorMessages[0];
+                break;
+            }
+            return response()->json(['status' => 'error', 'message' => implode(', ', $errors)], 400);
         }
         $idDevice = $request->input('id_device');
         $updateData = ['actived'=>true,'updated_at' => Carbon::now()];
@@ -80,7 +85,12 @@ class DeviceController extends Controller
             'token.required'=>'Token device wajib di isi',
         ]);
         if ($validator->fails()) {
-            return response()->json(['status'=>'error','message'=>$validator->errors()->toArray()],400);
+            $errors = [];
+            foreach ($validator->errors()->toArray() as $field => $errorMessages) {
+                $errors[$field] = $errorMessages[0];
+                break;
+            }
+            return response()->json(['status' => 'error', 'message' => implode(', ', $errors)], 400);
         }
         $email = $request->input('email');
         $idDevice = $request->input('id_device');
@@ -133,7 +143,12 @@ class DeviceController extends Controller
             'email.email'=>'Email yang anda masukkan invalid',
         ]);
         if ($validator->fails()) {
-            return response()->json(['status'=>'error','message'=>$validator->errors()->toArray()],400);
+            $errors = [];
+            foreach ($validator->errors()->toArray() as $field => $errorMessages) {
+                $errors[$field] = $errorMessages[0];
+                break;
+            }
+            return response()->json(['status' => 'error', 'message' => implode(', ', $errors)], 400);
         }
         $email = $request->input('email');
         if(User::select("email")->whereRaw("BINARY email = ?",[$email])->limit(1)->exists()){
@@ -166,7 +181,12 @@ class DeviceController extends Controller
             'token.required'=>'token device wajib di isi',
         ]);
         if ($validator->fails()) {
-            return response()->json(['status'=>'error','message'=>$validator->errors()->toArray()],400);
+            $errors = [];
+            foreach ($validator->errors()->toArray() as $field => $errorMessages) {
+                $errors[$field] = $errorMessages[0];
+                break;
+            }
+            return response()->json(['status' => 'error', 'message' => implode(', ', $errors)], 400);
         }
         $idDevice = $request->input('id_device');
         $nama = $request->input('nama');
@@ -209,7 +229,12 @@ class DeviceController extends Controller
             'anorganik.required'=>'data anorganik wajib di isi',
         ]);
         if ($validator->fails()) {
-            return response()->json(['status'=>'error','message'=>$validator->errors()->toArray()],400);
+            $errors = [];
+            foreach ($validator->errors()->toArray() as $field => $errorMessages) {
+                $errors[$field] = $errorMessages[0];
+                break;
+            }
+            return response()->json(['status' => 'error', 'message' => implode(', ', $errors)], 400);
         }
         $idDevice = $request->input('id_device');
         $organik = $request->input('organik');
@@ -242,7 +267,12 @@ class DeviceController extends Controller
             'id_device.required'=>'id device wajib di isi',
         ]);
         if ($validator->fails()) {
-            return response()->json(['status'=>'error','message'=>$validator->errors()->toArray()],400);
+            $errors = [];
+            foreach ($validator->errors()->toArray() as $field => $errorMessages) {
+                $errors[$field] = $errorMessages[0];
+                break;
+            }
+            return response()->json(['status' => 'error', 'message' => implode(', ', $errors)], 400);
         }
         $email = $request->input('email');
         if(User::select("email")->whereRaw("BINARY email = ?",[$email])->limit(1)->exists()){

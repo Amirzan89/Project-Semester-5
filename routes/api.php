@@ -14,6 +14,18 @@ use App\Http\Controllers\Device\DeviceController;
 | be assigned to the "api" middleware group. Make something great!
 |
 */
-
-Route::post('/create', 'Device\DeviceController@createForgotPassword');
-Route::post('/update', 'Device\DeviceController@createForgotPassword');
+Route::group(["prefix"=>"/firmware"],function(){
+    Route::post('/check','Device\FirmwareController@checkUpdate');
+    Route::post('/download','Device\FirmwareController@downloadUpdate');
+});
+Route::group(["prefix"=>"/device"],function(){
+    Route::post('/create', 'Device\DeviceController@createForgotPassword');
+    Route::post('/update', 'Device\DeviceController@createForgotPassword');
+});
+Route::group(["prefix"=>"/laporan"],function(){
+    Route::get('/check', 'Services/FirmwareController');
+    Route::post('/register', 'Services/FirmwareController');
+    Route::post('/create', 'Services/FirmwareController');
+    Route::put('/update', 'Services/FirmwareController');
+    Route::delete('/delete', 'Services/FirmwareController');
+});

@@ -65,6 +65,36 @@ Route::group(['middleware'=>'auth'],function(){
             return view();
         });
     });
-    // Route::get('/','Pages\HomeController@getHome')->where('any','.*');
+    Route::group(["prefix"=>"/device"],function(){
+        Route::get('/', 'Page/FirmwareController');
+        Route::get('/', 'Page/FirmwareController');
+        Route::get('/', 'Page/FirmwareController');
+
+        Route::post('/', 'Services/FirmwareController');
+        Route::put('/{id}', 'Services/FirmwareController');
+        Route::delete('/{id}', 'Services/FirmwareController');
+    });
+    Route::group(["prefix"=>"/firmware"],function(){
+        Route::get('/', 'Page/FirmwareController');
+        Route::get('/', 'Page/FirmwareController');
+        Route::get('/{id}', 'Page/FirmwareController');
+
+        Route::post('/', 'Services/FirmwareController');
+        Route::put('/{id}', 'Services/FirmwareController');
+        Route::delete('/{id}', 'Services/FirmwareController');
+    });
+    Route::group(["prefix"=>"/laporan"],function(){
+        Route::get('/', 'Page/FirmwareController');
+        Route::get('/', 'Page/FirmwareController');
+        Route::get('/{id}', 'Page/FirmwareController');
+
+        Route::post('/register', 'Services/FirmwareController');
+        Route::post('/activate', 'Services/FirmwareController');
+        Route::put('/{id}', 'Services/FirmwareController@update');
+        Route::delete('/{id}', 'Services/FirmwareController');
+    });
+    Route::get('/profile','Page\HomeController@profile')->where('any','.*');
+    Route::get('/dashboard','Page\HomeController@dashboard')->where('any','.*');
+    Route::get('/','Page\HomeController@getHome')->where('any','.*');
 });
 ?>

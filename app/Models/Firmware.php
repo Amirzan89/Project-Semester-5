@@ -1,8 +1,11 @@
 <?php
+
 namespace App\Models;
+
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-class Device extends Model
+
+class Firmware extends Model
 {
     use HasFactory;
     protected $table = "device";
@@ -19,4 +22,3 @@ class Device extends Model
         // 'email_verified_at' => 'datetime',
     ];
 }
-?>
