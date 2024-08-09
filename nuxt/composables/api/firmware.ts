@@ -1,20 +1,29 @@
 import createAxios from './axios';
 const { axiosJson } = createAxios();
-const prefix = '/admin'
-export async function TambahAdmin(data: { nama:string, email: string, password: string, ulangiPassword: string, role:string, }){
+const prefix = '/firmware';
+export async function getFirmware(data: { email: string, password: string }){
     try{
-        const response = await axiosJson.post(`${prefix}/create`, {
-            nama: data.nama,
+        const response = await axiosJson.post('/firmware', {
             email: data.email,
             password: data.password,
-            password_confirm: data.ulangiPassword,
         });
         return { status:'success', message: response.data.message};
     }catch(err: any){
         return { status:'error', message: err.response.data.message };
     }
 }
-export async function EditAdmin(data: { nama: string, email: string, password: string, ulangiPassword: string }){
+export async function TambahFirmware(data: { email: string, password: string,  }){
+    try{
+        const response = await axiosJson.post(`${prefix}/create`, {
+            email: data.email,
+            password: data.password,
+        });
+        return { status:'success', message: response.data.message};
+    }catch(err: any){
+        return { status:'error', message: err.response.data.message };
+    }
+}
+export async function EditFirmware(data: { nama: string, email: string, password: string, ulangiPassword: string }){
     try{
         const response = await axiosJson.put(`${prefix}/update`,{
             nama: data.nama,
@@ -27,7 +36,7 @@ export async function EditAdmin(data: { nama: string, email: string, password: s
         return { status:'error', message: err.response.data.message };
     }
 }
-export async function DeleteAdmin(data: { email: string }){
+export async function DeleteDevice(data: { email: string }){
     try{
         const response = await axiosJson.delete(`${prefix}/delete`,{
             data:{

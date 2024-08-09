@@ -53,7 +53,7 @@ const div: Ref = ref('');
 const inpChange = () => {
     // emit('change-popup');
 };
-const handleInput = (index: number, event: Event) => {
+const handleInput = (index: number, event: any) => {
     let val = event.target.value;
     if (isNaN(val[val.length - 1])) {
         inpOtp.value[index] = val.slice(0, -1);
@@ -71,7 +71,7 @@ const handleInput = (index: number, event: Event) => {
         }
     }
 };
-const handleKeyUp = (index: number, event: Event) => {
+const handleKeyUp = (index: number, event: any) => {
     const key = event.key.toLowerCase();
     if (key == "backspace" || key == "delete") {
         inpOtp.value[index] = "";

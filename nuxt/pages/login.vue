@@ -39,7 +39,7 @@
         </form>
     </div>
 </template>
-<style scoped>
+<style scoped lang="scss">
 .fade-out{
     animation: fadeOut 0.75s ease forwards;
 }

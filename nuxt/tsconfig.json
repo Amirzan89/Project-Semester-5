@@ -5,6 +5,10 @@
     "target": "ES2018",
     "module": "ESNext",
     "moduleResolution": "Node",
+    "isolatedModules": true,
+    "verbatimModuleSyntax": true,
+    "strict": true,
+    "noImplicitThis": true,
     "paths": {
       "~/*": ["./*"],
       "vue-recaptcha-v3": ["./node_modules/vue-recaptcha-v3/dist/ReCaptchaVuePlugin"],

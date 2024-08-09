@@ -11,11 +11,10 @@ return new class extends Migration
         Schema::create('device', function (Blueprint $table) {
             $table->id('id_device');
             $table->uuid('uuid');
-            $table->string('nama_device');
+            $table->string('nama_device', 30);
             $table->string('device_id');
             $table->string('device_token');
             $table->boolean('actived');
-            $table->string('email');
             $table->timestamps();
             $table->unsignedBigInteger('id_user');
             $table->foreign('id_user')->references('id_user')->on('users')->onDelete('cascade');

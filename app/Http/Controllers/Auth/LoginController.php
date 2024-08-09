@@ -3,15 +3,12 @@ namespace App\Http\Controllers\Auth;
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\Auth\JwtController;
-use App\Http\Controllers\Website\ChangePasswordController;
+use App\Http\Controllers\Services\ChangePasswordController;
 use App\Models\User;
 use App\Models\RefreshToken;
 use Illuminate\Http\Request;
-use Illuminate\Http\Response;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Cookie;
 use Laravel\Socialite\Facades\Socialite;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Http\JsonResponse;
@@ -156,29 +153,25 @@ class LoginController extends Controller
             $password = $request->input('password');
             if (User::select("email")->whereRaw("BINARY email = ?",[$email])->limit(1)->exists()){
                 return response()->json(['status'=>'error','message'=>'Email sudah digunakan'],400);
-            }else{
-                $user->username = $username;
-                $user->email = $email;
-                $user->nama = $nama;
-                $user->password = Hash::make($password);
-                $user->email_verified = true;
-                if($user->save()){
-                    $data = $jwtController->createJWT($email,$refreshToken);
-                    if(is_null($data)){
-                        return response()->json(['status'=>'error','message'=>'create token error']);
-                    }else{
-                        if($data['status'] == 'error'){
-                            return response()->json(['status'=>'error','message'=>$data['message']],400);
-                        }else{
-                            $encoded = base64_encode($email);
-                            // return redirect('/dashboard');
-                            return redirect("/page/dashboard")->withCookies([cookie('token1',$encoded,time()+intval(env('JWT_ACCESS_TOKEN_EXPIRED'))),cookie('token2',$data['data'],time() + intval(env('JWT_ACCESS_TOKEN_EXPIRED')))]);
-                        }
-                    }
-                }else{
-                    return response()->json(['status'=>'error','message'=>'Akun Gagal Dibuat'],400);
-                }
             }
+            $user->username = $username;
+            $user->email = $email;
+            $user->nama = $nama;
+            $user->password = Hash::make($password);
+            $user->email_verified = true;
+            if(!$user->save()){
+                return response()->json(['status'=>'error','message'=>'Akun Gagal Dibuat'],400);
+            }
+            $data = $jwtController->createJWT($email,$refreshToken);
+            if(is_null($data)){
+                return response()->json(['status'=>'error','message'=>'create token error']);
+            }
+            if($data['status'] == 'error'){
+                return response()->json(['status'=>'error','message'=>$data['message']],400);
+            }
+            $encoded = base64_encode($email);
+            // return redirect('/dashboard');
+            return redirect("/page/dashboard")->withCookies([cookie('token1',$encoded,time()+intval(env('JWT_ACCESS_TOKEN_EXPIRED'))),cookie('token2',$data['data'],time() + intval(env('JWT_ACCESS_TOKEN_EXPIRED')))]);
         } catch (\Exception $e) {
             return response()->json($e->getMessage());
             // return redirect()->route('login');

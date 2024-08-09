@@ -6,24 +6,23 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
         Schema::create('firmware', function (Blueprint $table) {
             $table->id('id_firmware');
             $table->uuid('uuid');
-            $table->string('title');
-            $table->string('description');
-            $table->string('');
+            $table->string('name', 30);
+            $table->string('description', 4000);
+            $table->string('version', 10);
+            $table->date('release_date');
+            $table->string('file');
+            $table->string('checksum');
+            $table->string('download_url');
+            $table->enum('device', ['esp32', 'arduino']);
             $table->timestamps();
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
         Schema::dropIfExists('firmware');

@@ -13,7 +13,7 @@
         <div></div>
     </section>
 </template>
-<style scoped>
+<style scoped lang="scss">
 .animated-cos{
     animation: updown 2s ease-in-out infinite alternate-reverse both;
 }

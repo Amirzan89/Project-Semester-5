@@ -63,7 +63,7 @@
         </OTPComponent>
     </div>
 </template>
-<style scoped>
+<style scoped lang="scss">
 .fade-out{
     animation: fadeOut 0.75s ease forwards;
 }
@@ -99,25 +99,25 @@ const input = reactive({
 const local = reactive({
     conOTP: 'register',
     errMessage: '',
-    timer: '',
-    timerMenit: '',
-    timerDetik: '',
-})
-const popup = ref(null);
-const inpNama = ref(null);
-const inpEmail = ref(null);
-const inpPassword = ref(null);
-const inpUlangiPassword = ref(null);
+    timer: null as Promise<number>,
+    timerMenit: 0,
+    timerDetik: 0,
+});
+const popup: Ref = ref(null);
+const inpNama: Ref = ref(null);
+const inpEmail: Ref = ref(null);
+const inpPassword:Ref = ref(null);
+const inpUlangiPassword: Ref = ref(null);
 const getConOTP = () => {
     return {'email':input.email,'condition':'email'};
 };
-const showOTPRedPopup = (message) => {
+const showOTPRedPopup = (message: string) => {
     // popup.value.classList.remove('invisible');
     local.errMessage = message;
 };
 const successOTP = () => {
     setTimeout(function(){
-        router.push('/dashboard');
+        // router.push('/dashboard');
     }, 2000);
 };
 const inpChangePopup = () => {
@@ -136,7 +136,7 @@ const getTimer = () => {
         timerDetik:local.timerDetik,
     }
 };
-const startCountdown = (waktu) =>{
+const startCountdown = (waktu: number) =>{
     local.timer = setInterval(function() {
         var now = new Date().getTime();
         var distance = waktu - now;
@@ -145,7 +145,7 @@ const startCountdown = (waktu) =>{
         local.timerDetik = Math.floor((distance % (1000 * 60)) / 1000);
         if (distance < 0) {
             clearInterval(local.timer);
-            local.timer['timer'] = null;
+            // local.timer['timer'] = null;
         }
     }, 1000);
 };
@@ -167,7 +167,7 @@ const showUlangiPass = () => {
         input.isUlangiPasswordShow = true;
     }
 };
-const inpChange = (div) => {
+const inpChange = (div: string) => {
     if(!popup.value.classList.contains('invisible')){
         popup.value.classList.add('fade-out');
         setTimeout(function(){
@@ -190,11 +190,11 @@ const inpChange = (div) => {
         inpUlangiPassword.value.classList.add('border-black','hover:border-black','focus:border-black');
     }
 };
-const isValidEmail = (email) => {
+const isValidEmail = (email: string) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return emailRegex.test(email);
 };
-const registerForm = async(event)=>{
+const registerForm = async(event: Event)=>{
     event.preventDefault();
     if(input.nama === null || input.nama === ''){
         inpNama.value.classList.remove('border-black','hover:border-black','focus:border-black');

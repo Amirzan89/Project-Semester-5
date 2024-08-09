@@ -13,7 +13,7 @@ class Firmware extends Model
     public $incrementing = true;
     public $timestamps = true;
     protected $fillable = [
-        'id_device','nama_device','token','gps','email'
+        'name', 'description', 'version', 'release_date', 'file', 'checksum', 'download_url', 'device'
     ];
     protected $hidden = [
         // 'password',

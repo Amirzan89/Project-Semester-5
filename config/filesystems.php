@@ -35,6 +35,11 @@ return [
             'root' => storage_path('app/database'),
             'throw' => false,
         ],
+        'firmware' => [
+            'driver' => 'local',
+            'root' => storage_path('app/firmware'),
+            'throw' => false,
+        ],
         'admin' => [
             'driver' => 'local',
             'root' => storage_path('app/admin'),
