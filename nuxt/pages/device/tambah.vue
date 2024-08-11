@@ -22,8 +22,9 @@
     </div>
 </template>
 <script setup lang="ts">
-import { TambahDevice } from '../composition/Device';
-const baseURL = useRuntimeConfig().public.baseURL;
+import { TambahDevice } from '~/composables/api/device';
+import { useFetchDataStore } from "~/store/FetchData";
+const publicConfig = useRuntimeConfig().public;
 definePageMeta({
     name: 'Projects',
     layout: 'home',
@@ -42,6 +43,10 @@ const input = reactive({
     message: '',
 });
 const inpName = ref(null);
+useAsyncData(async () => {
+    const res = await useFetchDataStore().fetchData();
+    local.fetchedViewData = res.data.viewData;
+});
 onBeforeRouteUpdate(() => {
     if(local.isTambah){
         const answer = window.confirm(
@@ -52,7 +57,7 @@ onBeforeRouteUpdate(() => {
     }
     useFetchDataStore().resetFetchData();
 });
-const inpChange = (cond) => {
+const inpChange = (cond: string) => {
     switch(cond){
         case 'email':
             inpEmail.value.classList.remove('border-popup_error','hover:border-popup_error','focus:border-popup_error');
@@ -90,7 +95,7 @@ const inpChange = (cond) => {
     }
     local.isTambah = isFilled;
 };
-const tambahForm = (event) => {
+const tambahForm = (event: Event) => {
     event.preventDefault();
     local.isTambah = false;
 }

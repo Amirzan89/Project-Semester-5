@@ -26,7 +26,7 @@ class DeviceController extends Controller
     }
     public function allDevice(Request $request){
         $userAuth = $request->input('user_auth');
-        $allDevice = Device::select('foto')->where('uuid',$request->input('uuid'))->limit(1)->first();
+        $allDevice = Device::select('foto')->where('uuid',$request->input('uuid'))->first();
         if (is_null($allDevice)) {
             return response()->json(['status' =>'error','message'=>'Device Not Found'], 400);
         }
@@ -42,7 +42,7 @@ class DeviceController extends Controller
     }
     public function detailDevice(Request $request){
         $userAuth = $request->input('user_auth');
-        $allDevice = Device::select('*')->where('uuid', $request->input('uuid'))->limit(1)->first();
+        $allDevice = Device::select('*')->where('uuid', $request->input('uuid'))->first();
         if (is_null($allDevice)) {
             return response()->json(['status' =>'error','message'=>'Device Not Found'], 400);
         }

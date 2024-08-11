@@ -100,17 +100,17 @@ const input = reactive({
 const local = reactive({
     conOTP: 'lupa_password',
     errMessage: '',
-    timer: '',
+    timer: null as NodeJS.Timeout | null,
     timerMenit: '',
     timerDetik: '',
 });
 const props = defineProps({
     viewData: Object,
 });
-const popup = ref(null);
-const inpEmail = ref(null);
-const inpPassword = ref(null);
-const inpUlangiPassword = ref(null);
+const popup: Ref = ref(null);
+const inpEmail: Ref = ref(null);
+const inpPassword: Ref = ref(null);
+const inpUlangiPassword: Ref = ref(null);
 onMounted(() => {
     if(props.viewData){
         if(props.viewData.title === 'Register Google'){
@@ -124,11 +124,11 @@ onMounted(() => {
 const getConOTP = () => {
     return {'email':input.email,'condition':'password'};
 };
-const showOTPRedPopup = (message) => {
+const showOTPRedPopup = (message: string) => {
     popup.value.classList.remove('invisible');
     local.errMessage = message;
 };
-const successOTP = (message, otp) =>{
+const successOTP = (message: string, otp: string) =>{
     local.conOTP = 'ganti_password';
     input.otp = otp;
     eventBus.emit('showGreenPopup', message);
@@ -160,7 +160,7 @@ const showUlangiPass = () => {
         input.isUlangiPasswordShow = true;
     }
 };
-const inpChange = (div) => {
+const inpChange = (div: string) => {
     if(!popup.value.classList.contains('invisible')){
         popup.value.classList.add('fade-out');
         setTimeout(function(){
@@ -305,7 +305,7 @@ const verifyChangeForm = async (event) => {
     }else if(local.conOTP === 'buat_password'){
         var desc = 'createUser';
     }
-    let verifyChange = await VerifyChange({nama:input.nama, email: input.email, code: input.otp, password: input.password, ulangiPassword:input.ulangiPassword, description:desc});
+    let verifyChange = await VerifyChange({nama:input.nama, email: input.email, code: input.otp as string, password: input.password, ulangiPassword:input.ulangiPassword, description:desc});
     if(verifyChange.status === 'success'){
         eventBus.emit('closeLoading');
         eventBus.emit('showGreenPopup', verifyChange.message);

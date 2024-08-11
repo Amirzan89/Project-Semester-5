@@ -59,7 +59,6 @@ import { useReCaptcha } from 'vue-recaptcha-v3';
 import { eventBus } from '~/app/eventBus';
 import { Login } from '~/composables/api/auth';
 const publicConfig = useRuntimeConfig().public;
-
 useHead({
     title:`Login | ${publicConfig.appName}`
 });

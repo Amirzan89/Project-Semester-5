@@ -1,12 +1,29 @@
 <template>
     <div>
         iki delok + edit device
-        <form action=""></form>
+        <form action="">
+            <div>
+                <label for="name">Name</label>
+                <input type="text">
+            </div>
+            <div>
+                <label for="name">Name</label>
+                <input type="text">
+            </div>
+            <div>
+                <label for="name">Name</label>
+                <input type="text">
+            </div>
+            <div>
+                <label for="name">Name</label>
+                <input type="text">
+            </div>
+        </form>
     </div>
 </template>
 <script setup lang="ts">
 import { ref } from "vue";
-import CarouselSlide from '~/composition/CarouselSlide';
+// import CarouselSlide from '~/composition/CarouselSlide';
 import { useNotFoundStore } from '~/store/NotFound';
 import { useFetchDataStore } from "~/store/FetchData";
 const publicConfig = useRuntimeConfig().public;
@@ -28,7 +45,7 @@ useHead({
 });
 const local = reactive({
     fetchedDetailProject: null,
-    fetchedOtherProject: null,
+    fetchedOtherProject: null as any,
     thumbnail: '',
     carouselSlide: null,
     formattedDeskripsi:'',
@@ -114,7 +131,7 @@ const inpChange = (cond) => {
     }
     local.isUpdated = isFilled;
 };
-const updateForm = (event) => {
+const updateForm = (event: Event) => {
     event.preventDefault();
     local.isUpdated = false;
 }

@@ -99,7 +99,7 @@ const input = reactive({
 const local = reactive({
     conOTP: 'register',
     errMessage: '',
-    timer: null as Promise<number>,
+    timer: null as NodeJS.Timeout | null,
     timerMenit: 0,
     timerDetik: 0,
 });

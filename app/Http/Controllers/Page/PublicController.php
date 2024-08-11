@@ -26,7 +26,7 @@ class HomeController extends Controller
         }
     }
     public function showHome(Request $request){
-        $allDevice = Device::select('foto')->where('uuid',$request->input('uuid'))->limit(1)->first();
+        $allDevice = Device::select('foto')->where('uuid',$request->input('uuid'))->first();
         if (is_null($allDevice)) {
             return response()->json(['status' =>'error','message'=>'Device Not Found'], 400);
         }
@@ -39,7 +39,7 @@ class HomeController extends Controller
         return $this->getView();
     }
     public function showFirmware(Request $request){
-        $allDevice = Device::select('foto')->where('uuid',$request->input('uuid'))->limit(1)->first();
+        $allDevice = Device::select('foto')->where('uuid',$request->input('uuid'))->first();
         if (is_null($allDevice)) {
             return response()->json(['status' =>'error','message'=>'Device Not Found'], 400);
         }

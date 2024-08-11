@@ -14,7 +14,7 @@ use Illuminate\Http\Request;
 Route::group(['middleware'=>'auth.device'],function(){
     Route::group(["prefix"=>"/firmware"],function(){
         Route::post('/check','Device\FirmwareController@checkUpdate');
-        Route::post('/download','Device\FirmwareController@downloadUpdate');
+        Route::post('/download','Device\FirmwareController@downloadFirmware');
     });
     Route::group(["prefix"=>"/device"],function(){
         Route::post('/upload', 'Device\DeviceController@handleData');

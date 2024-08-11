@@ -26,7 +26,7 @@ class HomeController extends Controller
     }
     public function getHome(Request $request){
         $userAuth = $request->input('user_auth');
-        $allDevice = User::select('foto')->where('uuid',$request->input('uuid'))->limit(1)->first();
+        $allDevice = User::select('foto')->where('uuid',$request->input('uuid'))->first();
         if (is_null($allDevice)) {
             return response()->json(['status' =>'error','message'=>'Device Not Found'], 400);
         }
@@ -42,7 +42,7 @@ class HomeController extends Controller
     }
     public function fetchData(Request $request){
         $userAuth = $request->input('user_auth');
-        $allDevice = User::select('foto')->where('uuid',$request->input('uuid'))->limit(1)->first();
+        $allDevice = User::select('foto')->where('uuid',$request->input('uuid'))->first();
         if (is_null($allDevice)) {
             return response()->json(['status' =>'error','message'=>'Device Not Found'], 400);
         }

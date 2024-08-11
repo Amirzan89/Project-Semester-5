@@ -94,7 +94,7 @@ class DeviceController extends Controller
             }
             return response()->json(['status' => 'error', 'message' => implode(', ', $errors)], 400);
         }
-        $device = Device::select('activated')->where('uuid', $request->input('id_firmware'))->limit(1)->first();
+        $device = Device::select('activated')->where('uuid', $request->input('id_firmware'))->first();
         if (is_null($device)) {
             return response()->json(['status' =>'error','message'=>'Device Not Found'], 400);
         }
@@ -125,7 +125,7 @@ class DeviceController extends Controller
             }
             return response()->json(['status' => 'error', 'message' => implode(', ', $errors)], 400);
         }
-        $device = Device::select('id_device')->where('uuid', $request->input('id_firmware'))->limit(1)->first();
+        $device = Device::select('id_device')->where('uuid', $request->input('id_firmware'))->first();
         if (is_null($device)) {
             return response()->json(['status' =>'error','message'=>'Device Not Found'], 400);
         }

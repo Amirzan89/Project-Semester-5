@@ -34,8 +34,8 @@ class AdminController extends Controller
         if (!$referrer && $request->path() == 'public/download/foto') {
             abort(404);
         }
-        $admin = User::select('jenis_kelamin','foto')->where('id_user',$userID)->limit(1)->get()[0];
-        if (!$admin) {
+        $admin = User::select('jenis_kelamin','foto')->where('id_user',$userID)->first();
+        if (is_null($admin)) {
             return response()->json(['status' => 'error', 'message' => 'Data Admin tidak ditemukan'], 404);
         }
         if (empty($admin->foto) || is_null($admin->foto)) {
@@ -186,8 +186,8 @@ class AdminController extends Controller
             return response()->json(['status' => 'error', 'message' => implode(', ', $errors)], 400);
         }
         //check data admin
-        $admin = User::select('password','foto')->whereRaw("BINARY email = ?",[$request->input('email_admin')])->limit(1)->get()[0];
-        if (!$admin) {
+        $admin = User::select('password','foto')->whereRaw("BINARY email = ?",[$request->input('email_admin')])->first();
+        if (is_null($admin)) {
             return response()->json(['status' => 'error', 'message' => 'Data Admin tidak ditemukan'], 404);
         }
         //process file foto

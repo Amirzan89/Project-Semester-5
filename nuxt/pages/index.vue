@@ -40,6 +40,9 @@ useHead({
 const local = reactive({
     fetchedData: null,
 });
+useAsyncData(async() => {
+    const res = await useFetchDataStore().fetchData();
+});
 onMounted(() => {
     if (route.hash) document.querySelector(route.hash)?.scrollIntoView({ behavior: "smooth" });
 });

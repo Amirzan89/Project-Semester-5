@@ -1,5 +1,11 @@
 import { defineStore } from "pinia";
 import createAxios from "~/composables/api/axios";
+interface Response{
+    status: string,
+    code?: number,
+    message?: string,
+    data?: any,
+}
 const { axios } = createAxios();
 const fetchCsrfToken = async () => {
     return await axios.get('/sanctum/csrf-cookie');
@@ -15,7 +21,7 @@ export const useFetchDataStore = defineStore('fetchData', {
         retryCount: 0 as number,
     }),
     actions: {
-        async fetchData(): Promise<object> {
+        async fetchData(link?: string): Promise<Response> {
             try{
                 const routePath = useRoute().fullPath;
                 //search cache
