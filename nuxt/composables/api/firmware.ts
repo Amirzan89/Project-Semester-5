@@ -1,46 +1,44 @@
 import createAxios from './axios';
 const { axiosJson } = createAxios();
 const prefix = '/firmware';
-export async function getFirmware(data: { email: string, password: string }){
-    try{
-        const response = await axiosJson.post('/firmware', {
-            email: data.email,
-            password: data.password,
-        });
-        return { status:'success', message: response.data.message};
-    }catch(err: any){
-        return { status:'error', message: err.response.data.message };
-    }
-}
-export async function TambahFirmware(data: { email: string, password: string,  }){
+export async function TambahFirmware(data: { name: string, description: string, version: string, release_date: string, checksum: string, device: string, file: File }){
     try{
         const response = await axiosJson.post(`${prefix}/create`, {
-            email: data.email,
-            password: data.password,
+            name: data.name,
+            description: data.description,
+            version: data.version,
+            release_date: data.release_date,
+            checksum: data.checksum,
+            device: data.device,
+            file: data.file,
         });
         return { status:'success', message: response.data.message};
     }catch(err: any){
         return { status:'error', message: err.response.data.message };
     }
 }
-export async function EditFirmware(data: { nama: string, email: string, password: string, ulangiPassword: string }){
+export async function EditFirmware(data: { id_firmware:string, name: string, description: string, version: string, release_date: string, checksum: string, device: string, file: File }){
     try{
         const response = await axiosJson.put(`${prefix}/update`,{
-            nama: data.nama,
-            email: data.email,
-            password: data.password,
-            password_confirm: data.ulangiPassword,
+            id_firmware: data.id_firmware,
+            name: data.name,
+            description: data.description,
+            version: data.version,
+            release_date: data.release_date,
+            checksum: data.checksum,
+            device: data.device,
+            file: data.file,
         });
         return { status:'success', message: response.data.message, data: response.data.data};
     }catch(err: any){
         return { status:'error', message: err.response.data.message };
     }
 }
-export async function DeleteDevice(data: { email: string }){
+export async function DeleteFirmware(data: { id_firmware:string }){
     try{
         const response = await axiosJson.delete(`${prefix}/delete`,{
             data:{
-                email: data.email,
+                id_firmware: data.id_firmware,
             }
         });
         return { status:'success', message: response.data.message, data: response.data.data };

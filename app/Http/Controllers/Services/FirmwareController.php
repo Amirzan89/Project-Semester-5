@@ -297,19 +297,19 @@ class FirmwareController extends Controller
             }
             return response()->json(['status' => 'error', 'message' => implode(', ', $errors)], 400);
         }
-        if(!in_array($request->input('device'), self::$allDevice)){
-            return response()->json(['status' => 'error', 'message' => 'Invalid name device'], 400);
-        }
-        $firmware = Firmware::select('file')->where('uuid', $request->input('id_firmware'))->where('device', $request->input('device'))->first();
+        // if(!in_array($request->input('device'), self::$allDevice)){
+        //     return response()->json(['status' => 'error', 'message' => 'Invalid name device'], 400);
+        // }
+        $firmware = Firmware::select('file', 'device')->where('uuid', $request->input('id_firmware'))->first();
         if (is_null($firmware)) {
             return response()->json(['status' =>'error','message'=>'Firmware Not Found'], 400);
         }
         //delete file
-        $fileToDelete = storage_path('app/firmware/'. $request->input('device') . '/' . $firmware->file);
+        $fileToDelete = storage_path('app/firmware/'. $firmware['device'] . '/' . $firmware->file);
         if (file_exists($fileToDelete) && !is_dir($fileToDelete)) {
             unlink($fileToDelete);
         }
-        Storage::disk('firmware')->delete($request->input('device') . '/' . $firmware->file);
+        Storage::disk('firmware')->delete($firmware['device'] . '/' . $firmware->file);
         if (!Firmware::where('uuid', $request->input('id_firmware'))->delete()) {
             return response()->json(['status' => 'error', 'message' => 'Gagal menghapus data Firmware'], 500);
         }
