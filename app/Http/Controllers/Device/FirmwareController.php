@@ -1,9 +1,11 @@
 <?php
 namespace App\Http\Controllers\Device;
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\Services\FirmwareController as ServiceFirmware;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Crypt;
+use App\Models\Device;
 use App\Models\Firmware;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -47,11 +49,11 @@ class FirmwareController extends Controller
         return response()->json(['status'=>'error', 'data' => $dataRes]);
     }
     public function downloadFirmware(Request $request){
-        $validator = Validator::make($request->only('id_firmware', 'device'), [
-            'id_firmware' => 'required',
+        $validator = Validator::make($request->only('id_device', 'device'), [
+            'id_device' => 'required',
             'device' => 'required',
         ], [
-            'id_firmware.required' => 'ID Firmware must filled !',
+            'id_device.required' => 'ID device must filled !',
             'device.required' => 'Device must filled !',
             'device.in' => 'Device must esp32 or arduino !',
         ]);
@@ -71,16 +73,7 @@ class FirmwareController extends Controller
         if(!in_array($request->input('device')['name'], self::$allDevice)){
             return response()->json(['status' => 'error', 'message' => 'Invalid name device'], 400);
         }
-        $firmwareData = Firmware::select('file', 'version', 'device')->where('device', $request->input('device')['name'])->where('version', $request->input('device')['version'])->first();
-        if (is_null($firmwareData)) {
-            return response()->json(['status' => 'error', 'message' => 'Data firmware tidak ditemukan'], 404);
-        }
-        $filePath = storage_path('app/firmware/'. $request->input('device')['name'] . '/' . $firmwareData['file']);
-        if (!file_exists($filePath)){
-            return response()->json(['status'=>'error', 'message'=>'Firmware Not Found'], 500);
-        }
-        $tempFilePath = tempnam(sys_get_temp_dir(), 'decrypted_file');
-        file_put_contents($tempFilePath, Crypt::decrypt(Storage::disk('firmware')->get($request->input('device')['name'] . '/' . $firmwareData->file)));
-        return Response::download($tempFilePath, $firmwareData->version. '.' . pathinfo($firmwareData->file, PATHINFO_EXTENSION));
+        $resultZip = ServiceFirmware::setZip(['id_device'=>$request->input('id_device'), 'device'=>$request->input('device')]);
+        return Response::download($resultZip['path'], $resultZip['name'])->deleteFileAfterSend(true);
     }
 }

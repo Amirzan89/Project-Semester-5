@@ -17,7 +17,6 @@ return new class extends Migration
             $table->date('release_date');
             $table->string('file');
             $table->string('checksum');
-            $table->string('download_url');
             $table->enum('device', ['esp32', 'arduino']);
             $table->timestamps();
         });

@@ -1,5 +1,5 @@
 <?php
-namespace App\Http\Controllers\Device;
+namespace App\Http\Controllers\Services;
 use App\Http\Controllers\Controller;
 use App\Models\Device;
 use App\Models\User;
