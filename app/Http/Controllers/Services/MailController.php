@@ -49,7 +49,7 @@ class MailController extends Controller
             //for register
             $verificationCode = mt_rand(100000, 999999);
             $linkPath = Str::random(50);
-            $verificationLink = URL::to('/verify/email/'.$linkPath);
+            $verificationLink = env('APP_ENV', 'local') == 'local' ? env('FRONTEND_URL', 'http://localhost:3000') . "/verify/email/$linkPath" : URL::to("/verify/email/$linkPath");
             $verify->email = $email;
             $verify->kode_otp = $verificationCode;
             $verify->link = $linkPath;
@@ -107,7 +107,7 @@ class MailController extends Controller
             //if user haven't create email forgot password
             $verificationCode = mt_rand(100000, 999999);
             $linkPath = Str::random(50);
-            $verificationLink = URL::to('/verify/password/' . $linkPath);
+            $verificationLink = env('APP_ENV', 'local') == 'local' ? env('FRONTEND_URL', 'http://localhost:3000') . "/verify/email/$linkPath" : URL::to("/verify/email/$linkPath");
             $verify->email = $email;
             $verify->kode_otp = $verificationCode;
             $verify->link = $linkPath;

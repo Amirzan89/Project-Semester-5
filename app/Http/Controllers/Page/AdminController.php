@@ -24,32 +24,43 @@ class HomeController extends Controller
             }
         }
     }
-    public function getHome(Request $request){
+    public function showAdmin(Request $request){
         $userAuth = $request->input('user_auth');
-        $allDevice = User::select('foto')->where('uuid',$request->input('uuid'))->first();
-        if (is_null($allDevice)) {
-            return response()->json(['status' =>'error','message'=>'Device Not Found'], 400);
+        $adminData = User::select('uuid', 'nama_lengkap', 'email', 'role')->limit(10)->get();
+        if(empty($adminData)){
+            return response()->json(['status' =>'error','message'=>'Admin Empty'], 400);
         }
         unset($userAuth['id_user']);
         $dataShow = [
             'userAuth' => $userAuth,
-            'viewData' => $allDevice,
+            'viewData' => $adminData,
         ];
         if ($request->wantsJson()) {
             return response()->json($dataShow);
         }
         return $this->getView();
     }
-    public function fetchData(Request $request){
+    public function showTambah(Request $request){
         $userAuth = $request->input('user_auth');
-        $allDevice = User::select('foto')->where('uuid',$request->input('uuid'))->first();
-        if (is_null($allDevice)) {
-            return response()->json(['status' =>'error','message'=>'Device Not Found'], 400);
+        unset($userAuth['id_user']);
+        $dataShow = [
+            'userAuth' => $userAuth,
+        ];
+        if ($request->wantsJson()) {
+            return response()->json($dataShow);
+        }
+        return $this->getView();
+    }
+    public function detailAdmin(Request $request, $link){
+        $userAuth = $request->input('user_auth');
+        $adminDetail = User::select('uuid', 'nama_lengkap', 'email', 'role', 'foto')->where('uuid', $link)->first();
+        if(is_null($adminDetail)){
+            return response()->json(['status' =>'error','message'=>'Detail Admin Not Found'], 400);
         }
         unset($userAuth['id_user']);
         $dataShow = [
             'userAuth' => $userAuth,
-            'viewData' => $allDevice,
+            'viewData' => $adminDetail,
         ];
         if ($request->wantsJson()) {
             return response()->json($dataShow);

@@ -282,12 +282,10 @@ class FirmwareController extends Controller
         return response()->json(['status'=>'error', 'message'=>'Data Firmware berhasil diupdate']);
     }
     public function deleteFirmware(Request $request){
-        $validator = Validator::make($request->only('id_firmware', 'device'), [
+        $validator = Validator::make($request->only('id_firmware'), [
             'id_firmware' => 'required',
-            'device' => 'required',
         ], [
             'id_firmware.required' => 'ID Firmware must filled !',
-            'device.required' => 'Device must filled !',
         ]);
         if ($validator->fails()) {
             $errors = [];
@@ -297,9 +295,6 @@ class FirmwareController extends Controller
             }
             return response()->json(['status' => 'error', 'message' => implode(', ', $errors)], 400);
         }
-        // if(!in_array($request->input('device'), self::$allDevice)){
-        //     return response()->json(['status' => 'error', 'message' => 'Invalid name device'], 400);
-        // }
         $firmware = Firmware::select('file', 'device')->where('uuid', $request->input('id_firmware'))->first();
         if (is_null($firmware)) {
             return response()->json(['status' =>'error','message'=>'Firmware Not Found'], 400);

@@ -4,7 +4,7 @@ use Illuminate\Http\Request;
 use Closure;
 class DefaultCSR
 {
-    private static $exceptPage = ['/sanctum/csrf-cookie', '/cv'];
+    private static $exceptPage = ['/sanctum/csrf-cookie', '/auth/redirect', '/auth/google'];
     public function handle(Request $request, Closure $next){
         $path = '/' . ltrim($request->path(), '/');
         if ($request->header('Accept') !== 'application/json' && !in_array($path, self::$exceptPage)) {

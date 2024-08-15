@@ -1,6 +1,6 @@
 import JSEncrypt from 'JSEncrypt';
 import CryptoJs from 'crypto-js';
-function generateKey(){
+async function generateKey(){
     const keyPair = await window.crypto.subtle.generateKey({
         name: "RSA-OAEP",
         modulusLength: 4096,
@@ -58,22 +58,22 @@ function generateKey(){
     // });
 }
 export async function encrypt(data: any){
-    function createTempFile(content, name){
+    // function createTempFile(content, name){
         
-        return File;
-    }
-    const keyPair = generateKey();
-    //make checksum
-    const checksum = 
-    //make signature
+    //     return File;
+    // }
+    // const keyPair = await generateKey();
+    // //make checksum
+    // const checksum = 
+    // //make signature
 
-    //encrypt fileContent
-    const data[''];
-    createTempFile();
-    const ranEn = CryptoJs.AES.encrypt('message', 'secret key');
-    var encrypt = new JSEncrypt(); // Create a new instance of the JSEncrypt library.
-    encrypt.setPublicKey(keyPair['public_key']); // Set the public key for the encryption library.
-    var encrypted = encrypt.encrypt(data['fileContent']); // Use the encrypt method of the library to encrypt the data.
-    encrypt.s
-    return { 'file': file, 'checksum': checksum}; // Return the encrypted data.
+    // //encrypt fileContent
+    // const data[''];
+    // createTempFile();
+    // const ranEn = CryptoJs.AES.encrypt('message', 'secret key');
+    // var encrypt = new JSEncrypt(); // Create a new instance of the JSEncrypt library.
+    // encrypt.setPublicKey(keyPair['public_key']); // Set the public key for the encryption library.
+    // var encrypted = encrypt.encrypt(data['fileContent']); // Use the encrypt method of the library to encrypt the data.
+    // encrypt.s
+    // return { 'file': file, 'checksum': checksum}; // Return the encrypted data.
 }

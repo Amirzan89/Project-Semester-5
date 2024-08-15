@@ -3,7 +3,6 @@ namespace App\Http\Controllers\Auth;
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\Auth\JwtController;
-use App\Http\Controllers\Services\ChangePasswordController;
 use App\Models\User;
 use App\Models\RefreshToken;
 use Illuminate\Http\Request;
@@ -14,7 +13,11 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Http\JsonResponse;
 use Exception;
 class LoginController extends Controller
-{ 
+{
+    private static $baseURL;
+    public function __construct(){
+        self::$baseURL = env('FRONTEND_URL', 'locahost:3000');
+    }
     public function Login(Request $request, JWTController $jwtController, RefreshToken $refreshToken){
         $validator = Validator::make($request->only('email','password'), [
             'email' => 'required|email',
@@ -59,7 +62,7 @@ class LoginController extends Controller
     }
     public function handleProviderCallback(Request $request){
         $refreshToken = new RefreshToken();
-        $changePasswordController = new ChangePasswordController();
+        $userController = new UserController();
         $jwtController = new JwtController();
         try {
             $user_google = Socialite::driver('google')->stateless()->user();
@@ -74,20 +77,16 @@ class LoginController extends Controller
                     ];
                     $decoded = $jwtController->decode($req);
                     if($decoded['status'] == 'error'){
-                        if($decoded['message'] == 'Expired token'){
-                            $updated = $jwtController->updateTokenWebsite($email);
-                            if($updated['status'] == 'error'){
-                                return response()->json(['status'=>'error','message'=>$updated['message']],500);
-                            }else{
-                                $data1 = ['email'=>$email,'number'=>$updated['number']];
-                                $encoded = base64_encode(json_encode($data1));
-                                return redirect("/page/dashboard")->withCookies([
-                                    cookie('token1',$encoded,time()+intval(env('JWT_ACCESS_TOKEN_EXPIRED'))),
-                                    cookie('token2',$updated['data'],time() + intval(env('JWT_ACCESS_TOKEN_EXPIRED')))]);
-                            }
+                        return redirect(self::$baseURL . "/dashboard")->with('json', new JsonResponse(['status'=>'success','data'=>$decoded['data'][0][0]]));
+                    }
+                    if($decoded['message'] == 'Expired token'){
+                        $updated = $jwtController->updateTokenWebsite($email);
+                        if($updated['status'] == 'error'){
+                            return response()->json(['status'=>'error','message'=>$updated['message']],500);
                         }
-                    }else{
-                        return redirect("/dashboard")->with('json', new JsonResponse(['status'=>'success','data'=>$decoded['data'][0][0]]));
+                        $data1 = ['email'=>$email,'number'=>$updated['number']];
+                        $encoded = base64_encode(json_encode($data1));
+                        return redirect(self::$baseURL . "/dashboard")->withCookies([cookie('token1',$encoded,time()+intval(env('JWT_ACCESS_TOKEN_EXPIRED'))),cookie('token2',$updated['data'],time() + intval(env('JWT_ACCESS_TOKEN_EXPIRED')))]);
                     }
                 //if user exist in database and doesnt login
                 }else{
@@ -97,21 +96,19 @@ class LoginController extends Controller
                     $data = $jwtController->createJWTWebsite($user_google->getEmail(),$refreshToken);
                     if(is_null($data)){
                         return response()->json(['status'=>'error','message'=>'create token error'],500);
-                    }else{
-                        if($data['status'] == 'error'){
-                            return response()->json(['status'=>'error','message'=>$data['message']],400);
-                        }else{
-                            $encoded = base64_encode(json_encode(['email'=>$user_google->getEmail(), 'number'=>$data['number']]));
-                            return redirect("/page/dashboard")->withCookies([cookie('token1',$encoded,time()+intval(env('JWT_ACCESS_TOKEN_EXPIRED'))),cookie('token2',$data['data']['token'],time() + intval(env('JWT_ACCESS_TOKEN_EXPIRED'))),cookie('token3',$data['data']['refresh'],time()+intval('JWT_REFRESH_TOKEN_EXPIRED'))]);
-                        }
                     }
+                    if($data['status'] == 'error'){
+                        return response()->json(['status'=>'error','message'=>$data['message']],400);
+                    }
+                    $encoded = base64_encode(json_encode(['email'=>$user_google->getEmail(), 'number'=>$data['number']]));
+                    return redirect(self::$baseURL . "/dashboard")->withCookies([cookie('token1',$encoded,time()+intval(env('JWT_ACCESS_TOKEN_EXPIRED'))),cookie('token2',$data['data']['token'],time() + intval(env('JWT_ACCESS_TOKEN_EXPIRED'))),cookie('token3',$data['data']['refresh'],time()+intval('JWT_REFRESH_TOKEN_EXPIRED'))]);
                 }
             //if user dont exist in database
             }else{
                 $data = ['email'=>$user_google->getEmail(), 'nama'=>$user_google->getName()];
                 $costum = new Request();
                 $costum->replace($data);
-                return $changePasswordController->showVerify($costum);
+                return $userController->showVerify($costum);
             }
         } catch (\Exception $e) {
             return response()->json('Error: ' . $e->getMessage() . ', Code: ' . $e->getCode() . ', File: ' . $e->getFile() . ', Line: ' . $e->getLine());
@@ -142,10 +139,10 @@ class LoginController extends Controller
             if ($validator->fails()) {
                 $errors = [];
                 foreach ($validator->errors()->toArray() as $field => $errorMessages) {
-                    $errors = $errorMessages[0];
+                    $errors[$field] = $errorMessages[0];
+                    break;
                 }
-                return response()->json(['status' => 'error', 'message' => $errors], 400);
-                // return response()->json(['status'=>'error','message'=>$validator->errors()->toArray()],400);
+                return response()->json(['status' => 'error', 'message' => implode(', ', $errors)], 400);
             }
             $username = $request->input('username');
             $nama = $request->input('nama');
@@ -171,7 +168,7 @@ class LoginController extends Controller
             }
             $encoded = base64_encode($email);
             // return redirect('/dashboard');
-            return redirect("/page/dashboard")->withCookies([cookie('token1',$encoded,time()+intval(env('JWT_ACCESS_TOKEN_EXPIRED'))),cookie('token2',$data['data'],time() + intval(env('JWT_ACCESS_TOKEN_EXPIRED')))]);
+            return redirect(self::$baseURL . "/dashboard")->withCookies([cookie('token1',$encoded,time()+intval(env('JWT_ACCESS_TOKEN_EXPIRED'))),cookie('token2',$data['data'],time() + intval(env('JWT_ACCESS_TOKEN_EXPIRED')))]);
         } catch (\Exception $e) {
             return response()->json($e->getMessage());
             // return redirect()->route('login');

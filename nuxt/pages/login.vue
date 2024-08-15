@@ -28,8 +28,8 @@
                 </div>
                 <NuxtLink to="/password/reset" class="absolute right-0 2xl:text-2xl xl:text-xl lg:text-md md:text-sm sm:text-lg hover:text-red-600 font-medium">Lupa Password ?</NuxtLink>
             </div>
-            <button class="relative mt-3 2xl:w-80 xl:w-70 md:w-40 sm:w-20 2xl:h-12 xl:h-10 lg:h-8 md:h-7 sm:h-6 bg-bold rounded-2xl 2xl:text-3xl xl:text-2xl lg:text-xl md:text-md sm:text-base text-white" @click.prevent="loginForm">Masuk</button>
-            <a href="/auth/redirect" class="relative mt-3 2xl:w-80 xl:w-70 md:w-40 sm:w-20 2xl:h-12 xl:h-10 lg:h-8 md:h-7 sm:h-6 bg-bold rounded-2xl flex items-center justify-evenly text-white">
+            <button class="relative mt-3 2xl:w-80 xl:w-70 md:w-40 sm:w-20 2xl:h-12 xl:h-10 lg:h-8 md:h-7 sm:h-6 bg-bold rounded-2xl 2xl:text-3xl xl:text-2xl lg:text-xl md:text-md sm:text-base text-white bg-black" @click.prevent="loginForm">Masuk</button>
+            <a :href="`${publicConfig.baseURL}/auth/redirect`" class="relative mt-3 2xl:w-80 xl:w-70 md:w-40 sm:w-20 2xl:h-12 xl:h-10 lg:h-8 md:h-7 sm:h-6 bg-bold rounded-2xl flex items-center justify-evenly text-white">
                 <img src="~assets/icon/google.svg" class="2xl:w-8 xl:!w-7 !lg:w-5 md:!w-4 sm:!w-3">
                 <p class="2xl:text-2xl xl:text-xl lg:text-md md:text-xs sm:text-sm">Masuk dengan google</p>
             </a>
@@ -55,10 +55,14 @@
 </style>
 <script setup lang="ts">
 import { ref, reactive } from "vue";
-import { useReCaptcha } from 'vue-recaptcha-v3';
+// import { useReCaptcha } from 'vue-recaptcha-v3';
 import { eventBus } from '~/app/eventBus';
 import { Login } from '~/composables/api/auth';
 const publicConfig = useRuntimeConfig().public;
+definePageMeta({
+    name: 'Login',
+    layout: 'default',
+});
 useHead({
     title:`Login | ${publicConfig.appName}`
 });

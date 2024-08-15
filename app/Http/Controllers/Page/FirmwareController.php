@@ -1,5 +1,5 @@
 <?php
-namespace App\Http\Controllers\Device;
+namespace App\Http\Controllers\Page;
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\Services\FirmwareController as ServiceFirmware;
 use Illuminate\Support\Facades\Storage;
@@ -33,11 +33,11 @@ class FirmwareController extends Controller
             }
         }
     }
-    public function allFirmware(Request $request){
+    public function showFirmware(Request $request){
         $userAuth = $request->input('user_auth');
-        $allDevice = Firmware::select('foto')->where('uuid',$request->input('uuid'))->first();
-        if (is_null($allDevice)) {
-            return response()->json(['status' =>'error','message'=>'Device Not Found'], 400);
+        $allDevice = Firmware::select('uuid', 'version', 'device',)->limit(10)->get();
+        if (empty($allDevice)) {
+            return response()->json(['status' =>'error','message'=>'Firmware Empty'], 400);
         }
         unset($userAuth['id_user']);
         $dataShow = [
@@ -49,18 +49,28 @@ class FirmwareController extends Controller
         }
         return $this->getView();
     }
+    public function showTambah(Request $request){
+        $userAuth = $request->input('user_auth');
+        unset($userAuth['id_user']);
+        $dataShow = [
+            'userAuth' => $userAuth,
+        ];
+        if ($request->wantsJson()) {
+            return response()->json($dataShow);
+        }
+        return $this->getView();
+    }
     public function detailFirmware(Request $request){
         $userAuth = $request->input('user_auth');
-        $allDevice = Firmware::select('foto')->where('uuid',$request->input('uuid'))->first();
+        $allDevice = Firmware::select('uuid', 'name', 'device', '')->where('uuid',$request->input('uuid'))->first();
         if (is_null($allDevice)) {
-            return response()->json(['status' =>'error','message'=>'Device Not Found'], 400);
+            return response()->json(['status' =>'error','message'=>'Firmware Not Found'], 400);
         }
         unset($userAuth['id_user']);
         $dataShow = [
             'userAuth' => $userAuth,
             'viewData' => $allDevice,
         ];
-        $update = Firmware::where('version', '>', $request->input('current_version'))->first();
         if ($request->wantsJson()) {
             return response()->json($dataShow);
         }

@@ -77,6 +77,8 @@ const inpFile: Ref = ref(null);
 useAsyncData(async () => {
     const res = await useFetchDataStore().fetchData();
     if(res.status == 'error'){
+        if(res.code === 404){
+        }
         return useNotFoundStore().setIsNotFound(true, '/firmware','Detail Firmware not found');
     }
     local.fetchedViewData = res.data.other;
@@ -164,15 +166,15 @@ const editForm = async (event: Event) => {
         return;
     }
     eventBus.emit('showLoading');
-    let enc = await encrypt({file: input.file, name:'', });
-    let res = await EditFirmware({ id_firmware: route.params.id,  name: input.name, description: input.description, version: input.version, release_date: input.release_date, checksum: enc.checksum, device: input.device, file: enc.file });
-    if(res.status === 'success'){
-        eventBus.emit('closeLoading');
-        eventBus.emit('showGreenPopup', res.message);
-    }else if(res.status === 'error'){
-        eventBus.emit('closeLoading');
-        eventBus.emit('showRedPopup', res.message);
-    }
+    // let enc = await encrypt({file: input.file, name:'', });
+    // let res = await EditFirmware({ id_firmware: route.params.id,  name: input.name, description: input.description, version: input.version, release_date: input.release_date, checksum: enc.checksum, device: input.device, file: enc.file });
+    // if(res.status === 'success'){
+    //     eventBus.emit('closeLoading');
+    //     eventBus.emit('showGreenPopup', res.message);
+    // }else if(res.status === 'error'){
+    //     eventBus.emit('closeLoading');
+    //     eventBus.emit('showRedPopup', res.message);
+    // }
 }
 const deleteForm = async (event: Event) => {
     event.preventDefault();

@@ -1,37 +1,43 @@
 <template>
-    <div>
-        <form>
-            <div>
-                <label for="">Nama Firmware</label>
-                <input type="text" ref="inpName" v-model="input.name" @input="inpChange('name')">
-            </div>
-            <div>
-                <label for="">Deskripsi</label>
-                <input type="text" ref="inpDescription" v-model="input.description" @input="inpChange('description')">
-            </div>
-            <div>
-                <label for="">Version Firmware</label>
-                <input type="text" ref="inpVersion" v-model="input.version" @input="inpChange('version')">
-            </div>
-            <div>
-                <label for="">release Firmware</label>
-                <input type="text" ref="inpReleaseDate" v-model="input.release_date" @input="inpChange('release_date')">
-            </div>
-            <div>
-                <label for="">Device Firmware</label>
-                <input type="text" ref="inpDevice" v-model="input.device" @input="inpChange('device')">
-            </div>
-            <div>
-                <label for="">Device Firmware</label>
-                <div @dragover.prevent="handleDragOver" @drop.prevent="handleDrop" @click="handleFormClick">
-                    <input type="file" ref="inpFile" hidden @change="handleFileChange">
+    <template v-if="local.isDoneFetch">
+        <div>
+            IKI TAMBAH
+            <form>
+                <div>
+                    <label for="">Nama Firmware</label>
+                    <input type="text" ref="inpName" v-model="input.name" @input="inpChange('name')">
                 </div>
-            </div>
-            <div>
-                <button @click.prevent="tambahForm">Tambah</button>
-            </div>
-        </form>
-    </div>
+                <div>
+                    <label for="">Deskripsi</label>
+                    <input type="text" ref="inpDescription" v-model="input.description" @input="inpChange('description')">
+                </div>
+                <div>
+                    <label for="">Version Firmware</label>
+                    <input type="text" ref="inpVersion" v-model="input.version" @input="inpChange('version')">
+                </div>
+                <div>
+                    <label for="">release Firmware</label>
+                    <input type="text" ref="inpReleaseDate" v-model="input.release_date" @input="inpChange('release_date')">
+                </div>
+                <div>
+                    <label for="">Device Firmware</label>
+                    <input type="text" ref="inpDevice" v-model="input.device" @input="inpChange('device')">
+                </div>
+                <div>
+                    <label for="">Device Firmware</label>
+                    <div @dragover.prevent="handleDragOver" @drop.prevent="handleDrop" @click="handleFormClick">
+                        <input type="file" ref="inpFile" hidden @change="handleFileChange">
+                    </div>
+                </div>
+                <div>
+                    <button @click.prevent="tambahForm">Tambah</button>
+                </div>
+            </form>
+        </div>
+    </template>
+    <template v-else>
+        <div></div>
+    </template>
 </template>
 <style scoped lang="scss"></style>
 <script setup lang="ts">
@@ -43,13 +49,13 @@ import { TambahFirmware } from '~/composables/api/firmware';
 const publicConfig = useRuntimeConfig().public;
 definePageMeta({
     name: 'FirmwareTambah',
-    layout: 'authenticated',
+    layout: 'default',
 });
 useHead({
-    title:`Firmware | ${publicConfig.appName}`
+    title:`Firmware Tambah | ${publicConfig.appName}`
 });
 const local = reactive({
-    isTambah: false,
+    isDoneFetch: false,
     fetchedViewData: null,
 });
 const input = reactive({
@@ -67,9 +73,19 @@ const inpVersion: Ref = ref(null);
 const inpReleaseDate: Ref = ref(null);
 const inpDevice: Ref = ref(null);
 const inpFile: Ref = ref(null);
-useAsyncData(async () => {
+// useAsyncData(async () => {
+onMounted(async () => {
     const res = await useFetchDataStore().fetchData();
-    local.fetchedViewData = res.data.viewData;
+    console.log('isi', local.isDoneFetch);
+    if(res ==  undefined || res.status == 'error'){
+        console.log('mobhh la', res);
+        return;
+    }else{
+        console.log('ws mariiiii', local.isDoneFetch)
+        local.isDoneFetch = true;
+        console.log('ws kenkekkk', local.isDoneFetch)
+        local.fetchedViewData = res.data.other;
+    }
 });
 const inpChange = (div: string) => {
     switch(div){
@@ -150,7 +166,7 @@ const tambahForm = async (event: Event) => {
         if (!errMessage) errMessage = 'Device Firmware Harus diisi !';
     }
     if(errMessage != ''){
-        eventBus.emit('showRedPopup', errMessage);
+        // eventBus.emit('showRedPopup', errMessage);
         return;
     }
     eventBus.emit('showLoading');

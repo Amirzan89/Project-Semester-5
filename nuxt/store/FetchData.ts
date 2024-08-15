@@ -1,19 +1,18 @@
 import { defineStore } from "pinia";
 import createAxios from "~/composables/api/axios";
+const { axiosJson, createCSRF } = createAxios();
 interface Response{
     status: string,
     code?: number,
     message?: string,
     data?: any,
 }
-const { axios } = createAxios();
-const fetchCsrfToken = async () => {
-    return await axios.get('/sanctum/csrf-cookie');
-}
 export const useFetchDataStore = defineStore('fetchData', {
     state: () => ({
         processFetch: { isDone: 'loading' as string, message: '' as string},
+        cacheAuth: {},
         cache: {
+            firmware: [],
             device: [],
             admin: [],
             random: [],
@@ -32,12 +31,10 @@ export const useFetchDataStore = defineStore('fetchData', {
                     let data = (this.cache[keyC] as {url: string}[]).find((item) => item.url == routePath);
                     if(data) return { status: 'success', data: data }
                 }
-                const res: Record<string, []> = await axios.get(`${routePath}?_=${Date.now()}`, {
-                    headers: {
-                        'Accept': 'application/json',
-                    }
-                });
+                const res: Record<string, any> = await axiosJson.get(`${routePath}?_=${Date.now()}`);
                 this.processFetch = { isDone: 'success', message: ''}
+                //check cache auth
+                if(Object.keys(this.cacheAuth).length == 0) if(res.data && res.data.auth) this.cacheAuth = res.data.auth;
                 //delete old cache
                 if(lenghtK >= 3){
                     this.cache[keyC].pop();
@@ -46,6 +43,9 @@ export const useFetchDataStore = defineStore('fetchData', {
                 return { status:'success', data: res.data};
             }catch(err: any){
                 if (err.response){
+                    if(err.response.status === 401){
+                        return useNuxtApp().runWithContext(() => navigateTo('/login'));
+                    }
                     if(err.response.status === 404){
                         this.processFetch = { isDone: 'error', message: 'not found'};
                         return { status:'error', message: 'not found', code: 404 };
@@ -53,7 +53,7 @@ export const useFetchDataStore = defineStore('fetchData', {
                     if(err.response.status === 419) {
                         if (this.retryCount <= 3) {
                             this.retryCount++;
-                            await fetchCsrfToken();
+                            createCSRF();
                             return this.fetchData();
                         } else {
                             this.retryCount = 0;
@@ -78,5 +78,11 @@ export const useFetchDataStore = defineStore('fetchData', {
             }
             this.processFetch = { isDone:'loading', message: ''};
         },
+        resetCacheAuth(cond = false){
+            if(cond){
+                this.cacheAuth = {};
+            }
+            this.processFetch = { isDone:'loading', message: ''};
+        }
     },
 });

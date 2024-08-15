@@ -144,8 +144,8 @@ class Authenticate
             // return $next($request); 
         }else{
             //if cookie gone
-            $page = ['/dashboard', '/profile', '/article', '/article/tambah', '/article/edit', '/users/check', '/emotal', '/emotal/tambah', '/nutrisi', '/nutrisi/tambah', '/pengasuhan', '/pengasuhan/tambah', '/konsultasi', '/konsultasi/tambah', '/admin', '/admin/tambah', '/acara', '/acara/tambah'];
-            $pagePrefix = ['/emotal/edit', '/konsultasi/edit', '/admin/edit', '/acara/edit'];
+            $page = ['/dashboard', '/profile', '/article', '/article/tambah', '/article/edit', '/users/check', '/firmware', '/firmware/tambah', '/device', '/device/tambah', '/pengasuhan', '/pengasuhan/tambah', '/konsultasi', '/konsultasi/tambah', '/admin', '/admin/tambah', '/acara', '/acara/tambah'];
+            $pagePrefix = ['/firmware', '/konsultasi/edit', '/admin/edit', '/acara/edit'];
             if(Str::startsWith($currentPath, $pagePrefix) || in_array($currentPath,$page)){
                 if($request->hasCookie("token1")){
                     $token1 = $request->cookie('token1');

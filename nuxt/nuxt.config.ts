@@ -1,6 +1,7 @@
-import { version } from "vue";
-
 export default defineNuxtConfig({
+    // devServer:{
+    //     port: 8000,
+    // },
     devtools: {
         enabled: true,
         timeline: {

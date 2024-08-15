@@ -83,6 +83,10 @@ import OTPComponent from '~/components/OTP.vue';
 import { eventBus } from '~/app/eventBus';
 import { Register } from '~/composables/api/auth';
 const publicConfig = useRuntimeConfig().public;
+definePageMeta({
+    name: 'Register',
+    layout: 'default',
+})
 useHead({
     title:`Register | ${publicConfig.appName}`
 });
@@ -144,8 +148,9 @@ const startCountdown = (waktu: number) =>{
         local.timerMenit = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
         local.timerDetik = Math.floor((distance % (1000 * 60)) / 1000);
         if (distance < 0) {
-            clearInterval(local.timer);
-            // local.timer['timer'] = null;
+            if(local.timer !== null){
+                clearInterval(local.timer);
+            }
         }
     }, 1000);
 };
@@ -289,7 +294,7 @@ const registerForm = async(event: Event)=>{
     let register = await Register({nama:input.nama, email: input.email, password: input.password, ulangiPassword:input.ulangiPassword});
     if(register.status === 'success'){
         eventBus.emit('closeLoading');
-        startCountdown(new Date(register.data.waktu).getTime());
+        startCountdown(new Date(register.data.waktu).getTime());    
         eventBus.emit('showGreenPopup', register.message);
         local.conOTP = 'verify';
     }else if(register.status === 'error'){

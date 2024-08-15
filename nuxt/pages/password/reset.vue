@@ -101,8 +101,8 @@ const local = reactive({
     conOTP: 'lupa_password',
     errMessage: '',
     timer: null as NodeJS.Timeout | null,
-    timerMenit: '',
-    timerDetik: '',
+    timerMenit: 0,
+    timerDetik: 0,
 });
 const props = defineProps({
     viewData: Object,
@@ -187,7 +187,7 @@ const getTimer = () => {
         timerDetik: local.timerDetik,
     };
 };
-const startCountdown = (waktu) => {
+const startCountdown = (waktu: number) => {
     local.timer = setInterval(function(){
         var now = new Date().getTime();
         var distance = waktu - now;
@@ -195,12 +195,13 @@ const startCountdown = (waktu) => {
         local.timerMenit = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
         local.timerDetik = Math.floor((distance % (1000 * 60)) / 1000);
         if (distance < 0) {
-            clearInterval(local.timer);
-            local.timer = null;
+            if(local.timer !== null){
+                clearInterval(local.timer);
+            }
         }
     }, 1000);
 };
-const forgotPassForm = async (event) => {
+const forgotPassForm = async (event: Event) => {
     event.preventDefault();
     if(input.email === null || input.email === ''){
         inpEmail.value.classList.remove('border-black','hover:border-black','focus:border-black');
@@ -222,7 +223,7 @@ const forgotPassForm = async (event) => {
         local.errMessage = forgotPass.message;
     }
 };
-const verifyChangeForm = async (event) => {
+const verifyChangeForm = async (event: Event) => {
     event.preventDefault();
     if(input.password === null || input.password === ''){
         inpPassword.value.classList.remove('border-black','hover:border-black','focus:border-black');
@@ -300,6 +301,7 @@ const verifyChangeForm = async (event) => {
         return;
     }
     eventBus.emit('showLoading');
+    var desc = '';
     if(local.conOTP === 'ganti_password'){
         var desc = 'password';
     }else if(local.conOTP === 'buat_password'){

@@ -1,96 +1,66 @@
 import createAxios from './axios';
-const { axios, axiosJson } = createAxios();
+const { reqData } = createAxios();
 export async function Login(data: { email: string, password: string }){
-    try{
-        const response = await axiosJson.post('/users/login', {
-            email: data.email,
-            password: data.password,
-        });
-        return { status:'success', message: response.data.message};
-    }catch(err: any){
-        return { status:'error', message: err.response.data.message };
-    }
+    return reqData('/users/login', 'post', {
+        email: data.email,
+        password: data.password,
+    }, true);
+}
+export async function LoginGoogle(data: { email: string, password: string }){
+    return reqData('/users/login', 'post', {
+        email: data.email,
+        password: data.password,
+    }, true);
 }
 export async function Register(data: { nama: string, email: string, password: string, ulangiPassword: string }){
-    try{
-        const response = await axiosJson.post('/users/register',{
-            nama: data.nama,
-            email: data.email,
-            password: data.password,
-            password_confirm: data.ulangiPassword,
-        });
-        return { status:'success', message: response.data.message, data: response.data.data};
-    }catch(err: any){
-        return { status:'error', message: err.response.data.message };
-    }
+    return reqData('/users/register', 'post', {
+        nama: data.nama,
+        email: data.email,
+        password: data.password,
+        password_confirm: data.ulangiPassword,
+    }, true);
 }
 export async function ForgotPassword(data: { email:string }){
-    try{
-        const response = await axiosJson.post('/verify/create/password',{
-            email: data.email,
-        });
-        return { status:'success', message: response.data.message, data: response.data.data };
-    }catch(err: any){
-        return { status:'error', message: err.response.data.message };
-    }
+    return reqData('/verify/create/password', 'post', {
+        email: data.email,
+    }, true);
 }
-export async function VerifyChange(data: { nama: string, email: string, password: string, ulangiPassword: string, description: string }){
-    try{
-        const response = await axiosJson.post('/verify/password',{
-            nama: data.nama,
-            email: data.email,
-            password: data.password,
-            password_confirm: data.ulangiPassword,
-            description: data.description,
-        });
-        return { status:'success', message: response.data.message, data: response.data.data};
-    }catch(err: any){
-        return { status:'error', message: err.response.data.message };
-    }
+export async function VerifyChange(data: { nama: string, email: string, code: string, password: string, ulangiPassword: string, description: string }){
+    return reqData('/verify/password', 'post', {
+        nama: data.nama,
+        email: data.email,
+        code: data.code,
+        password: data.password,
+        password_confirm: data.ulangiPassword,
+        description: data.description,
+    }, true);
 }
 export async function SendOtp(data: { email: string, link: string, }){
-    try{
-        const response = await axiosJson.post(data.link,{
-            email: data.email,
-        });
-        return { status:'success', message: response.data.message, data: response.data.data };
-    }catch(err: any){
-        return { status:'error', message: err.response.data.message };
-    }
+    return reqData(data.link, 'post',{
+        email: data.email,
+    }, true);
 }
 export async function VerifyOtp(data: { link: string, email: string, otp:string }){
-    try{
-        const response = await axiosJson.post(data.link,{
-            email: data.email,
-            otp: data.otp
-        });
-        return { status:'success', message: response.data.message};
-    }catch(err: any){
-        return { status:'error', message: err.response.data.message };
-    }
+    return reqData(data.link, 'post', {
+        email: data.email,
+        otp: data.otp
+    }, true);
 }
 export async function CheckAuth(link: string): Promise<{ status: string, data?: any, message: string, code?: number, link?:string }>{
-    try{
-        const response = await axiosJson.get(link);
-        return { status:'success', message: response.data.message, data: response.data.data};
-    }catch(err: any){
-        if (err.response.status === 401) {
-            return { status: 'error', message: err.response.data.message, code: 401, link: '/login' };
-        }
-        if (err.response.status === 302) {
-            return { status: 'error', message: err.response.data.message, code: 302, link: err.response.data.link };
-        }
-        return { status:'error', message: err.response.data.message };
-    }
+    return reqData(link, 'get', '', true);
+}
+export async function updateProfile(data: any){
+    return reqData('/users/update/profile', 'put', data, true);
+}
+export async function updatePassword(data: {password: string, password_ulangi: string}){
+    return reqData('/users/update/password', 'put', {
+        password: data.password,
+        password_ulangi: data.password_ulangi,
+    }, true);
 }
 export async function Logout(data: { email: string, number: string, }){
-    try{
-        const response = await axiosJson.post('/users/logout',{
-            email: data.email,
-            number: data.number,
-        });
-        return { status:'success', message: response.data.message};
-    }catch(err: any){
-        return { status:'error', message: err.response.data.message };
-    }
+    return reqData('/users/logout', 'post', {
+        email: data.email,
+        number: data.number,
+    }, true);
 }

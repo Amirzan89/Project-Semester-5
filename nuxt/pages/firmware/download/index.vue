@@ -28,4 +28,7 @@ useAsyncData(async () => {
     const res = await useFetchDataStore().fetchData();
     local.fetchedViewData = res.data.viewData;
 });
+onMounted(() => {
+    
+});
 </script>

@@ -27,14 +27,14 @@ class HomeController extends Controller
     }
     public function showDashboard(Request $request){
         $userAuth = $request->input('user_auth');
-        $allDevice = Device::select('foto')->where('uuid',$request->input('uuid'))->first();
-        if (is_null($allDevice)) {
-            return response()->json(['status' =>'error','message'=>'Device Not Found'], 400);
-        }
+        // $allDevice = Device::select('foto')->where('uuid',$request->input('uuid'))->first();
+        // if (is_null($allDevice)) {
+        //     return response()->json(['status' =>'error','message'=>'Device Not Found'], 400);
+        // }
         unset($userAuth['id_user']);
         $dataShow = [
             'userAuth' => $userAuth,
-            'viewData' => $allDevice,
+            // 'viewData' => $allDevice,
         ];
         if ($request->wantsJson()) {
             return response()->json($dataShow);
@@ -43,14 +43,9 @@ class HomeController extends Controller
     }
     public function showProfile(Request $request){
         $userAuth = $request->input('user_auth');
-        $allDevice = User::select('foto')->where('uuid',$request->input('uuid'))->first();
-        if (is_null($allDevice)) {
-            return response()->json(['status' =>'error','message'=>'Device Not Found'], 400);
-        }
         unset($userAuth['id_user']);
         $dataShow = [
             'userAuth' => $userAuth,
-            'viewData' => $allDevice,
         ];
         if ($request->wantsJson()) {
             return response()->json($dataShow);

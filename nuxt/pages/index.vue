@@ -32,10 +32,11 @@ import { useFetchDataStore } from "~/store/FetchData";
 const publicConfig = useRuntimeConfig().public;
 const route = useRoute();
 definePageMeta({
+    name: 'LandingPage',
     layout:'home',
 });
 useHead({
-    title:`Home | ${publicConfig.appName}`
+    title:`Landing Page | ${publicConfig.appName}`
 });
 const local = reactive({
     fetchedData: null,

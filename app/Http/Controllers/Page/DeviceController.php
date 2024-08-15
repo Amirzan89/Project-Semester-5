@@ -24,11 +24,11 @@ class DeviceController extends Controller
             }
         }
     }
-    public function allDevice(Request $request){
+    public function showDevice(Request $request){
         $userAuth = $request->input('user_auth');
-        $allDevice = Device::select('foto')->where('uuid',$request->input('uuid'))->first();
-        if (is_null($allDevice)) {
-            return response()->json(['status' =>'error','message'=>'Device Not Found'], 400);
+        $allDevice = Device::select('uuid', 'nama_device', 'device_id')->where('device.id_user', $userAuth['id_user'])->join('users', 'device.id_user', '=', 'users.id_user')->limit(10)->get();
+        if (empty($allDevice)) {
+            return response()->json(['status' =>'error','message'=>'Device Empty'], 400);
         }
         unset($userAuth['id_user']);
         $dataShow = [
@@ -40,9 +40,20 @@ class DeviceController extends Controller
         }
         return $this->getView();
     }
-    public function detailDevice(Request $request){
+    public function showTambah(Request $request){
         $userAuth = $request->input('user_auth');
-        $allDevice = Device::select('*')->where('uuid', $request->input('uuid'))->first();
+        unset($userAuth['id_user']);
+        $dataShow = [
+            'userAuth' => $userAuth,
+        ];
+        if ($request->wantsJson()) {
+            return response()->json($dataShow);
+        }
+        return $this->getView();
+    }
+    public function detailDevice(Request $request, $link){
+        $userAuth = $request->input('user_auth');
+        $allDevice = Device::select('uuid', 'nama_device', 'device_id', 'device_token', 'activated')->where('device.uuid', $link)->where('users.id_user', $userAuth['id_user'])->join('users', 'device.id_user', '=', 'users.id_user')->first();
         if (is_null($allDevice)) {
             return response()->json(['status' =>'error','message'=>'Device Not Found'], 400);
         }

@@ -1,9 +1,11 @@
 <template>
+    <template v-if="local.isDoneFetch">
+    </template>
     <div>
         <ul class="container">
             <template v-for="(item, index) in local.fetchedViewData" :key="index">
                 <li>
-                    <div>
+                    <div>x
                         <button @click.prevent="deleteForm"></button>
                     </div>
                 </li>
@@ -26,6 +28,7 @@ useHead({
     title:`Firmware | ${publicConfig.appName}`
 });
 const local = reactive({
+    isDoneFetch: false,
     fetchedViewData: null,
 });
 useAsyncData(async () => {
