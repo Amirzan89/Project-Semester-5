@@ -15,6 +15,7 @@
 </template>
 <style scoped lang="scss"></style>
 <script setup lang="ts">
+import { ref, reactive, onMounted, type Ref } from "vue";
 import { eventBus } from '~/app/eventBus';
 import { DeleteFirmware } from '~/composables/api/firmware';
 import { useFetchDataStore } from '~/store/FetchData';

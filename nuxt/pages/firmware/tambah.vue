@@ -41,11 +41,11 @@
 </template>
 <style scoped lang="scss"></style>
 <script setup lang="ts">
-import { ref, reactive } from "vue";
+import { ref, reactive, onMounted, Ref } from "vue";
 import { eventBus } from '~/app/eventBus';
 import { useFetchDataStore } from '~/store/FetchData';
-import { encrypt } from '~/composables/encryption';
-import { TambahFirmware } from '~/composables/api/firmware';
+// import { encrypt } from '~/composables/encryption';
+// import { TambahFirmware } from '~/composables/api/firmware';
 const publicConfig = useRuntimeConfig().public;
 definePageMeta({
     name: 'FirmwareTambah',
@@ -170,17 +170,17 @@ const tambahForm = async (event: Event) => {
         return;
     }
     eventBus.emit('showLoading');
-    let enc = await encrypt({file: input.file, name:'', });
-    let res = await TambahFirmware({ name: input.name, description: input.description, version: input.version, release_date: input.release_date, checksum: input.checksum, device: input.device, file: enc.file });
-    if(res.status === 'success'){
-        eventBus.emit('closeLoading');
-        eventBus.emit('showGreenPopup', res.message);
-        setTimeout(function(){
-            navigateTo('/firmware');
-        }, 1500);
-    }else if(res.status === 'error'){
-        eventBus.emit('closeLoading');
-        eventBus.emit('showRedPopup', res.message);
-    }
+    // let enc = await encrypt({file: input.file, name:'', });
+    // let res = await TambahFirmware({ name: input.name, description: input.description, version: input.version, release_date: input.release_date, checksum: input.checksum, device: input.device, file: enc.file });
+    // if(res.status === 'success'){
+    //     eventBus.emit('closeLoading');
+    //     eventBus.emit('showGreenPopup', res.message);
+    //     setTimeout(function(){
+    //         navigateTo('/firmware');
+    //     }, 1500);
+    // }else if(res.status === 'error'){
+    //     eventBus.emit('closeLoading');
+    //     eventBus.emit('showRedPopup', res.message);
+    // }
 }
 </script>

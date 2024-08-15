@@ -52,8 +52,9 @@ export async function CheckAuth(link: string): Promise<{ status: string, data?: 
 export async function updateProfile(data: any){
     return reqData('/users/update/profile', 'put', data, true);
 }
-export async function updatePassword(data: {password: string, password_ulangi: string}){
+export async function updatePassword(data: {password_old: string, password: string, password_ulangi: string}){
     return reqData('/users/update/password', 'put', {
+        password_old: data.password_old,
         password: data.password,
         password_ulangi: data.password_ulangi,
     }, true);

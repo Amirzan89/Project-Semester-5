@@ -38,6 +38,7 @@
 </template>
 <style scoped lang="scss"></style>
 <script setup lang="ts">
+import { ref, reactive, onMounted, type Ref } from "vue";
 import { useFetchDataStore } from '~/store/FetchData';
 import { eventBus } from '~/app/eventBus';
 import { EditFirmware, DeleteFirmware } from '~/composables/api/firmware';
@@ -58,7 +59,8 @@ useHead({
     title:`Firmware | ${publicConfig.appName}`
 });
 const local = reactive({
-    fetchedViewData: null,
+    fetchedUserAuth: null,
+    fetchedViewData: null as any,
 });
 const input = reactive({
     name: '',
@@ -136,6 +138,7 @@ const handleFiles = (file: File) => {
 const editForm = async (event: Event) => {
     event.preventDefault();
     let errMessage = '';
+    if (input.name === local.fetchedViewData.name && input.description === local.fetchedViewData.description && input.version === local.fetchedViewData.version && input.release_date === local.fetchedViewData.release_date && input.device === local.fetchedViewData.device) if(errMessage == '') errMessage = 'Data belum diubah !';
     if(input.name === null || input.name === ''){
         inpName.value.classList.remove('border-black','hover:border-black','focus:border-black');
         inpName.value.classList.add('border-popup_error','hover:border-popup_error','focus:border-popup_error');
