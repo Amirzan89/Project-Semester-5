@@ -1,3 +1,4 @@
+import cosRouter from './app/cosRouter'
 export default defineNuxtConfig({
     // devServer:{
     //     port: 8000,
@@ -16,8 +17,10 @@ export default defineNuxtConfig({
         },
     },
     ssr: false,
-    typescript:{
-
+    hooks:{
+        'pages:extend'(pages){
+            pages.push(...cosRouter);
+        }
     },
     css: [
         '~/assets/style/global.scss',

@@ -1,40 +1,45 @@
 <template>
-    <div>
-        <form>
-            <div>
-                <label for="">Nama Firmware</label>
-                <input type="text" ref="inpName" v-model="input.name" @input="inpChange('name')">
-            </div>
-            <div>
-                <label for="">Deskripsi</label>
-                <input type="text" ref="inpDescription" v-model="input.description" @input="inpChange('description')">
-            </div>
-            <div>
-                <label for="">Version Firmware</label>
-                <input type="text" ref="inpVersion" v-model="input.version" @input="inpChange('version')">
-            </div>
-            <div>
-                <label for="">release Firmware</label>
-                <input type="text" ref="inpReleaseDate" v-model="input.release_date" @input="inpChange('release_date')">
-            </div>
-            <div>
-                <label for="">Device Firmware</label>
-                <input type="text" ref="inpDevice" v-model="input.device" @input="inpChange('device')">
-            </div>
-            <div>
-                <label for="">Device Firmware</label>
-                <div @dragover.prevent="handleDragOver" @drop.prevent="handleDrop" @click="handleFormClick">
-                    <input type="file" ref="inpFile" hidden @change="handleFileChange">
+    <template v-if="local.isDoneFetch">
+        <div>
+            <form>
+                <div>
+                    <label for="">Nama Firmware</label>
+                    <input type="text" ref="inpName" v-model="input.name" @input="inpChange('name')">
                 </div>
-            </div>
-            <div>
-                <button @click.prevent="deleteForm">Delete</button>
-            </div>
-            <div>
-                <button @click.prevent="editForm">Edit</button>
-            </div>
-        </form>
-    </div>
+                <div>
+                    <label for="">Deskripsi</label>
+                    <input type="text" ref="inpDescription" v-model="input.description" @input="inpChange('description')">
+                </div>
+                <div>
+                    <label for="">Version Firmware</label>
+                    <input type="text" ref="inpVersion" v-model="input.version" @input="inpChange('version')">
+                </div>
+                <div>
+                    <label for="">release Firmware</label>
+                    <input type="text" ref="inpReleaseDate" v-model="input.release_date" @input="inpChange('release_date')">
+                </div>
+                <div>
+                    <label for="">Device Firmware</label>
+                    <input type="text" ref="inpDevice" v-model="input.device" @input="inpChange('device')">
+                </div>
+                <div>
+                    <label for="">Device Firmware</label>
+                    <div @dragover.prevent="handleDragOver" @drop.prevent="handleDrop" @click="handleFormClick">
+                        <input type="file" ref="inpFile" hidden @change="handleFileChange">
+                    </div>
+                </div>
+                <div>
+                    <button @click.prevent="deleteForm">Delete</button>
+                </div>
+                <div>
+                    <button @click.prevent="editForm">Edit</button>
+                </div>
+            </form>
+        </div>
+    </template>
+    <template v-else>
+        <div>iki detaill</div>
+    </template>
 </template>
 <style scoped lang="scss"></style>
 <script setup lang="ts">
@@ -46,7 +51,8 @@ import { useNotFoundStore } from '~/store/NotFound';
 const route = useRoute();
 const publicConfig = useRuntimeConfig().public;
 definePageMeta({
-    name: 'FirmwareDetail',
+    name: 'FirmwareDetail', 
+    layout: 'default',
     validate: async(route) => { 
         if(route.params.id === '/'){
             navigateTo('/firmware');
@@ -56,9 +62,10 @@ definePageMeta({
     }
 });
 useHead({
-    title:`Firmware | ${publicConfig.appName}`
+    title:`Firmware Detail | ${publicConfig.appName}`
 });
 const local = reactive({
+    isDoneFetch: false,
     fetchedUserAuth: null,
     fetchedViewData: null as any,
 });
@@ -77,6 +84,7 @@ const inpReleaseDate: Ref = ref(null);
 const inpDevice: Ref = ref(null);
 const inpFile: Ref = ref(null);
 useAsyncData(async () => {
+    console.log('detaill coyy')
     const res = await useFetchDataStore().fetchData();
     if(res.status == 'error'){
         if(res.code === 404){

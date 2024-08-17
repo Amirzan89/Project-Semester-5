@@ -36,12 +36,12 @@
         </div>
     </template>
     <template v-else>
-        <div></div>
+        <div>iki tambah</div>
     </template>
 </template>
 <style scoped lang="scss"></style>
 <script setup lang="ts">
-import { ref, reactive, onMounted, Ref } from "vue";
+import { ref, reactive, onMounted } from "vue";
 import { eventBus } from '~/app/eventBus';
 import { useFetchDataStore } from '~/store/FetchData';
 // import { encrypt } from '~/composables/encryption';
@@ -73,8 +73,8 @@ const inpVersion: Ref = ref(null);
 const inpReleaseDate: Ref = ref(null);
 const inpDevice: Ref = ref(null);
 const inpFile: Ref = ref(null);
-// useAsyncData(async () => {
-onMounted(async () => {
+useAsyncData(async () => {
+    console.log('iki tambahhh cooo');
     const res = await useFetchDataStore().fetchData();
     console.log('isi', local.isDoneFetch);
     if(res ==  undefined || res.status == 'error'){

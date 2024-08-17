@@ -1,16 +1,19 @@
 <template>
     <div>
-        <ul class="container">
-            <template v-for="(item, index) in local.fetchedViewData" :key="index">
-                <li>
-                    <div></div>
-                </li>
-            </template>
-        </ul>
+        <div>
+            iki donwload index
+        </div>
     </div>
 </template>
 <style scoped lang="scss"></style>
 <script setup lang="ts">
+// <ul class="container">
+//     <!-- <template v-for="(item, index) in local.fetchedViewData" :key="index">
+//         <li>
+//             <div></div>
+//         </li>
+//     </template> -->
+// </ul>
 import { useFetchDataStore } from '~/store/FetchData';
 const route = useRoute();
 const publicConfig = useRuntimeConfig().public;

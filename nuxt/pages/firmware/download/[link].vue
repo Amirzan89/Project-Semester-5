@@ -1,6 +1,6 @@
 <template>
     <div>
-        f
+        iki detail download
     </div>
 </template>
 <style lang="scss">
