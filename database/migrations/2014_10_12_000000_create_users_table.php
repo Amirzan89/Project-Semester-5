@@ -14,6 +14,7 @@ return new class extends Migration
             $table->string('nama_lengkap',50);
             $table->string('email',45);
             $table->string('password');
+            $table->boolean('email_verified')->default(false);
             $table->enum('role',['admin', 'user']);
             $table->string('foto',50)->nullable();
             $table->timestamps();

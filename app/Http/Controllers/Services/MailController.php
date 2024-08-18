@@ -107,7 +107,7 @@ class MailController extends Controller
             //if user haven't create email forgot password
             $verificationCode = mt_rand(100000, 999999);
             $linkPath = Str::random(50);
-            $verificationLink = env('APP_ENV', 'local') == 'local' ? env('FRONTEND_URL', 'http://localhost:3000') . "/verify/email/$linkPath" : URL::to("/verify/email/$linkPath");
+            $verificationLink = env('APP_DOMAIN', 'same') == 'same' ? URL::to("/verify/password/$linkPath") : env('FRONTEND_URL', 'http://localhost:3000') . "/verify/password/$linkPath";
             $verify->email = $email;
             $verify->kode_otp = $verificationCode;
             $verify->link = $linkPath;
@@ -137,35 +137,5 @@ class MailController extends Controller
         dispatch(new SendResetPassword(['name'=>$user->nama_lengkap,'email'=>$email,'code'=>$verificationCode,'link'=>$verificationLink]));
         return response()->json(['status'=>'success','message'=>'email benar kami kirim ulang kode ke anda silahkan cek email','data'=>['waktu'=>Carbon::now()->addMinutes(self::$conditionOTP[min($verifyDb['send'] + 1, count(self::$conditionOTP)) - 1])]]);
     }
-    public function verifyEmail(Request $request){
-        $email = $request->input('email');
-        if(empty($email) || is_null($email)){
-            return response()->json(['status'=>'error','message'=>'email empty'],404);
-        }else{
-            $prefix = "/verify/email/";
-            if(($request->path() === $prefix) && $request->isMethod("post")){
-                $linkPath = substr($request->path(), strlen($prefix));
-                if(Verifikasi::select("link")->whereRaw("BINARY link = ?",[$linkPath])->limit(1)->exists()){
-                    if(Verifikasi::select("email")->whereRaw("BINARY email = ?",[$email])->limit(1)->exists()){
-                        if(is_null(DB::table('users')->whereRaw("BINARY email = ?",[$email])->update(['email_verified'=>true]))){
-                            return response()->json(['status'=>'error','message'=>'error verify email'],500);
-                        }else{
-                            return response()->json(['status'=>'success','message'=>'email verify success']);
-                        }
-                    }else{
-                        return response()->json(['status'=>'error','message'=>'email invalid'],400);
-                    }
-                }else{
-                    return response()->json(['status'=>'error','message'=>'link invalid'],400);
-                }
-            }else{
-                return response()->json(['status'=>'error','message'=>'not found'],404);
-            }
-        }
-    }
-    // public function send(){
-    //     Mail::to('amirzanfikri5@gmail.com')->send(new ForgotPassword(['data'=>'data']));
-    //     return view('page.home');
-    // }
 }
 ?>

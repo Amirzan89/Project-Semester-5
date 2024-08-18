@@ -6,6 +6,7 @@
             <template v-for="(item, index) in local.fetchedViewData" :key="index">
                 <li>
                     <div>
+                        
                         <button @click.prevent="deleteForm"></button>
                     </div>
                 </li>

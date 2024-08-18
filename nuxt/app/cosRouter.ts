@@ -1,5 +1,10 @@
 export default [
     {
+        name:'DeviceTambah',
+        path:'/device/tambah',
+        file:'~/pages/device/tambah.vue',
+    },
+    {
         name:'FirmwareTambah',
         path:'/firmware/tambah',
         file:'~/pages/firmware/tambah.vue',
@@ -14,4 +19,9 @@ export default [
         path:'/firmware/download/:link',
         file:'~/pages/firmware/download/[link].vue',
     },
+    {
+        name: 'NotFound',
+        path: '/:catchAll(.*)',
+        component: '~/pages/NotFound.vue',
+    }
 ];

@@ -15,7 +15,7 @@ use UnexpectedValueException;
 use DomainException;
 use InvalidArgumentException;
 use Carbon\Carbon;
-class JwtController extends Controller
+class JWTController extends Controller
 {
     //cek jumlah login di database
     public function checkTotalLogin($data, $cond){

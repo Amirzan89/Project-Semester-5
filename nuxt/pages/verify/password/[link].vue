@@ -4,11 +4,11 @@
             <form>
                 <div>
                     <label for="">password</label>
-                    <input type="password" ref="inpPassword" v-model="input.password" @change="">
+                    <input type="password" ref="inpPassword" v-model="input.password" @change="inpChange('password')">
                 </div>
                 <div>
                     <label for="">repeat pasword</label>
-                    <input type="password" ref="inpPasswordRepeat" v-model="input.passwordRepeat" @change="">
+                    <input type="password" ref="inpPasswordRepeat" v-model="input.passwordRepeat" @change="inpChange('password_repeat')">
                 </div>
                 <button @click.prevent="sendForm">Kirim</button>
             </form>
@@ -20,7 +20,7 @@
 <script setup lang="ts">
 import { eventBus } from '~/app/eventBus';
 import { LoginGoogle } from '~/composables/api/auth';
-import { useFetchDataStore } from '~/store/FetchData';
+// import { useFetchDataStore } from '~/store/FetchData';
 const route = useRoute();
 const publicConfig = useRuntimeConfig().public;
 definePageMeta({
@@ -35,7 +35,7 @@ definePageMeta({
     }
 });
 useHead({
-    title:`Login Google | ${publicConfig.appName}`
+    title:`Verify Password | ${publicConfig.appName}`
 });
 const local = reactive({
     isDoneFetch: false,
@@ -46,11 +46,11 @@ const input = reactive({
 });
 const inpPassword: Ref = ref(null);
 const inpPasswordRepeat: Ref = ref(null);
-useLazyAsyncData(async () => {
-    const res = await useFetchDataStore().fetchData();
-    if(res.status == 'error'){
-        console.log(res);
-    }
+useAsyncData(async () => {
+    // const res = await useFetchDataStore().fetchData();
+    // if(res.status == 'error'){
+    //     console.log(res);
+    // }
     local.isDoneFetch = true;
 });
 onMounted(() => {

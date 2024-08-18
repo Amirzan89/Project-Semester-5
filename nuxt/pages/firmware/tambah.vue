@@ -41,11 +41,11 @@
 </template>
 <style scoped lang="scss"></style>
 <script setup lang="ts">
-import { ref, reactive, onMounted } from "vue";
+import { ref, reactive } from "vue";
 import { eventBus } from '~/app/eventBus';
 import { useFetchDataStore } from '~/store/FetchData';
-// import { encrypt } from '~/composables/encryption';
-// import { TambahFirmware } from '~/composables/api/firmware';
+import { encrypt } from '~/composables/encryption';
+import { TambahFirmware } from '~/composables/api/firmware';
 const publicConfig = useRuntimeConfig().public;
 definePageMeta({
     name: 'FirmwareTambah',
@@ -56,6 +56,7 @@ useHead({
 });
 const local = reactive({
     isDoneFetch: false,
+    isTambah: false,
     fetchedViewData: null,
 });
 const input = reactive({
@@ -74,43 +75,23 @@ const inpReleaseDate: Ref = ref(null);
 const inpDevice: Ref = ref(null);
 const inpFile: Ref = ref(null);
 useAsyncData(async () => {
-    console.log('iki tambahhh cooo');
     const res = await useFetchDataStore().fetchData();
-    console.log('isi', local.isDoneFetch);
     if(res ==  undefined || res.status == 'error'){
-        console.log('mobhh la', res);
         return;
     }else{
-        console.log('ws mariiiii', local.isDoneFetch)
         local.isDoneFetch = true;
-        console.log('ws kenkekkk', local.isDoneFetch)
         local.fetchedViewData = res.data.other;
     }
 });
-const inpChange = (div: string) => {
-    switch(div){
-        case 'name':
-            inpName.value.classList.remove('border-popup_error','hover:border-popup_error','focus:border-popup_error');
-            inpName.value.classList.add('border-black','hover:border-black','focus:border-black');
-        break;
-        case 'description':
-            inpDescription.value.classList.remove('border-popup_error','hover:border-popup_error','focus:border-popup_error');
-            inpDescription.value.classList.add('border-black','hover:border-black','focus:border-black');
-        break;
-        case 'version':
-            inpVersion.value.classList.remove('border-popup_error','hover:border-popup_error','focus:border-popup_error');
-            inpVersion.value.classList.add('border-black','hover:border-black','focus:border-black');
-        break;
-        case 'release_date':
-            inpReleaseDate.value.classList.remove('border-popup_error','hover:border-popup_error','focus:border-popup_error');
-            inpReleaseDate.value.classList.add('border-black','hover:border-black','focus:border-black');
-        break;
-        case 'device':
-            inpDevice.value.classList.remove('border-popup_error','hover:border-popup_error','focus:border-popup_error');
-            inpDevice.value.classList.add('border-black','hover:border-black','focus:border-black');
-        break;
+onBeforeRouteUpdate(() => {
+    if(local.isTambah){
+        const answer = window.confirm(
+            'Do you really want to leave? you have unsaved changes!'
+        )
+        if (!answer) return false
     }
-};
+    useFetchDataStore().resetFetchData();
+});
 const handleFormClick = () => {
     inpFile.value.click();
 }
@@ -137,6 +118,68 @@ const handleFiles = (file: File) => {
     }
     input.file = file;
 }
+const inpChange_ = (div: string) => {
+    switch(div){
+        case 'name':
+            inpName.value.classList.remove('border-popup_error','hover:border-popup_error','focus:border-popup_error');
+            inpName.value.classList.add('border-black','hover:border-black','focus:border-black');
+        break;
+        case 'description':
+            inpDescription.value.classList.remove('border-popup_error','hover:border-popup_error','focus:border-popup_error');
+            inpDescription.value.classList.add('border-black','hover:border-black','focus:border-black');
+        break;
+        case 'version':
+            inpVersion.value.classList.remove('border-popup_error','hover:border-popup_error','focus:border-popup_error');
+            inpVersion.value.classList.add('border-black','hover:border-black','focus:border-black');
+        break;
+        case 'release_date':
+            inpReleaseDate.value.classList.remove('border-popup_error','hover:border-popup_error','focus:border-popup_error');
+            inpReleaseDate.value.classList.add('border-black','hover:border-black','focus:border-black');
+        break;
+        case 'device':
+            inpDevice.value.classList.remove('border-popup_error','hover:border-popup_error','focus:border-popup_error');
+            inpDevice.value.classList.add('border-black','hover:border-black','focus:border-black');
+        break;
+    }
+    let isFilled = true; 
+    if(input.name === null || input.name === ''){
+        isFilled = false;
+        inpName.value.classList.remove('border-orange-500', 'dark:border-blue-600');
+    }
+    if(input.description === null || input.description === ''){
+        isFilled = false;
+        inpDescription.value.classList.remove('border-orange-500', 'dark:border-blue-600');
+    }
+    if(input.version === null || input.version === ''){
+        isFilled = false;
+        inpVersion.value.classList.remove('border-orange-500', 'dark:border-blue-600');
+    }
+    if(input.release_date === null || input.release_date === ''){
+        isFilled = false;
+        inpReleaseDate.value.classList.remove('border-orange-500', 'dark:border-blue-600');
+    }
+    local.isTambah = isFilled;
+};
+type InputKeys = 'name' | 'description' | 'version' | 'release_date' | 'checksum' | 'device' | 'file';
+const inpChange = (div: string) => {
+    const inputs: any = {
+        name: inpName,
+        description: inpDescription,
+        version: inpVersion,
+        release_date: inpReleaseDate,
+        device: inpDevice,
+    };
+    inputs[div].value?.classList.remove('border-popup_error', 'hover:border-popup_error', 'focus:border-popup_error');
+    inputs[div].value?.classList.add('border-black', 'hover:border-black', 'focus:border-black');
+    let isFilled = true;
+    for (const key of Object.keys(inputs)) {
+        if (input[key as InputKeys] === null || input[key as InputKeys] === '') {
+            isFilled = false;
+            inputs[key].value.classList.remove('border-orange-500', 'dark:border-blue-600');
+        }
+    }
+    local.isTambah = isFilled;
+};
 const tambahForm = async (event: Event) => {
     event.preventDefault();
     let errMessage = '';
@@ -166,7 +209,7 @@ const tambahForm = async (event: Event) => {
         if (!errMessage) errMessage = 'Device Firmware Harus diisi !';
     }
     if(errMessage != ''){
-        // eventBus.emit('showRedPopup', errMessage);
+        eventBus.emit('showRedPopup', errMessage);
         return;
     }
     eventBus.emit('showLoading');
@@ -175,6 +218,7 @@ const tambahForm = async (event: Event) => {
     // if(res.status === 'success'){
     //     eventBus.emit('closeLoading');
     //     eventBus.emit('showGreenPopup', res.message);
+    //     local.isTambah = false;
     //     setTimeout(function(){
     //         navigateTo('/firmware');
     //     }, 1500);

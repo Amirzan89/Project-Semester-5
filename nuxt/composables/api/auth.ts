@@ -6,10 +6,12 @@ export async function Login(data: { email: string, password: string }){
         password: data.password,
     }, true);
 }
-export async function LoginGoogle(data: { email: string, password: string }){
-    return reqData('/users/login', 'post', {
+export async function CreateLoginGoogle(data: { email: string, nama: string, password: string, password_confirm: string }){
+    return reqData('/users/register/google', 'post', {
         email: data.email,
+        nama: data.nama,
         password: data.password,
+        password_confirm: data.password_confirm,
     }, true);
 }
 export async function Register(data: { nama: string, email: string, password: string, ulangiPassword: string }){

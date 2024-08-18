@@ -1,7 +1,7 @@
 <?php
 namespace App\Http\Controllers;
 use App\Http\Controllers\Controller;
-use App\Http\Controllers\Auth\JwtController;
+use App\Http\Controllers\Auth\JWTController;
 use App\Http\Controllers\Services\MailController;
 use App\Models\User;
 use App\Models\Verifikasi;
@@ -17,6 +17,29 @@ use Illuminate\Support\Str;
 use Carbon\Carbon;
 class UserController extends Controller
 {
+    public function getView($name = null, $data = [], $url = ''){
+        $env = env('APP_VIEW', 'blade');
+        if($env == 'blade'){
+            return view($name);
+        }else if($env == 'inertia'){
+            return inertia($name);
+        }else if($env == 'nuxt'){
+            if(env('APP_DOMAIN', 'same') == 'same'){
+                $indexPath = public_path('dist/index.html');
+                if (File::exists($indexPath)) {
+                    $htmlContent = File::get($indexPath);
+                    $htmlContent = str_replace('<body>', '<body>' . '<script>const csrfToken = "' . csrf_token() . '";</script>', $htmlContent);
+                    $htmlContent = str_replace('</head>', '<script>window.__INITIAL_STATE__ = ' . json_encode($data) . '</script></head>', $htmlContent);
+                    return response($htmlContent)->cookie('XSRF-TOKEN', csrf_token(), 0, '/', null, false, true);
+                } else {
+                    return response()->json(['error' => 'Page not found'], 404);
+                }
+            }else{
+                setCookie('__INITIAL_COSTUM_STATE__', base64_encode(json_encode($data)), 0, '/', null, false, false);
+                return redirect(env('FRONTEND_URL', 'http://localhost:3000') . $url);
+            }
+        }
+    }
     public function getDefaultFoto(Request $request){
         $referrer = $request->headers->get('referer');
         if (!$referrer && $request->path() == 'public/download/foto') {
@@ -57,27 +80,32 @@ class UserController extends Controller
             }
             return response()->json(['status' => 'error', 'message' => implode(', ', $errors)], 400);
         }
-        if(Str::startsWith($request->path(), 'verify/password') && $request->isMethod('get')){
+        $prefix = '/verify/password';
+        if(Str::startsWith('/' . $request->path(), $prefix) && $request->isMethod('get')){
             $email = $request->query('email');
             if (!Verifikasi::whereRaw("BINARY link = ?", [$any])->exists()) {
-                return response()->json(['title' => 'Reset Password', 'message' => 'Link invalid', 'code' => 400, 'div' => 'red']);
-                // return Inertia::render('app', ['title' => 'Reset Password', 'message' => 'Link invalid', 'code' => 400, 'div' => 'red']);
+                // return response()->json(['title' => 'Reset Password', 'message' => 'Link invalid', 'code' => 400, 'div' => 'red']);
+                return self::getView('resetPass', ['title' => 'Reset Password', 'message' => 'Link invalid', 'code' => 400, 'div' => 'red'], $prefix);
             }
             if (!Verifikasi::whereRaw("BINARY email = ?", [$email])->exists()) {
-                return response()->json(['title' => 'Reset Password', 'message' => 'Email invalid', 'code' => 400, 'div' => 'red']);
+                // return response()->json(['title' => 'Reset Password', 'message' => 'Email invalid', 'code' => 400, 'div' => 'red']);
+                return self::getView('resetPass', ['title' => 'Reset Password', 'message' => 'Email invalid', 'code' => 400, 'div' => 'red'], $prefix);
                 // return Inertia::render('app', ['title' => 'Reset Password', 'message' => 'Email invalid', 'code' => 400, 'div' => 'red']);
             }
             if (!Verifikasi::whereRaw("BINARY email = ? AND BINARY link = ?", [$email, $any])->exists()) {
-                return response()->json(['title' => 'Reset Password', 'message' => 'Link invalid', 'code' => 400, 'div' => 'red']);
+                // return response()->json(['title' => 'Reset Password', 'message' => 'Link invalid', 'code' => 400, 'div' => 'red']);
+                return self::getView('resetPass', ['title' => 'Reset Password', 'message' => 'Link invalid', 'code' => 400, 'div' => 'red'], $prefix);
                 // return Inertia::render('app', ['title' => 'Reset Password', 'message' => 'Link invalid', 'code' => 400, 'div' => 'red']);
             }
             $currentDateTime = Carbon::now();
             if (!Verifikasi::whereRaw("BINARY email = ?", [$email])->where('updated_at', '>=', $currentDateTime->subMinutes(1))->exists()) {
                 Verifikasi::whereRaw("BINARY email = ? AND deskripsi = 'password'", [$email])->delete();
-                return response()->json(['title' => 'Reset Password', 'message' => 'Link Expired', 'code' => 400, 'div' => 'red']);
+                // return response()->json(['title' => 'Reset Password', 'message' => 'Link Expired', 'code' => 400, 'div' => 'red']);
+                return self::getView('resetPass', ['title' => 'Reset Password', 'message' => 'Link Expired', 'code' => 400, 'div' => 'red'], $prefix);
                 // return Inertia::render('app', ['title' => 'Reset Password', 'message' => 'Link Expired', 'code' => 400, 'div' => 'red']);
             }
-            return response()->json(['email' => $email, 'title' => 'Reset Password', 'link' => $any, 'code' => '', 'div' => 'verifyDiv', 'deskripsi' => 'password']);
+            // return response()->json(['email' => $email, 'title' => 'Reset Password', 'link' => $any, 'div' => 'verifyDiv', 'deskripsi' => 'password']);
+            return self::getView('resetPass', ['email' => $email, 'title' => 'Reset Password', 'link' => $any, 'div' => 'verifyDiv', 'deskripsi' => 'password'], $prefix);
             // return Inertia::render('app', ['email' => $email, 'title' => 'Reset Password', 'link' => $any, 'code' => '', 'div' => 'verifyDiv', 'deskripsi' => 'password']);
         }else{
             $email = $request->input('email');
@@ -96,7 +124,7 @@ class UserController extends Controller
             return response()->json(['status' => 'success', 'message' => 'OTP Anda benar, silahkan ganti password']);
         }
     }
-    public function changePassEmail(Request $request, User $user, JWTController $jwtController, RefreshToken $refreshToken){
+    public function changePassEmail(Request $request){
         $validator = Validator::make($request->all(), [
             'email'=>'required|email',
             'nama'=>'nullable',
@@ -139,59 +167,34 @@ class UserController extends Controller
             return response()->json(['status' => 'error', 'message' => implode(', ', $errors)], 400);
         }
         $email = $request->input('email');
-        $pass = $request->input("password");
-        $pass1 = $request->input("password_confirm");
-        $code = $request->input('code');
         $link = $request->input('link');
         $desc = $request->input('description');
-        if($pass !== $pass1){
+        if($request->input("password") !== $request->input("password_confirm")){
             return response()->json(['status'=>'error','message'=>'Password Harus Sama'],400);
         }
         if(is_null($link) || empty($link)){
-            if($desc == 'createUser'){
-                $ins = User::insert([
-                    'uuid' => Str::uuid(),
-                    'email' => $request->input('email'),
-                    'nama_lengkap' => $request->input('nama'),
-                    'password' => Hash::make($request->input('password')),
-                    'verifikasi' => true,
-                    'role' => 'user',
-                ]);
-                if(!$ins){
-                    return ['status'=>'error','message'=>'Akun Gagal Dibuat'];
-                }
-                $data = $jwtController->createJWTWebsite($email,$refreshToken);
-                if (!$data || $data['status'] == 'error') {
-                    $errorMessage = $data ? $data['message'] : 'create token error';
-                    return response()->json(['status' => 'error', 'message' => $errorMessage], 500);
-                }
-                return response()->json(['status'=>'success','message'=>'login sukses silahkan masuk dashboard'])
-                ->cookie('token1',base64_encode(json_encode(['email'=>$email,'number'=>$data['number']])),time()+intval(env('JWT_ACCESS_TOKEN_EXPIRED')),'/','',true)
-                ->cookie('token2',$data['data']['token'],time() + intval(env('JWT_ACCESS_TOKEN_EXPIRED')),'/','',true)
-                ->cookie('token3',$data['data']['refresh'],time() + intval(env('JWT_REFRESH_TOKEN_EXPIRED')),'/','',true);
-            }else{
-                if (!Verifikasi::whereRaw("BINARY kode_otp = ?",[$code])->exists()) {
-                    return response()->json(['status'=>'error','message'=>'Token invalid'], 400);
-                }
-                if (!User::whereRaw("BINARY email = ?",[$email])->exists()) {
-                    return response()->json(['status'=>'error','message'=>'Invalid Email'], 400);
-                }
-                if (!Verifikasi::whereRaw("BINARY email = ? AND BINARY kode_otp = ?",[$email,$code])->exists()) {
-                    return response()->json(['status'=>'error','message'=>'Invalid Email'], 400);
-                }
-                $currentDateTime = Carbon::now();
-                if (!DB::table('verifikasi')->whereRaw("BINARY email = ?",[$email])->where('updated_at', '>=', $currentDateTime->subMinutes(15))->exists()) {
-                    DB::table('verifikasi')->whereRaw("BINARY email = ? AND deskripsi = 'password'",[$email])->delete();
-                    return response()->json(['status'=>'error','message'=>'Token expired'], 400);
-                }
-                if (is_null(DB::table('users')->whereRaw("BINARY email = ?",[$email])->update(['password'=>Hash::make($pass)]))) {
-                    return response()->json(['status'=>'error','message'=>'Error updating password'], 500);
-                }
-                if (!DB::table('verifikasi')->whereRaw("BINARY email = ?",[$email])->delete()) {
-                    return response()->json(['status'=>'error','message'=>'Error updating password'], 500);
-                }
-                return response()->json(['status'=>'success','message'=>'ganti password berhasil silahkan login']);
+            $code = $request->input('code');
+            if (!Verifikasi::whereRaw("BINARY kode_otp = ?",[$code])->exists()) {
+                return response()->json(['status'=>'error','message'=>'Token invalid'], 400);
             }
+            if (!User::whereRaw("BINARY email = ?",[$email])->exists()) {
+                return response()->json(['status'=>'error','message'=>'Invalid Email'], 400);
+            }
+            if (!Verifikasi::whereRaw("BINARY email = ? AND BINARY kode_otp = ?",[$email,$code])->exists()) {
+                return response()->json(['status'=>'error','message'=>'Invalid Email'], 400);
+            }
+            $currentDateTime = Carbon::now();
+            if (!DB::table('verifikasi')->whereRaw("BINARY email = ?",[$email])->where('updated_at', '>=', $currentDateTime->subMinutes(15))->exists()) {
+                DB::table('verifikasi')->whereRaw("BINARY email = ? AND deskripsi = 'password'",[$email])->delete();
+                return response()->json(['status'=>'error','message'=>'Token expired'], 400);
+            }
+            if (is_null(DB::table('users')->whereRaw("BINARY email = ?",[$email])->update(['password'=>Hash::make($request->input("password"))]))) {
+                return response()->json(['status'=>'error','message'=>'Error updating password'], 500);
+            }
+            if (!DB::table('verifikasi')->whereRaw("BINARY email = ?",[$email])->delete()) {
+                return response()->json(['status'=>'error','message'=>'Error updating password'], 500);
+            }
+            return response()->json(['status'=>'success','message'=>'ganti password berhasil silahkan login']);
         }else{
             if (!Verifikasi::whereRaw("BINARY link = ? AND deskripsi = ?", [$link, $desc])->exists()) {
                 return response()->json(['status'=>'error', 'message'=>'Link expired'], 400);
@@ -207,31 +210,13 @@ class UserController extends Controller
                 DB::table('verifikasi')->whereRaw("BINARY email = ? AND deskripsi = ?", [$email, $desc])->delete();
                 return response()->json(['status'=>'error', 'message'=>'Link expired'], 400);
             }
-            if (is_null(DB::table('users')->whereRaw("BINARY email = ?", [$email])->update(['password'=>Hash::make($pass)]))) {
+            if (is_null(DB::table('users')->whereRaw("BINARY email = ?", [$email])->update(['password'=>Hash::make($request->input("password"))]))) {
                 return response()->json(['status'=>'error', 'message'=>'Error updating password'], 500);
             }
             if (!DB::table('verifikasi')->whereRaw("BINARY email = ? AND deskripsi = ?", [$email, $desc])->delete()) {
                 return response()->json(['status'=>'error', 'message'=>'Error updating password'], 500);
             }
             return response()->json(['status'=>'success', 'message'=>'ganti password berhasil silahkan login']);
-        }
-    }
-    private function getView($name = null, $data = []){
-        $env = env('APP_VIEW', 'blade');
-        if($env == 'blade'){
-            return view($name);
-        }else if($env == 'inertia'){
-            return inertia($name);
-        }else if($env == 'nuxt'){
-            $indexPath = public_path('dist/index.html');
-            if (File::exists($indexPath)) {
-                $htmlContent = File::get($indexPath);
-                $htmlContent = str_replace('<body>', '<body>' . '<script>const csrfToken = "' . csrf_token() . '";</script>', $htmlContent);
-                $htmlContent = str_replace('</head>', '<script>window.__INITIAL_STATE__ = ' . json_encode($data) . '</script></head>', $htmlContent);
-                return response($htmlContent)->cookie('XSRF-TOKEN', csrf_token(), 0, '/', null, false, true);
-            } else {
-                return response()->json(['error' => 'Page not found'], 404);
-            }
         }
     }
     public function showCreatePass(Request $request){
@@ -253,26 +238,6 @@ class UserController extends Controller
         }
         return self::getView('forgotPassword',['email'=>$request->input('email'), 'nama'=>$request->input('nama'), 'div'=>'register','title'=>'Reset Password','description'=>'changePass','code'=>'','link'=>'']);
     }
-    //register user using google
-    public function showVerify(Request $request){
-        $validator = Validator::make($request->all(), [
-            'email'=>'required|email',
-            'nama'=>'required',
-        ],[
-            'nama.required'=>'nama wajib di isi',
-            'email.required'=>'Email wajib di isi',
-            'email.email'=>'Email yang anda masukkan invalid',
-        ]);
-        if ($validator->fails()) {
-            $errors = [];
-            foreach ($validator->errors()->toArray() as $field => $errorMessages) {
-                $errors[$field] = $errorMessages[0];
-                break;
-            }
-            return response()->json(['status' => 'error', 'message' => implode(', ', $errors)], 400);
-        }
-        return self::getView('forgotPassword', ['email'=>$request->input('email'), 'nama'=>$request->input('nama'), 'div'=>'verifyDiv','title'=>'Register Google','description'=>'createUser','code'=>'','link'=>'']);
-    }
     public function verifyEmail(Request $request, User $user, $any = null){
         $email = $request->query('email');
         $validator = Validator::make($request->all(), [
@@ -285,9 +250,10 @@ class UserController extends Controller
         if ($validator->fails()) {
             $errors = [];
             foreach ($validator->errors()->toArray() as $field => $errorMessages) {
-                $errors = $errorMessages[0]; 
+                $errors[$field] = $errorMessages[0];
+                break;
             }
-            return response()->json(['status' => 'error', 'message' => $errors], 400);
+            return response()->json(['status' => 'error', 'message' => implode(', ', $errors)], 400);
         }
         $email = $request->input('email');
         $code = $request->input('otp');
@@ -344,6 +310,71 @@ class UserController extends Controller
             }
             return response()->json(['status'=>'success','message'=>'verifikasi email berhasil silahkan login']);
         }
+    }
+    //register user from google login
+    public function createGoogleUser(Request $request, JWTController $jwtController, RefreshToken $refreshToken){
+        $validator = Validator::make($request->all(), [
+            'email'=>'required|email',
+            'nama'=>'nullable',
+            'password' => [
+                'required',
+                'string',
+                'min:8',
+                'max:25',
+                'regex:/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]+$/'
+            ],
+            'password_confirm' => [
+                'required',
+                'string',
+                'min:8',
+                'max:25',
+                'regex:/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]+$/'
+            ],
+            'code' => 'nullable',
+            'link' => 'nullable',
+        ],[
+            'email.required'=>'Email harus di isi',
+            'email.email'=>'Email yang anda masukkan invalid',
+            'password.required'=>'Password harus di isi',
+            'password.min'=>'Password minimal 8 karakter',
+            'password.max'=>'Password maksimal 25 karakter',
+            'password.regex'=>'Password baru harus terdiri dari 1 huruf besar, huruf kecil, angka dan karakter unik',
+            'password_confirm.required'=>'Password konfirmasi konfirmasi harus di isi',
+            'password_confirm.min'=>'Password konfirmasi minimal 8 karakter',
+            'password_confirm.max'=>'Password konfirmasi maksimal 25 karakter',
+            'password_confirm.regex'=>'Password konfirmasi terdiri dari 1 huruf besar, huruf kecil, angka dan karakter unik',
+        ]);
+        if ($validator->fails()) {
+            $errors = [];
+            foreach ($validator->errors()->toArray() as $field => $errorMessages) {
+                $errors[$field] = $errorMessages[0];
+                break;
+            }
+            return response()->json(['status' => 'error', 'message' => implode(', ', $errors)], 400);
+        }
+        if($request->input("password") !== $request->input("password_confirm")){
+            return response()->json(['status'=>'error','message'=>'Password Harus Sama'],400);
+        }
+        $ins = User::insert([
+            'uuid' => Str::uuid(),
+            'email' => $request->input('email'),
+            'nama_lengkap' => $request->input('nama'),
+            'password' => Hash::make($request->input('password')),
+            'email_verified' => true,
+            'role' => 'user',
+        ]);
+        if(!$ins){
+            return ['status'=>'error','message'=>'Akun Gagal Dibuat'];
+        }
+        $data = $jwtController->createJWTWebsite($request->input('email'),$refreshToken);
+        if (!$data || $data['status'] == 'error') {
+            $errorMessage = $data ? $data['message'] : 'create token error';
+            return response()->json(['status' => 'error', 'message' => $errorMessage], 500);
+        }
+        return response()->json(['status'=>'success','message'=>'login sukses silahkan masuk dashboard'])
+        ->cookie('token1',base64_encode(json_encode(['email'=>$request->input('email'),'number'=>$data['number']])),time()+intval(env('JWT_ACCESS_TOKEN_EXPIRED')),'/','',true)
+        ->cookie('token2',$data['data']['token'],time() + intval(env('JWT_ACCESS_TOKEN_EXPIRED')),'/','',true)
+        ->cookie('token3',$data['data']['refresh'],time() + intval(env('JWT_REFRESH_TOKEN_EXPIRED')),'/','',true);
     }
     public function createUser(Request $request, MailController $mailController, Verifikasi $verify){
         $validator = Validator::make($request->only('nama','jenis_kelamin','no_telpon','tanggal_lahir','tempat_lahir','email','password','foto'), [

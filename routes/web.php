@@ -72,6 +72,7 @@ Route::group(['middleware'=>'auth'],function(){
     Route::group(["prefix"=>"/users"],function(){
         Route::post('/login','Auth\LoginController@login');
         Route::post('/register','Auth\RegisterController@register');
+        Route::post('/register/google', 'UserController@createGoogleUser');
         Route::post('/logout','UserController@logout');
         Route::get('/pengaturan',function(){
             return getView('pengaturan');
@@ -140,5 +141,15 @@ Route::group(['middleware'=>'auth'],function(){
         Route::put('/{id}', 'AdminController@updateAdmin');
         Route::delete('/{id}', 'AdminController@deleteAdmin');
     });
+});
+Route::fallback(function(){
+    $indexPath = public_path('dist/index.html');
+    if (File::exists($indexPath)) {
+        $htmlContent = File::get($indexPath);
+        return response($htmlContent, 404);
+    } else {
+        // If the index.html file doesn't exist, return a 404 response
+        return response()->json(['error' => 'Page not found'], 404);
+    }
 });
 ?>

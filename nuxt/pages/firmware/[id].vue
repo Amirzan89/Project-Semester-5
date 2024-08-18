@@ -66,6 +66,8 @@ useHead({
 });
 const local = reactive({
     isDoneFetch: false,
+    isChanging: false,
+    isUpdated:false,
     fetchedUserAuth: null,
     fetchedViewData: null as any,
 });
@@ -84,38 +86,43 @@ const inpReleaseDate: Ref = ref(null);
 const inpDevice: Ref = ref(null);
 const inpFile: Ref = ref(null);
 useAsyncData(async () => {
-    console.log('detaill coyy')
     const res = await useFetchDataStore().fetchData();
     if(res.status == 'error'){
         if(res.code === 404){
+            return useNotFoundStore().setIsNotFound(true, '/firmware','Detail Firmware not found');
         }
-        return useNotFoundStore().setIsNotFound(true, '/firmware','Detail Firmware not found');
     }
     local.fetchedViewData = res.data.other;
 });
-const inpChange = (div: string) => {
-    switch(div){
-        case 'name':
-            inpName.value.classList.remove('border-popup_error','hover:border-popup_error','focus:border-popup_error');
-            inpName.value.classList.add('border-black','hover:border-black','focus:border-black');
-        break;
-        case 'description':
-            inpDescription.value.classList.remove('border-popup_error','hover:border-popup_error','focus:border-popup_error');
-            inpDescription.value.classList.add('border-black','hover:border-black','focus:border-black');
-        break;
-        case 'version':
-            inpVersion.value.classList.remove('border-popup_error','hover:border-popup_error','focus:border-popup_error');
-            inpVersion.value.classList.add('border-black','hover:border-black','focus:border-black');
-        break;
-        case 'release_date':
-            inpReleaseDate.value.classList.remove('border-popup_error','hover:border-popup_error','focus:border-popup_error');
-            inpReleaseDate.value.classList.add('border-black','hover:border-black','focus:border-black');
-        break;
-        case 'device':
-            inpDevice.value.classList.remove('border-popup_error','hover:border-popup_error','focus:border-popup_error');
-            inpDevice.value.classList.add('border-black','hover:border-black','focus:border-black');
-        break;
+onBeforeRouteUpdate(() => {
+    if(local.isUpdated){
+        const answer = window.confirm(
+            'Do you really want to leave? you have unsaved changes!'
+        )
+        // cancel the navigation and stay on the same page
+        if (!answer) return false
     }
+    useFetchDataStore().resetFetchData();
+});
+type InputKeys = 'name' | 'description' | 'version' | 'release_date' | 'device' | 'file';
+const inpChange = (div: string) => {
+    const inputs: any = {
+        name: inpName,
+        description: inpDescription,
+        version: inpVersion,
+        release_date: inpReleaseDate,
+        device: inpDevice,
+    };
+    inputs[div].value?.classList.remove('border-popup_error', 'hover:border-popup_error', 'focus:border-popup_error');
+    inputs[div].value?.classList.add('border-black', 'hover:border-black', 'focus:border-black');
+    let isFilled = true;
+    for (const key of Object.keys(inputs)) {
+        if (input[key as InputKeys] === null || input[key as InputKeys] === '') { 
+            isFilled = false;
+            inputs[key].value.classList.remove('border-orange-500', 'dark:border-blue-600');
+        }
+    }
+    local.isUpdated = isFilled;
 };
 const handleFormClick = () => {
     inpFile.value.click();
@@ -181,6 +188,7 @@ const editForm = async (event: Event) => {
     // let res = await EditFirmware({ id_firmware: route.params.id,  name: input.name, description: input.description, version: input.version, release_date: input.release_date, checksum: enc.checksum, device: input.device, file: enc.file });
     // if(res.status === 'success'){
     //     eventBus.emit('closeLoading');
+    //     local.isUpdated = false;
     //     eventBus.emit('showGreenPopup', res.message);
     // }else if(res.status === 'error'){
     //     eventBus.emit('closeLoading');

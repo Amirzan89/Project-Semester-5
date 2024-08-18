@@ -59,6 +59,6 @@ export default () => {
             }
         };
         return req();
-    } 
+    }
     return { axios: createInstance(), axiosJson: axiosJson(), createCSRF: fetchCsrfToken, reqData: reqData };
 }

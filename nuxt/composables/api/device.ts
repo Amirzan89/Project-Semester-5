@@ -1,22 +1,24 @@
 import createAxios from './axios';
 const { reqData } = createAxios();
 const prefix = '/device'
-export async function TambahDevice(data: { email: string, password: string }){
+export async function TambahDevice(data: { name: string, device_id: string, token: string, activated: string }){
     return reqData(`${prefix}/create`, 'post', {
-        email: data.email,
-        password: data.password,
+        name: data.name,
+        device_id: data.device_id,
+        token: data.token,
+        password_confirm: data.activated,
     }, true);
 }
-export async function EditDevice(data: { nama: string, email: string, password: string, ulangiPassword: string }){
+export async function EditDevice(data: { id_device: string, name: string, device_id: string, token: string, activated: string }){
     return reqData(`${prefix}/update`, 'put',{
-        nama: data.nama,
-        email: data.email,
-        password: data.password,
-        password_confirm: data.ulangiPassword,
+        name: data.name,
+        device_id: data.device_id,
+        token: data.token,
+        password_confirm: data.activated,
     }, true);
 }
-export async function DeleteDevice(data: { email: string }){
+export async function DeleteDevice(data: { id_device: string }){
     return reqData(`${prefix}/delete`, 'delete',{
-        email: data.email,
+        id_device: data.id_device,
     }, true);
 }

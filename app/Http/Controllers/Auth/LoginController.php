@@ -2,7 +2,7 @@
 namespace App\Http\Controllers\Auth;
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\UserController;
-use App\Http\Controllers\Auth\JwtController;
+use App\Http\Controllers\Auth\JWTController;
 use App\Models\User;
 use App\Models\RefreshToken;
 use Illuminate\Http\Request;
@@ -63,7 +63,7 @@ class LoginController extends Controller
     public function handleProviderCallback(Request $request){
         $refreshToken = new RefreshToken();
         $userController = new UserController();
-        $jwtController = new JwtController();
+        $jwtController = new JWTController();
         try {
             $user_google = Socialite::driver('google')->stateless()->user();
             if(User::select('email')->whereRaw("BINARY email = ?",[$user_google->getEmail()])->limit(1)->exists()){
@@ -105,73 +105,10 @@ class LoginController extends Controller
                 }
             //if user dont exist in database
             }else{
-                $data = ['email'=>$user_google->getEmail(), 'nama'=>$user_google->getName()];
-                $costum = new Request();
-                $costum->replace($data);
-                return $userController->showVerify($costum);
+                return $userController->getView('forgotPassword', ['email'=>$user_google->getEmail(), 'nama'=>$user_google->getName()], '/auth/google');
             }
         } catch (\Exception $e) {
             return response()->json('Error: ' . $e->getMessage() . ', Code: ' . $e->getCode() . ', File: ' . $e->getFile() . ', Line: ' . $e->getLine());
-        }
-    }
-    public function GooglePass(Request $request, User $user, JwtController $jwtController, RefreshToken $refreshToken){
-        try{
-            $validator = Validator::make($request->all(), [
-            'email'=>'required|email',
-            'password' => [
-                    'required',
-                    'string',
-                    'min:8',
-                    'max:25',
-                    'regex:/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]+$/'
-                ],
-            'username'=>'required',
-            'nama'=>'required',
-            ],[
-                'nama.required'=>'nama wajib di isi',
-                'email.required'=>'Email wajib di isi',
-                'email.email'=>'Email yang anda masukkan invalid',
-                'password.required'=>'Password wajib di isi',
-                'password.min'=>'Password minimal 8 karakter',
-                'password.max'=>'Password maksimal 25 karakter',
-                'password.regex'=>'Password baru wajib terdiri dari 1 huruf besar, huruf kecil, angka dan karakter unik',
-            ]);
-            if ($validator->fails()) {
-                $errors = [];
-                foreach ($validator->errors()->toArray() as $field => $errorMessages) {
-                    $errors[$field] = $errorMessages[0];
-                    break;
-                }
-                return response()->json(['status' => 'error', 'message' => implode(', ', $errors)], 400);
-            }
-            $username = $request->input('username');
-            $nama = $request->input('nama');
-            $email = $request->input('email');
-            $password = $request->input('password');
-            if (User::select("email")->whereRaw("BINARY email = ?",[$email])->limit(1)->exists()){
-                return response()->json(['status'=>'error','message'=>'Email sudah digunakan'],400);
-            }
-            $user->username = $username;
-            $user->email = $email;
-            $user->nama = $nama;
-            $user->password = Hash::make($password);
-            $user->email_verified = true;
-            if(!$user->save()){
-                return response()->json(['status'=>'error','message'=>'Akun Gagal Dibuat'],400);
-            }
-            $data = $jwtController->createJWT($email,$refreshToken);
-            if(is_null($data)){
-                return response()->json(['status'=>'error','message'=>'create token error']);
-            }
-            if($data['status'] == 'error'){
-                return response()->json(['status'=>'error','message'=>$data['message']],400);
-            }
-            $encoded = base64_encode($email);
-            // return redirect('/dashboard');
-            return redirect(self::$baseURL . "/dashboard")->withCookies([cookie('token1',$encoded,time()+intval(env('JWT_ACCESS_TOKEN_EXPIRED'))),cookie('token2',$data['data'],time() + intval(env('JWT_ACCESS_TOKEN_EXPIRED')))]);
-        } catch (\Exception $e) {
-            return response()->json($e->getMessage());
-            // return redirect()->route('login');
         }
     }
 }

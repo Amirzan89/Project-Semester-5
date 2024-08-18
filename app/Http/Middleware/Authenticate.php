@@ -26,7 +26,7 @@ class Authenticate
             $tokenDecode1 = json_decode(base64_decode($token1),true);
             $email = $tokenDecode1['email'];
             $number = $tokenDecode1['number'];
-            $authPage = ['/','/login','/register','/password/reset'];
+            $authPage = ['/','/login','/register','/password/reset', 'verify/password','verify/email','auth/redirect','auth/google'];
             if ((in_array($currentPath, $authPage) || strpos($currentPath, '/artikel/') === 0) && $request->isMethod('get')) {
                 if (in_array(ltrim($path), $authPage)) {
                     $response = $this->handleRedirect($request, 'success', '/dashboard');

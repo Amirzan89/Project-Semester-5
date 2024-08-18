@@ -1,6 +1,6 @@
 <template>
     <div>
-        
+        success verified email
     </div>
 </template>
 <style scoped lang="scss">
@@ -20,14 +20,10 @@ definePageMeta({
     }
 });
 useHead({
-    title:`Verify Password | ${publicConfig.appName}`
+    title:`Verify Email | ${publicConfig.appName}`
 });
 const local = reactive({
     isDoneFetch: false,
-});
-const input = reactive({
-    password:'',
-    passwordRepeat:'',
 });
 const inpPassword: Ref = ref(null);
 const inpPasswordRepeat: Ref = ref(null);
