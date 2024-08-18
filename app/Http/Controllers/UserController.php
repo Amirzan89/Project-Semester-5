@@ -84,29 +84,25 @@ class UserController extends Controller
         if(Str::startsWith('/' . $request->path(), $prefix) && $request->isMethod('get')){
             $email = $request->query('email');
             if (!Verifikasi::whereRaw("BINARY link = ?", [$any])->exists()) {
-                // return response()->json(['title' => 'Reset Password', 'message' => 'Link invalid', 'code' => 400, 'div' => 'red']);
-                return self::getView('resetPass', ['title' => 'Reset Password', 'message' => 'Link invalid', 'code' => 400, 'div' => 'red'], $prefix);
+                // return response()->json(['status' => 'error', 'message' => 'Link invalid', 'code' => 400]);
+                return self::getView('resetPass', ['status' => 'error', 'message' => 'Link invalid', 'code' => 400], $prefix);
             }
             if (!Verifikasi::whereRaw("BINARY email = ?", [$email])->exists()) {
-                // return response()->json(['title' => 'Reset Password', 'message' => 'Email invalid', 'code' => 400, 'div' => 'red']);
-                return self::getView('resetPass', ['title' => 'Reset Password', 'message' => 'Email invalid', 'code' => 400, 'div' => 'red'], $prefix);
-                // return Inertia::render('app', ['title' => 'Reset Password', 'message' => 'Email invalid', 'code' => 400, 'div' => 'red']);
+                // return response()->json(['status' => 'error', 'message' => 'Email invalid', 'code' => 400]);
+                return self::getView('resetPass', ['status' => 'error', 'message' => 'Email invalid', 'code' => 400], $prefix);
             }
             if (!Verifikasi::whereRaw("BINARY email = ? AND BINARY link = ?", [$email, $any])->exists()) {
-                // return response()->json(['title' => 'Reset Password', 'message' => 'Link invalid', 'code' => 400, 'div' => 'red']);
-                return self::getView('resetPass', ['title' => 'Reset Password', 'message' => 'Link invalid', 'code' => 400, 'div' => 'red'], $prefix);
-                // return Inertia::render('app', ['title' => 'Reset Password', 'message' => 'Link invalid', 'code' => 400, 'div' => 'red']);
+                // return response()->json(['status' => 'error', 'message' => 'Link invalid', 'code' => 400]);
+                return self::getView('resetPass', ['status' => 'error', 'message' => 'Link invalid', 'code' => 400], $prefix);
             }
             $currentDateTime = Carbon::now();
             if (!Verifikasi::whereRaw("BINARY email = ?", [$email])->where('updated_at', '>=', $currentDateTime->subMinutes(1))->exists()) {
                 Verifikasi::whereRaw("BINARY email = ? AND deskripsi = 'password'", [$email])->delete();
-                // return response()->json(['title' => 'Reset Password', 'message' => 'Link Expired', 'code' => 400, 'div' => 'red']);
-                return self::getView('resetPass', ['title' => 'Reset Password', 'message' => 'Link Expired', 'code' => 400, 'div' => 'red'], $prefix);
-                // return Inertia::render('app', ['title' => 'Reset Password', 'message' => 'Link Expired', 'code' => 400, 'div' => 'red']);
+                // return response()->json(['status' => 'error', 'message' => 'Link Expired', 'code' => 400]);
+                return self::getView('resetPass', ['status' => 'error', 'message' => 'Link Expired', 'code' => 400], $prefix);
             }
-            // return response()->json(['email' => $email, 'title' => 'Reset Password', 'link' => $any, 'div' => 'verifyDiv', 'deskripsi' => 'password']);
-            return self::getView('resetPass', ['email' => $email, 'title' => 'Reset Password', 'link' => $any, 'div' => 'verifyDiv', 'deskripsi' => 'password'], $prefix);
-            // return Inertia::render('app', ['email' => $email, 'title' => 'Reset Password', 'link' => $any, 'code' => '', 'div' => 'verifyDiv', 'deskripsi' => 'password']);
+            // return response()->json(['status' => 'success', 'email' => $email, 'link' => $any]);
+            return self::getView('resetPass', ['status' => 'success', 'email' => $email, 'link' => $any], $prefix);
         }else{
             $email = $request->input('email');
             $code = $request->input('otp');
@@ -144,7 +140,6 @@ class UserController extends Controller
             ],
             'code' => 'nullable',
             'link' => 'nullable',
-            'description'=>'required'
         ],[
             'email.required'=>'Email harus di isi',
             'email.email'=>'Email yang anda masukkan invalid',
@@ -156,7 +151,6 @@ class UserController extends Controller
             'password_confirm.min'=>'Password konfirmasi minimal 8 karakter',
             'password_confirm.max'=>'Password konfirmasi maksimal 25 karakter',
             'password_confirm.regex'=>'Password konfirmasi terdiri dari 1 huruf besar, huruf kecil, angka dan karakter unik',
-            'description.required'=>'Deskripsi harus di isi',
         ]);
         if ($validator->fails()) {
             $errors = [];
@@ -168,7 +162,6 @@ class UserController extends Controller
         }
         $email = $request->input('email');
         $link = $request->input('link');
-        $desc = $request->input('description');
         if($request->input("password") !== $request->input("password_confirm")){
             return response()->json(['status'=>'error','message'=>'Password Harus Sama'],400);
         }
@@ -196,47 +189,28 @@ class UserController extends Controller
             }
             return response()->json(['status'=>'success','message'=>'ganti password berhasil silahkan login']);
         }else{
-            if (!Verifikasi::whereRaw("BINARY link = ? AND deskripsi = ?", [$link, $desc])->exists()) {
+            if (!Verifikasi::whereRaw("BINARY link = ? AND deskripsi = ?", [$link, 'password'])->exists()) {
                 return response()->json(['status'=>'error', 'message'=>'Link expired'], 400);
             }
             if (!User::whereRaw("BINARY email = ?", [$email])->exists()) {
                 return response()->json(['status'=>'error', 'message'=>'Invalid Email1'], 400);
             }
-            if (!Verifikasi::whereRaw("BINARY email = ? AND BINARY link = ? AND deskripsi = ?", [$email, $link, $desc])->exists()) {
+            if (!Verifikasi::whereRaw("BINARY email = ? AND BINARY link = ? AND deskripsi = ?", [$email, $link, 'password'])->exists()) {
                 return response()->json(['status'=>'error', 'message'=>'Email invalid'], 400);
             }
             $currentDateTime = Carbon::now();
             if (!DB::table('verifikasi')->whereRaw("BINARY email = ?", [$email])->where('updated_at', '>=', $currentDateTime->subMinutes(15))->exists()) {
-                DB::table('verifikasi')->whereRaw("BINARY email = ? AND deskripsi = ?", [$email, $desc])->delete();
+                DB::table('verifikasi')->whereRaw("BINARY email = ? AND deskripsi = ?", [$email, 'password'])->delete();
                 return response()->json(['status'=>'error', 'message'=>'Link expired'], 400);
             }
             if (is_null(DB::table('users')->whereRaw("BINARY email = ?", [$email])->update(['password'=>Hash::make($request->input("password"))]))) {
                 return response()->json(['status'=>'error', 'message'=>'Error updating password'], 500);
             }
-            if (!DB::table('verifikasi')->whereRaw("BINARY email = ? AND deskripsi = ?", [$email, $desc])->delete()) {
+            if (!DB::table('verifikasi')->whereRaw("BINARY email = ? AND deskripsi = ?", [$email, 'password'])->delete()) {
                 return response()->json(['status'=>'error', 'message'=>'Error updating password'], 500);
             }
             return response()->json(['status'=>'success', 'message'=>'ganti password berhasil silahkan login']);
         }
-    }
-    public function showCreatePass(Request $request){
-        $validator = Validator::make($request->all(), [
-            'email'=>'required|email',
-            'nama'=>'required',
-        ],[
-            'nama.required'=>'nama wajib di isi',
-            'email.required'=>'Email wajib di isi',
-            'email.email'=>'Email yang anda masukkan invalid',
-        ]);
-        if ($validator->fails()) {
-            $errors = [];
-            foreach ($validator->errors()->toArray() as $field => $errorMessages) {
-                $errors[$field] = $errorMessages[0];
-                break;
-            }
-            return response()->json(['status' => 'error', 'message' => implode(', ', $errors)], 400);
-        }
-        return self::getView('forgotPassword',['email'=>$request->input('email'), 'nama'=>$request->input('nama'), 'div'=>'register','title'=>'Reset Password','description'=>'changePass','code'=>'','link'=>'']);
     }
     public function verifyEmail(Request $request, User $user, $any = null){
         $email = $request->query('email');
@@ -355,6 +329,17 @@ class UserController extends Controller
         if($request->input("password") !== $request->input("password_confirm")){
             return response()->json(['status'=>'error','message'=>'Password Harus Sama'],400);
         }
+        //process file foto
+        // if ($request->hasFile('foto')) {
+        //     $file = $request->file('foto');
+        //     if(!($file->isValid() && in_array($file->extension(), ['jpeg', 'png', 'jpg']))){
+        //         return response()->json(['status'=>'error','message'=>'Format Foto tidak valid. Gunakan format jpeg, png, jpg'], 400);
+        //     }
+        //     $destinationPath = storage_path('app/user/');
+        //     $fotoName = $file->hashName();
+        //     $fileData = Crypt::encrypt(file_get_contents($file));
+        //     Storage::disk('user')->put('/' . $fotoName, $fileData);
+        // }
         $ins = User::insert([
             'uuid' => Str::uuid(),
             'email' => $request->input('email'),
@@ -362,6 +347,8 @@ class UserController extends Controller
             'password' => Hash::make($request->input('password')),
             'email_verified' => true,
             'role' => 'user',
+            'created_at' => Carbon::now(),
+            'updated_at' => Carbon::now(),
         ]);
         if(!$ins){
             return ['status'=>'error','message'=>'Akun Gagal Dibuat'];
@@ -412,17 +399,6 @@ class UserController extends Controller
             }
             return response()->json(['status' => 'error', 'message' => implode(', ', $errors)], 400);
         }
-        //process file foto
-        // if ($request->hasFile('foto')) {
-        //     $file = $request->file('foto');
-        //     if(!($file->isValid() && in_array($file->extension(), ['jpeg', 'png', 'jpg']))){
-        //         return response()->json(['status'=>'error','message'=>'Format Foto tidak valid. Gunakan format jpeg, png, jpg'], 400);
-        //     }
-        //     $destinationPath = storage_path('app/user/');
-        //     $fotoName = $file->hashName();
-        //     $fileData = Crypt::encrypt(file_get_contents($file));
-        //     Storage::disk('user')->put('/' . $fotoName, $fileData);
-        // }
         //create user
         $insert = User::insert([
             'uuid' =>  Str::uuid(),

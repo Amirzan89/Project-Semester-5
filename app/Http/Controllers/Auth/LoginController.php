@@ -90,7 +90,7 @@ class LoginController extends Controller
                     }
                 //if user exist in database and doesnt login
                 }else{
-                    if(User::select('nama')->whereRaw("BINARY email = ? AND email_verified = 0",[$user_google->getEmail()])->limit(1)->exists()){
+                    if(User::select('nama_lengkap')->whereRaw("BINARY email = ? AND email_verified = 0",[$user_google->getEmail()])->limit(1)->exists()){
                         DB::table('users')->whereRaw("BINARY email = ?",[$user_google->getEmail()])->update(['email_verified'=>true]);
                     }
                     $data = $jwtController->createJWTWebsite($user_google->getEmail(),$refreshToken);

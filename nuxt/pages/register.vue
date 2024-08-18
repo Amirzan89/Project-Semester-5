@@ -90,7 +90,6 @@ definePageMeta({
 useHead({
     title:`Register | ${publicConfig.appName}`
 });
-const errMessage = ref('');
 const input = reactive({
     nama: '',
     email:'',
@@ -107,6 +106,7 @@ const local = reactive({
     timerMenit: 0,
     timerDetik: 0,
 });
+const errMessage: Ref = ref('');
 const popup: Ref = ref(null);
 const inpNama: Ref = ref(null);
 const inpEmail: Ref = ref(null);
@@ -204,77 +204,77 @@ const registerForm = async(event: Event)=>{
     if(input.nama === null || input.nama === ''){
         inpNama.value.classList.remove('border-black','hover:border-black','focus:border-black');
         inpNama.value.classList.add('border-popup_error','hover:border-popup_error','focus:border-popup_error');
-        local.errMessage = 'Nama lengkap Harus diisi !';
+        if(!local.errMessage) local.errMessage = 'Nama lengkap Harus diisi !';
     }
     if(input.email === null || input.email === ''){
         inpEmail.value.classList.remove('border-black','hover:border-black','focus:border-black');
         inpEmail.value.classList.add('border-popup_error','hover:border-popup_error','focus:border-popup_error');
-        local.errMessage = 'Email Harus diisi !';
+        if(!local.errMessage) local.errMessage = 'Email Harus diisi !';
     }else{
         if (!isValidEmail(input.email)) {
             inpEmail.value.classList.remove('border-black','hover:border-black','focus:border-black');
             inpEmail.value.classList.add('border-popup_error','hover:border-popup_error','focus:border-popup_error');
-            local.errMessage = 'Masukkan email dengan benar !';
+            if(!local.errMessage) local.errMessage = 'Masukkan email dengan benar !';
         }
     }
     if(input.password === null || input.password === ''){
         inpPassword.value.classList.remove('border-black','hover:border-black','focus:border-black');
         inpPassword.value.classList.add('border-popup_error','hover:border-popup_error','focus:border-popup_error');
-        local.errMessage = 'Password Harus diisi !';
+        if(!local.errMessage) local.errMessage = 'Password Harus diisi !';
     }else{
         if (input.password.length < 8) {
             inpPassword.value.classList.remove('border-black','hover:border-black','focus:border-black');
             inpPassword.value.classList.add('border-popup_error','hover:border-popup_error','focus:border-popup_error');
-            local.errMessage = 'Password minimal 8 karakter !';
+            if(!local.errMessage) local.errMessage = 'Password minimal 8 karakter !';
         }
         if (!/[A-Z]/.test(input.password)) {
             inpPassword.value.classList.remove('border-black','hover:border-black','focus:border-black');
             inpPassword.value.classList.add('border-popup_error','hover:border-popup_error','focus:border-popup_error');
-            local.errMessage = 'Password minimal ada 1 huruf kapital !';
+            if(!local.errMessage) local.errMessage = 'Password minimal ada 1 huruf kapital !';
         }
         if (!/[a-z]/.test(input.password)) {
             inpPassword.value.classList.remove('border-black','hover:border-black','focus:border-black');
             inpPassword.value.classList.add('border-popup_error','hover:border-popup_error','focus:border-popup_error');
-            local.errMessage = 'Password minimal ada 1 huruf kecil !';
+            if(!local.errMessage) local.errMessage = 'Password minimal ada 1 huruf kecil !';
         }
         if (!/\d/.test(input.password)) {
             inpPassword.value.classList.remove('border-black','hover:border-black','focus:border-black');
             inpPassword.value.classList.add('border-popup_error','hover:border-popup_error','focus:border-popup_error');
-            local.errMessage = 'Password minimal ada 1 angka !';
+            if(!local.errMessage) local.errMessage = 'Password minimal ada 1 angka !';
         }
         if (!/[!@#$%^&*]/.test(input.password)) {
             inpPassword.value.classList.remove('border-black','hover:border-black','focus:border-black');
             inpPassword.value.classList.add('border-popup_error','hover:border-popup_error','focus:border-popup_error');
-            local.errMessage = 'Password minimal ada 1 karakter unik !';
+            if(!local.errMessage) local.errMessage = 'Password minimal ada 1 karakter unik !';
         }
     }
     if(input.ulangiPassword === null || input.ulangiPassword === ''){
         inpUlangiPassword.value.classList.remove('border-black','hover:border-black','focus:border-black');
         inpUlangiPassword.value.classList.add('border-popup_error','hover:border-popup_error','focus:border-popup_error');
-        local.errMessage = 'Ulangi Password Harus diisi !';
+        if(!local.errMessage) local.errMessage = 'Ulangi Password Harus diisi !';
     }else{
         if (input.ulangiPassword.length < 8) {
             inpUlangiPassword.value.classList.remove('border-black','hover:border-black','focus:border-black');
             inpUlangiPassword.value.classList.add('border-popup_error','hover:border-popup_error','focus:border-popup_error');
-            local.errMessage = 'Password konfirmasi minimal 8 karakter !';
+            if(!local.errMessage) local.errMessage = 'Password konfirmasi minimal 8 karakter !';
         }
         if (!/[A-Z]/.test(input.ulangiPassword)) {
             inpUlangiPassword.value.classList.remove('border-black','hover:border-black','focus:border-black');
             inpUlangiPassword.value.classList.add('border-popup_error','hover:border-popup_error','focus:border-popup_error');
-            local.errMessage = 'Password konfirmasi minimal ada 1 huruf kapital !';
+            if(!local.errMessage) local.errMessage = 'Password konfirmasi minimal ada 1 huruf kapital !';
         }
         if (!/[a-z]/.test(input.ulangiPassword)) {
             inpUlangiPassword.value.classList.remove('border-black','hover:border-black','focus:border-black');
             inpUlangiPassword.value.classList.add('border-popup_error','hover:border-popup_error','focus:border-popup_error');
-            local.errMessage = 'Password konfirmasi minimal ada 1 huruf kecil !';
+            if(!local.errMessage) local.errMessage = 'Password konfirmasi minimal ada 1 huruf kecil !';
         }
         if (!/\d/.test(input.ulangiPassword)) {
             inpUlangiPassword.value.classList.remove('border-black','hover:border-black','focus:border-black');
             inpUlangiPassword.value.classList.add('border-popup_error','hover:border-popup_error','focus:border-popup_error');
-            local.errMessage = 'Password konfirmasi minimal ada 1 angka !';
+            if(!local.errMessage) local.errMessage = 'Password konfirmasi minimal ada 1 angka !';
         }
         if (!/[!@#$%^&*]/.test(input.ulangiPassword)) {
-            local.errMessage = 'Password konfirmasi minimal ada 1 karakter unik !';
+            if(!local.errMessage) local.errMessage = 'Password konfirmasi minimal ada 1 karakter unik !';
         }
     }
     if(!(input.password === null || input.password === '') && !(input.password === null || input.password === '')){
@@ -283,7 +283,7 @@ const registerForm = async(event: Event)=>{
             inpPassword.value.classList.add('border-popup_error','hover:border-popup_error','focus:border-popup_error');
             inpUlangiPassword.value.classList.remove('border-black','hover:border-black','focus:border-black');
             inpUlangiPassword.value.classList.add('border-popup_error','hover:border-popup_error','focus:border-popup_error');
-            local.errMessage = 'Password harus sama !';
+            if(!local.errMessage) local.errMessage = 'Password harus sama !';
         }
     }
     if(local.errMessage != ''){

@@ -25,7 +25,7 @@
                 @green-popup="successOTP"
                 @countdown="startCountdown">
             </OTPComponent>
-            <form v-if="local.conOTP === 'ganti_password' || local.conOTP === 'buat_password'" class="w-full relative flex flex-col justify-center items-center">
+            <form v-if="local.conOTP === 'ganti_password'" class="w-full relative flex flex-col justify-center items-center">
                 <div class="row relative mt-4 flex flex-col w-7/8">
                     <label class="relative left-3 xl:text-xl lg:text-xl md:text-md sm:text-lg">Password</label>
                     <div class="relative flex items-center top-1">
@@ -48,12 +48,7 @@
                 </div>
                 <div class="row relative mt-4 flex flex-row items-center justify-center w-7/8 text-3xl xl:text-2xl lg:text-xl md:text-lg sm:text-base text-white">
                     <button class="relative mt-3 2xl:w-60 xl:w-70 md:w-40 sm:w-20 2xl:h-12 xl:h-9 lg:h-8 md:h-7 sm:h-6 bg-bold rounded-2xl" @click.prevent="verifyChangeForm">
-                        <template v-if="local.conOTP === 'ganti_password'">
-                            Ganti Password
-                        </template>
-                        <template v-if="local.conOTP === 'buat_password'">
-                            Buat Akun
-                        </template>
+                        Ganti Password
                     </button>
                 </div>
             </form>
@@ -78,7 +73,7 @@
 import { ref, reactive, defineProps, onMounted } from "vue";
 import { eventBus } from '~/app/eventBus';
 import OTPComponent from '~/components/OTP.vue';
-import { ForgotPassword, VerifyChange  } from '../../composables/api/auth';
+import { CreateForgotPassword, VerifyChange  } from '../../composables/api/auth';
 const publicConfig = useRuntimeConfig().public;
 useHead({
     title:`Reset Password | ${publicConfig.appName}`
@@ -87,6 +82,13 @@ definePageMeta({
     layout:'default',
 });
 useAsyncData(async () => {
+});
+const local = reactive({
+    conOTP: 'lupa_password',
+    errMessage: '',
+    timer: null as NodeJS.Timeout | null,
+    timerMenit: 0,
+    timerDetik: 0,
 });
 const input = reactive({
     email: '',
@@ -97,29 +99,19 @@ const input = reactive({
     isPasswordShow: false,
     isUlangiPasswordShow: false,
 });
-const local = reactive({
-    conOTP: 'lupa_password',
-    errMessage: '',
-    timer: null as NodeJS.Timeout | null,
-    timerMenit: 0,
-    timerDetik: 0,
-});
-const props = defineProps({
-    viewData: Object,
-});
 const popup: Ref = ref(null);
 const inpEmail: Ref = ref(null);
 const inpPassword: Ref = ref(null);
 const inpUlangiPassword: Ref = ref(null);
 onMounted(() => {
-    if(props.viewData){
-        if(props.viewData.title === 'Register Google'){
-            document.title = 'Register Google | TOkoKU';
-            local.conOTP = 'buat_password';
-            input.email = props.viewData.email;
-            input.nama = props.viewData.nama;
-        }
-    }
+    // if(props.viewData){
+    //     if(props.viewData.title === 'Register Google'){
+    //         document.title = 'Register Google | TOkoKU';
+    //         local.conOTP = 'buat_password';
+    //         input.email = props.viewData.email;
+    //         input.nama = props.viewData.nama;
+    //     }
+    // }
 });
 const getConOTP = () => {
     return {'email':input.email,'condition':'password'};
@@ -133,7 +125,7 @@ const successOTP = (message: string, otp: string) =>{
     input.otp = otp;
     eventBus.emit('showGreenPopup', message);
 };
-const inpChangePopup= () => {
+const inpChangePopup = () => {
     if(!popup.value.classList.contains('invisible')){
         popup.value.classList.add('fade-out');
         setTimeout(function(){
@@ -201,17 +193,18 @@ const startCountdown = (waktu: number) => {
         }
     }, 1000);
 };
+//create forgot password
 const forgotPassForm = async (event: Event) => {
     event.preventDefault();
     if(input.email === null || input.email === ''){
         inpEmail.value.classList.remove('border-black','hover:border-black','focus:border-black');
         inpEmail.value.classList.add('border-popup_error','hover:border-popup_error','focus:border-popup_error');
         popup.value.classList.remove('invisible');
-        local.errMessage = 'Email Harus diisi !';
+        if(!local.errMessage) local.errMessage = 'Email Harus diisi !';
         return;
     }
     eventBus.emit('showLoading');
-    let forgotPass = await ForgotPassword({email: input.email});
+    let forgotPass = await CreateForgotPassword({email: input.email});
     if(forgotPass.status === 'success'){
         eventBus.emit('closeLoading');
         startCountdown(new Date(forgotPass.data.waktu).getTime());
@@ -223,68 +216,69 @@ const forgotPassForm = async (event: Event) => {
         local.errMessage = forgotPass.message;
     }
 };
+//change password
 const verifyChangeForm = async (event: Event) => {
     event.preventDefault();
     if(input.password === null || input.password === ''){
         inpPassword.value.classList.remove('border-black','hover:border-black','focus:border-black');
         inpPassword.value.classList.add('border-popup_error','hover:border-popup_error','focus:border-popup_error');
-        local.errMessage = 'Password Harus diisi !';
+        if(!local.errMessage) local.errMessage = 'Password Harus diisi !';
     }else{
         if (input.password.length < 8) {
             inpPassword.value.classList.remove('border-black','hover:border-black','focus:border-black');
             inpPassword.value.classList.add('border-popup_error','hover:border-popup_error','focus:border-popup_error');
-            local.errMessage = 'Password minimal 8 karakter !';
+            if(!local.errMessage) local.errMessage = 'Password minimal 8 karakter !';
         }
         if (!/[A-Z]/.test(input.password)) {
             inpPassword.value.classList.remove('border-black','hover:border-black','focus:border-black');
             inpPassword.value.classList.add('border-popup_error','hover:border-popup_error','focus:border-popup_error');
-            local.errMessage = 'Password minimal ada 1 huruf kapital !';
+            if(!local.errMessage) local.errMessage = 'Password minimal ada 1 huruf kapital !';
         }
         if (!/[a-z]/.test(input.password)) {
             inpPassword.value.classList.remove('border-black','hover:border-black','focus:border-black');
             inpPassword.value.classList.add('border-popup_error','hover:border-popup_error','focus:border-popup_error');
-            local.errMessage = 'Password minimal ada 1 huruf kecil !';
+            if(!local.errMessage) local.errMessage = 'Password minimal ada 1 huruf kecil !';
         }
         if (!/\d/.test(input.password)) {
             inpPassword.value.classList.remove('border-black','hover:border-black','focus:border-black');
             inpPassword.value.classList.add('border-popup_error','hover:border-popup_error','focus:border-popup_error');
-            local.errMessage = 'Password minimal ada 1 angka !';
+            if(!local.errMessage) local.errMessage = 'Password minimal ada 1 angka !';
         }
         if (!/[!@#$%^&*]/.test(input.password)) {
             inpPassword.value.classList.remove('border-black','hover:border-black','focus:border-black');
             inpPassword.value.classList.add('border-popup_error','hover:border-popup_error','focus:border-popup_error');
-            local.errMessage = 'Password minimal ada 1 karakter unik !';
+            if(!local.errMessage) local.errMessage = 'Password minimal ada 1 karakter unik !';
         }
     }
     if(input.ulangiPassword === null || input.ulangiPassword === ''){
         inpUlangiPassword.value.classList.remove('border-black','hover:border-black','focus:border-black');
         inpUlangiPassword.value.classList.add('border-popup_error','hover:border-popup_error','focus:border-popup_error');
-        local.errMessage = 'Password baru Harus diisi !';
+        if(!local.errMessage) local.errMessage = 'Password baru Harus diisi !';
     }else{
         if (input.ulangiPassword.length < 8) {
             inpUlangiPassword.value.classList.remove('border-black','hover:border-black','focus:border-black');
             inpUlangiPassword.value.classList.add('border-popup_error','hover:border-popup_error','focus:border-popup_error');
-            local.errMessage = 'Password konfirmasi minimal 8 karakter !';
+            if(!local.errMessage) local.errMessage = 'Password konfirmasi minimal 8 karakter !';
         }
         if (!/[A-Z]/.test(input.ulangiPassword)) {
             inpUlangiPassword.value.classList.remove('border-black','hover:border-black','focus:border-black');
             inpUlangiPassword.value.classList.add('border-popup_error','hover:border-popup_error','focus:border-popup_error');
-            local.errMessage = 'Password konfirmasi minimal ada 1 huruf kapital !';
+            if(!local.errMessage) local.errMessage = 'Password konfirmasi minimal ada 1 huruf kapital !';
         }
         if (!/[a-z]/.test(input.ulangiPassword)) {
             inpUlangiPassword.value.classList.remove('border-black','hover:border-black','focus:border-black');
             inpUlangiPassword.value.classList.add('border-popup_error','hover:border-popup_error','focus:border-popup_error');
-            local.errMessage = 'Password konfirmasi minimal ada 1 huruf kecil !';
+            if(!local.errMessage) local.errMessage = 'Password konfirmasi minimal ada 1 huruf kecil !';
         }
         if (!/\d/.test(input.ulangiPassword)) {
             inpUlangiPassword.value.classList.remove('border-black','hover:border-black','focus:border-black');
             inpUlangiPassword.value.classList.add('border-popup_error','hover:border-popup_error','focus:border-popup_error');
-            local.errMessage = 'Password konfirmasi minimal ada 1 angka !';
+            if(!local.errMessage) local.errMessage = 'Password konfirmasi minimal ada 1 angka !';
         }
         if (!/[!@#$%^&*]/.test(input.ulangiPassword)) {
             inpUlangiPassword.value.classList.remove('border-black','hover:border-black','focus:border-black');
             inpUlangiPassword.value.classList.add('border-popup_error','hover:border-popup_error','focus:border-popup_error');
-            local.errMessage = 'Password konfirmasi minimal ada 1 karakter unik !';
+            if(!local.errMessage) local.errMessage = 'Password konfirmasi minimal ada 1 karakter unik !';
         }
     }
     if(!(input.password === null || input.password === '') && !(input.password === null || input.password === '')){
@@ -293,7 +287,7 @@ const verifyChangeForm = async (event: Event) => {
             inpPassword.value.classList.add('border-popup_error','hover:border-popup_error','focus:border-popup_error');
             inpUlangiPassword.value.classList.remove('border-black','hover:border-black','focus:border-black');
             inpUlangiPassword.value.classList.add('border-popup_error','hover:border-popup_error','focus:border-popup_error');
-            local.errMessage = 'Password harus sama !';
+            if(!local.errMessage) local.errMessage = 'Password harus sama !';
         }
     }
     if(local.errMessage != ''){
@@ -301,25 +295,13 @@ const verifyChangeForm = async (event: Event) => {
         return;
     }
     eventBus.emit('showLoading');
-    var desc = '';
-    if(local.conOTP === 'ganti_password'){
-        var desc = 'password';
-    }else if(local.conOTP === 'buat_password'){
-        var desc = 'createUser';
-    }
-    let verifyChange = await VerifyChange({nama:input.nama, email: input.email, code: input.otp as string, password: input.password, ulangiPassword:input.ulangiPassword, description:desc});
+    let verifyChange = await VerifyChange({nama:input.nama, email: input.email, code: input.otp, password: input.password, ulangiPassword:input.ulangiPassword});
     if(verifyChange.status === 'success'){
         eventBus.emit('closeLoading');
         eventBus.emit('showGreenPopup', verifyChange.message);
-        if(desc === 'password'){
-            setTimeout(function(){
-                navigateTo('/login');
-            }, 2000);
-        }else if(desc === 'createUser'){
-            setTimeout(function(){
-                navigateTo('/dashboard');
-            }, 2000);
-        }
+        setTimeout(function(){
+            navigateTo('/login');
+        }, 2000);
     }else if(verifyChange.status === 'error'){
         eventBus.emit('closeLoading');
         popup.value.classList.remove('invisible');

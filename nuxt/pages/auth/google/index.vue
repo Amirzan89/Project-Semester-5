@@ -10,7 +10,7 @@
                     <label for="">repeat pasword</label>
                     <input type="password" ref="inpPasswordRepeat" v-model="input.passwordRepeat" @change="inpChange('password_reset')">
                 </div>
-                <button @click.prevent="sendForm">Kirim</button>
+                <button @click.prevent="sendForm">Buat Akun</button>
             </form>
         </div>
     </template>
@@ -31,7 +31,7 @@ definePageMeta({
     layout: 'default',
 });
 useHead({
-    title:`Login Google | ${publicConfig.appName}`
+    title:`Register with Google | ${publicConfig.appName}`
 });
 const local = reactive({
     isDoneFetch: false,
@@ -50,7 +50,6 @@ useAsyncData(async () => {
     if(deC == null || deC == '') return navigateTo('/login');
     local.fetchedUserAuth = JSON.parse(deC);
     local.isDoneFetch = true;
-    console.log('isi local',local.fetchedUserAuth)
     Cookies.remove('__INITIAL_COSTUM_STATE__');
 });
 const inpChange = (div: string) => {

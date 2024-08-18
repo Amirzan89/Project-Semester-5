@@ -111,18 +111,18 @@ const loginForm = async (event: Event) => {
     if(input.email === null || input.email === ''){
         inpEmail.value.classList.remove('border-black','hover:border-black','focus:border-black');
         inpEmail.value.classList.add('border-popup_error','hover:border-popup_error','focus:border-popup_error');
-        errMessage.value = 'Email Harus diisi !';
+        if(!local.errMessage) errMessage.value = 'Email Harus diisi !';
     }else{
         if (!isValidEmail(input.email)) {
             inpEmail.value.classList.remove('border-black','hover:border-black','focus:border-black');
             inpEmail.value.classList.add('border-popup_error','hover:border-popup_error','focus:border-popup_error');
-            errMessage.value = 'Masukkan email dengan benar !';
+            if(!local.errMessage) errMessage.value = 'Masukkan email dengan benar !';
         }
     }
     if(input.password === null || input.password === ''){
         inpPassword.value.classList.remove('border-black','hover:border-black','focus:border-black');
         inpPassword.value.classList.add('border-popup_error','hover:border-popup_error','focus:border-popup_error');
-        errMessage.value = 'Password Harus diisi !';
+        if(!local.errMessage) errMessage.value = 'Password Harus diisi !';
     }
     if(errMessage.value != ''){
         popup.value.classList.remove('invisible');

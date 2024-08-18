@@ -15,7 +15,8 @@ use App\Mail\VerifyEmail;
 use Carbon\Carbon;
 class MailController extends Controller
 {
-    private static $conditionOTP = [ 5, 15, 30, 60];
+    // private static $conditionOTP = [ 5, 15, 30, 60];
+    private static $conditionOTP = [ 60, 15, 30, 60];
     public static function getConditionOTP(){
         return self::$conditionOTP;
     }
@@ -49,7 +50,7 @@ class MailController extends Controller
             //for register
             $verificationCode = mt_rand(100000, 999999);
             $linkPath = Str::random(50);
-            $verificationLink = env('APP_ENV', 'local') == 'local' ? env('FRONTEND_URL', 'http://localhost:3000') . "/verify/email/$linkPath" : URL::to("/verify/email/$linkPath");
+            $verificationLink = URL::to("/verify/email/$linkPath");
             $verify->email = $email;
             $verify->kode_otp = $verificationCode;
             $verify->link = $linkPath;
@@ -71,7 +72,7 @@ class MailController extends Controller
         //if after desired time then update code
         $verificationCode = mt_rand(100000, 999999);
         $linkPath = Str::random(50);
-        $verificationLink = URL::to('/verify/email/'.$linkPath);
+        $verificationLink = URL::to("/verify/email/$linkPath");
         if(is_null(DB::table('verifikasi')->whereRaw("BINARY email = ? AND deskripsi = 'email'",[$email])->update(['kode_otp'=>$verificationCode,'link'=>$linkPath, 'send'=> min($verifyDb['send'] + 1, count(self::$conditionOTP))]))){
             return response()->json(['status'=>'error','message'=>'fail create verify email'], 400);
         }
@@ -107,7 +108,7 @@ class MailController extends Controller
             //if user haven't create email forgot password
             $verificationCode = mt_rand(100000, 999999);
             $linkPath = Str::random(50);
-            $verificationLink = env('APP_DOMAIN', 'same') == 'same' ? URL::to("/verify/password/$linkPath") : env('FRONTEND_URL', 'http://localhost:3000') . "/verify/password/$linkPath";
+            $verificationLink = URL::to("/verify/password/$linkPath");
             $verify->email = $email;
             $verify->kode_otp = $verificationCode;
             $verify->link = $linkPath;
@@ -130,7 +131,7 @@ class MailController extends Controller
         //if after desired time then update code
         $verificationCode = mt_rand(100000, 999999);
         $linkPath = Str::random(50);
-        $verificationLink = URL::to('/verify/password/' . $linkPath);
+        $verificationLink = URL::to("/verify/password/$linkPath");
         if(is_null(DB::table('verifikasi')->whereRaw("BINARY email = ? AND deskripsi = 'password'",[$email])->update(['kode_otp'=>$verificationCode, 'link'=>$linkPath, 'updated_at' => Carbon::now(), 'send' => min($verifyDb['send'] + 1, count(self::$conditionOTP))]))){
             return response()->json(['status'=>'error','message'=>'fail create forgot password'], 500);
         }

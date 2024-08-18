@@ -22,19 +22,19 @@ export async function Register(data: { nama: string, email: string, password: st
         password_confirm: data.ulangiPassword,
     }, true);
 }
-export async function ForgotPassword(data: { email:string }){
+export async function CreateForgotPassword(data: { email:string }){
     return reqData('/verify/create/password', 'post', {
         email: data.email,
     }, true);
 }
-export async function VerifyChange(data: { nama: string, email: string, code: string, password: string, ulangiPassword: string, description: string }){
+export async function VerifyChange(data: { nama?: string, email: string, link?: string, code?: string, password: string, ulangiPassword: string }){
     return reqData('/verify/password', 'post', {
         nama: data.nama,
         email: data.email,
+        link: data.link,
         code: data.code,
         password: data.password,
         password_confirm: data.ulangiPassword,
-        description: data.description,
     }, true);
 }
 export async function SendOtp(data: { email: string, link: string, }){
