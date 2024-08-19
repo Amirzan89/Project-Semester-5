@@ -67,6 +67,9 @@ useHead({
     title:`Login | ${publicConfig.appName}`
 });
 const errMessage = ref('');
+const local = reactive({
+    isRequestInProgress: false,
+});
 const input = reactive({
     email:'',
     password:'',
@@ -108,35 +111,39 @@ const isValidEmail = (email: string) => {
 };
 const loginForm = async (event: Event) => {
     event.preventDefault();
+    if(local.isRequestInProgress) return;
     if(input.email === null || input.email === ''){
         inpEmail.value.classList.remove('border-black','hover:border-black','focus:border-black');
         inpEmail.value.classList.add('border-popup_error','hover:border-popup_error','focus:border-popup_error');
-        if(!local.errMessage) errMessage.value = 'Email Harus diisi !';
+        if(!errMessage.value) errMessage.value = 'Email Harus diisi !';
     }else{
         if (!isValidEmail(input.email)) {
             inpEmail.value.classList.remove('border-black','hover:border-black','focus:border-black');
             inpEmail.value.classList.add('border-popup_error','hover:border-popup_error','focus:border-popup_error');
-            if(!local.errMessage) errMessage.value = 'Masukkan email dengan benar !';
+            if(!errMessage.value) errMessage.value = 'Masukkan email dengan benar !';
         }
     }
     if(input.password === null || input.password === ''){
         inpPassword.value.classList.remove('border-black','hover:border-black','focus:border-black');
         inpPassword.value.classList.add('border-popup_error','hover:border-popup_error','focus:border-popup_error');
-        if(!local.errMessage) errMessage.value = 'Password Harus diisi !';
+        if(!errMessage.value) errMessage.value = 'Password Harus diisi !';
     }
     if(errMessage.value != ''){
         popup.value.classList.remove('invisible');
         return;
     }
+    local.isRequestInProgress = true;
     eventBus.emit('showLoading');
     let login = await Login({email: input.email, password: input.password});
     if(login.status === 'success'){
+        local.isRequestInProgress = false;
         eventBus.emit('closeLoading');
         eventBus.emit('showGreenPopup', login.message);
         setTimeout(function(){
             navigateTo('/dashboard');
         }, 1500);
     }else if(login.status === 'error'){
+        local.isRequestInProgress = false;
         eventBus.emit('closeLoading');
         popup.value.classList.remove('invisible');
         errMessage.value = login.message;

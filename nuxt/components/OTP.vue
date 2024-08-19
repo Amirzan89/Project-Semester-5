@@ -39,17 +39,19 @@
 <script setup lang="ts">
 import { ref, defineEmits } from "vue";
 import { eventBus } from '../app/eventBus';
-import { SendOtp, VerifyOtp } from '~/composables/api/auth';
+import { ReSendOtp, VerifyOtp } from '~/composables/api/auth';
 import type { Props } from "nuxt/dist/head/runtime/types";
-const emit = defineEmits(['change-popup', 'red-popup', 'green-popup', 'countdown']);
+const emit = defineEmits(['change-popup', 'green-popup', 'countdown']);
 const props: Props = defineProps({
     data: Object,
     timer: Object,
 });
+const local = reactive({
+    isReSend: false,
+    isSend: false,
+})
 const inpOtpRefs: Ref = ref(null);
 const inpOtp: Ref = ref(Array(6).fill(''));
-const errMessage: Ref = ref('');
-const div: Ref = ref('');
 const inpChange = () => {
     // emit('change-popup');
 };
@@ -65,7 +67,6 @@ const handleInput = (index: number, event: any) => {
     }
     if (val !== "") {
         const nextIndex = index + 1;
-        console.log(inpOtpRefs);
         if (nextIndex < inpOtp.value.length) {
             inpOtpRefs.value[nextIndex].focus()
         }
@@ -84,7 +85,6 @@ const handleKeyUp = (index: number, event: any) => {
     if (key === "arrowleft" || key === "arrowright") {
         const direction = key === "arrowleft" ? "previousElementSibling" : "nextElementSibling";
             const nextInput = inpOtpRefs.value[index][direction];
-            console.log(inpOtpRefs.value[index]);
             if (nextInput) {
                 nextInput.focus();
             }
@@ -102,53 +102,48 @@ const showTimerPopup = () => {
     }, 1000);
 };
 const sendOtp = async () => {
-    if (props.data.email && props.data.email.trim() !== '') {
-        // emit('red-popup', 'Email harus diisi');
-        return;
-    }
+    if(local.isReSend) return;
+    if (!props.data.email || props.data.email.trim() == '') return;
     if(props.timer.timer){
-        showTimerPopup();
-        return;
+        return showTimerPopup();
     }
     eventBus.emit('showLoading');
-    let link = props.data.condition === 'email' ? '/verify/create/email' : '/verify/create/password';
-    let sendOTP = await SendOtp({email: props.data.email, link: link});
+    let link = props.data.condition === 'email' ? '/verify/otp/resend/email' : '/verify/otp/resend/password';
+    local.isReSend = true;
+    let sendOTP = await ReSendOtp({email: props.data.email, link: link});
     if(sendOTP.status === 'success'){
+        local.isReSend = false;
         eventBus.emit('closeLoading');
-        // eventBus.emit('showGreenPopup', sendOTP.message);
-        // emit('countdown',new Date(sendOTP.data.waktu).getTime());
-        // emit('green-popup', 'success verifikasi otp');
+        emit('countdown',new Date(sendOTP.data.waktu).getTime());
+        eventBus.emit('showGreenPopup', sendOTP.message);
     }else if(sendOTP.status === 'error'){
+        local.isReSend = false;
         eventBus.emit('closeLoading');
-        // popup.value.classList.remove('invisible');
-        errMessage.value = sendOTP.message;
+        eventBus.emit('showRedPopup', sendOTP.message);
     }
 };
 const otpForm = async (event: Event) => {
-    let hasError = false;
     event.preventDefault();
+    if(local.isSend) return;
     inpOtp.value.forEach(function(inpotp: string){
         if(inpotp === '' || inpotp === null){
-            hasError = true;
-            // emit('red-popup', 'kode OTP harus diisi');
+            eventBus.emit('showRedPopup', 'kode OTP harus diisi');
             return;
         }
     });
-    if(hasError){
-        return;
-    }
-    console.log(props.data);
     let link = props.data.condition === 'email' ? '/verify/otp/email' : '/verify/otp/password';
     eventBus.emit('showLoading');
+    local.isSend = true;
     let verifyOTP = await VerifyOtp({email: props.data.email, otp: inpOtp.value.join(''), link: link});
     if(verifyOTP.status === 'success'){
+        local.isSend = false;
         eventBus.emit('closeLoading');
-        // emit('green-popup', 'success verifikasi otp', inpOtp.value.join(''));
-        return;
+        eventBus.emit('showGreenPopup', 'success verifikasi otp');
+        emit('green-popup', { otp: inpOtp.value.join(''), cond: props.data.condition == 'email' ? 'verifyEmail' : 'refPassword' });
     }else if(verifyOTP.status === 'error'){
+        local.isSend = false;
         eventBus.emit('closeLoading');
-        // emit('red-popup', err.response.data.message);
-        return
+        eventBus.emit('showRedPopup', verifyOTP.message);
     }
 };
 </script>

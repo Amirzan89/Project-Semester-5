@@ -36,6 +36,7 @@ useHead({
     title:`Tambah Device | ${publicConfig.appName}`
 });
 const local = reactive({
+    isRequestInProgress: false,
     isDoneFetch: false,
     isTambah: false,
     fetchedViewData: null,
@@ -128,6 +129,7 @@ const inpChange = (div: string) => {
 };
 const tambahForm = async(event: Event) => {
     event.preventDefault();
+    if(local.isRequestInProgress) return;
     let errMessage = '';
     if(input.name === null || input.name === ''){
         inpName.value.classList.remove('border-black','hover:border-black','focus:border-black');
@@ -153,9 +155,11 @@ const tambahForm = async(event: Event) => {
         eventBus.emit('showRedPopup', errMessage);
         return;
     }
+    local.isRequestInProgress = true;
     eventBus.emit('showLoading');
     let res = await TambahDevice({ name: input.name, device_id: input.device_id, token: input.token, activated: input.activated });
     if(res.status === 'success'){
+        local.isRequestInProgress = false;
         eventBus.emit('closeLoading');
         eventBus.emit('showGreenPopup', res.message);
         local.isTambah = false;
@@ -163,6 +167,7 @@ const tambahForm = async(event: Event) => {
             navigateTo('/firmware');
         }, 1500);
     }else if(res.status === 'error'){
+        local.isRequestInProgress = false;
         eventBus.emit('closeLoading');
         eventBus.emit('showRedPopup', res.message);
     }

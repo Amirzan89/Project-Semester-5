@@ -17,10 +17,10 @@
                     <router-link to="/login" class="hover:text-red-700 font-medium">Masuk sekarang</router-link>
                 </span>
             </form>
+            <!-- @change-popup="inpChangeOTP" -->
             <OTPComponent v-if="local.conOTP === 'verify'" 
                 :data="getConOTP()"
                 :timer="getTimer()"
-                @change-popup="inpChangePopup"
                 @red-popup="showOTPRedPopup"
                 @green-popup="successOTP"
                 @countdown="startCountdown">
@@ -70,10 +70,10 @@
 }
 </style>
 <script setup lang="ts">
-import { ref, reactive, defineProps, onMounted } from "vue";
+import { ref, reactive } from "vue";
 import { eventBus } from '~/app/eventBus';
 import OTPComponent from '~/components/OTP.vue';
-import { CreateForgotPassword, VerifyChange  } from '../../composables/api/auth';
+import { CreateForgotPassword, VerifyChange  } from '~/composables/api/auth';
 const publicConfig = useRuntimeConfig().public;
 useHead({
     title:`Reset Password | ${publicConfig.appName}`
@@ -81,9 +81,8 @@ useHead({
 definePageMeta({
     layout:'default',
 });
-useAsyncData(async () => {
-});
 const local = reactive({
+    isRequestInProgress: false,
     conOTP: 'lupa_password',
     errMessage: '',
     timer: null as NodeJS.Timeout | null,
@@ -103,16 +102,6 @@ const popup: Ref = ref(null);
 const inpEmail: Ref = ref(null);
 const inpPassword: Ref = ref(null);
 const inpUlangiPassword: Ref = ref(null);
-onMounted(() => {
-    // if(props.viewData){
-    //     if(props.viewData.title === 'Register Google'){
-    //         document.title = 'Register Google | TOkoKU';
-    //         local.conOTP = 'buat_password';
-    //         input.email = props.viewData.email;
-    //         input.nama = props.viewData.nama;
-    //     }
-    // }
-});
 const getConOTP = () => {
     return {'email':input.email,'condition':'password'};
 };
@@ -120,20 +109,21 @@ const showOTPRedPopup = (message: string) => {
     popup.value.classList.remove('invisible');
     local.errMessage = message;
 };
-const successOTP = (message: string, otp: string) =>{
-    local.conOTP = 'ganti_password';
-    input.otp = otp;
-    eventBus.emit('showGreenPopup', message);
-};
-const inpChangePopup = () => {
-    if(!popup.value.classList.contains('invisible')){
-        popup.value.classList.add('fade-out');
-        setTimeout(function(){
-            popup.value.classList.remove('fade-out');
-            popup.value.classList.add('invisible');
-        }, 750);
+const successOTP = (data: {otp?: string, cond: string}) => {
+    if(data.cond == 'refPassword' && data.otp){
+        local.conOTP = 'ganti_password';
+        input.otp = data.otp;
     }
 };
+// const inpChangeOTP = () => {
+//     if(!popup.value.classList.contains('invisible')){
+//         popup.value.classList.add('fade-out');
+//         setTimeout(function(){
+//             popup.value.classList.remove('fade-out');
+//             popup.value.classList.add('invisible');
+//         }, 750);
+//     }
+// };
 const showPass = () => {
     if(input.isPasswordShow){
         inpPassword.value.type = 'password';
@@ -189,6 +179,7 @@ const startCountdown = (waktu: number) => {
         if (distance < 0) {
             if(local.timer !== null){
                 clearInterval(local.timer);
+                local.timer = null;
             }
         }
     }, 1000);
@@ -196,6 +187,7 @@ const startCountdown = (waktu: number) => {
 //create forgot password
 const forgotPassForm = async (event: Event) => {
     event.preventDefault();
+    if(local.isRequestInProgress)  return;
     if(input.email === null || input.email === ''){
         inpEmail.value.classList.remove('border-black','hover:border-black','focus:border-black');
         inpEmail.value.classList.add('border-popup_error','hover:border-popup_error','focus:border-popup_error');
@@ -203,14 +195,17 @@ const forgotPassForm = async (event: Event) => {
         if(!local.errMessage) local.errMessage = 'Email Harus diisi !';
         return;
     }
+    local.isRequestInProgress = true;
     eventBus.emit('showLoading');
     let forgotPass = await CreateForgotPassword({email: input.email});
     if(forgotPass.status === 'success'){
+        local.isRequestInProgress = false;
         eventBus.emit('closeLoading');
         startCountdown(new Date(forgotPass.data.waktu).getTime());
         eventBus.emit('showGreenPopup', forgotPass.message);
         local.conOTP = 'verify';
     }else if(forgotPass.status === 'error'){
+        local.isRequestInProgress = false;
         eventBus.emit('closeLoading');
         popup.value.classList.remove('invisible');
         local.errMessage = forgotPass.message;
@@ -219,6 +214,7 @@ const forgotPassForm = async (event: Event) => {
 //change password
 const verifyChangeForm = async (event: Event) => {
     event.preventDefault();
+    if(local.isRequestInProgress) return;
     if(input.password === null || input.password === ''){
         inpPassword.value.classList.remove('border-black','hover:border-black','focus:border-black');
         inpPassword.value.classList.add('border-popup_error','hover:border-popup_error','focus:border-popup_error');
@@ -294,15 +290,18 @@ const verifyChangeForm = async (event: Event) => {
         popup.value.classList.remove('invisible');
         return;
     }
+    local.isRequestInProgress = true;
     eventBus.emit('showLoading');
     let verifyChange = await VerifyChange({nama:input.nama, email: input.email, code: input.otp, password: input.password, ulangiPassword:input.ulangiPassword});
     if(verifyChange.status === 'success'){
+        local.isRequestInProgress = false;
         eventBus.emit('closeLoading');
         eventBus.emit('showGreenPopup', verifyChange.message);
         setTimeout(function(){
             navigateTo('/login');
         }, 2000);
     }else if(verifyChange.status === 'error'){
+        local.isRequestInProgress = false;
         eventBus.emit('closeLoading');
         popup.value.classList.remove('invisible');
         local.errMessage = verifyChange.message;

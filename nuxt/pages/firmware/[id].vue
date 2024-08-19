@@ -65,6 +65,7 @@ useHead({
     title:`Firmware Detail | ${publicConfig.appName}`
 });
 const local = reactive({
+    isRequestInProgress: false,
     isDoneFetch: false,
     isChanging: false,
     isUpdated:false,
@@ -152,6 +153,7 @@ const handleFiles = (file: File) => {
 }
 const editForm = async (event: Event) => {
     event.preventDefault();
+    if(local.isRequestInProgress) return;
     let errMessage = '';
     if (input.name === local.fetchedViewData.name && input.description === local.fetchedViewData.description && input.version === local.fetchedViewData.version && input.release_date === local.fetchedViewData.release_date && input.device === local.fetchedViewData.device) if(errMessage == '') errMessage = 'Data belum diubah !';
     if(input.name === null || input.name === ''){
@@ -183,14 +185,17 @@ const editForm = async (event: Event) => {
         eventBus.emit('showRedPopup', errMessage);
         return;
     }
+    local.isRequestInProgress = true;
     eventBus.emit('showLoading');
     // let enc = await encrypt({file: input.file, name:'', });
     // let res = await EditFirmware({ id_firmware: route.params.id,  name: input.name, description: input.description, version: input.version, release_date: input.release_date, checksum: enc.checksum, device: input.device, file: enc.file });
     // if(res.status === 'success'){
-    //     eventBus.emit('closeLoading');
-    //     local.isUpdated = false;
-    //     eventBus.emit('showGreenPopup', res.message);
-    // }else if(res.status === 'error'){
+    //     local.isRequestInProgress = false;
+    //         eventBus.emit('closeLoading');
+    //         local.isUpdated = false;
+    //         eventBus.emit('showGreenPopup', res.message);
+    //     }else if(res.status === 'error'){
+    //     local.isRequestInProgress = false;
     //     eventBus.emit('closeLoading');
     //     eventBus.emit('showRedPopup', res.message);
     // }

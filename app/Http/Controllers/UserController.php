@@ -65,7 +65,7 @@ class UserController extends Controller
         }
     }
     public function getChangePass(Request $request, User $user, $any = null){
-        $validator = Validator::make($request->all(), [
+        $validator = Validator::make($request->only('email', 'code'), [
             'email'=>'required|email',
             'code' =>'nullable'
         ],[
@@ -84,24 +84,19 @@ class UserController extends Controller
         if(Str::startsWith('/' . $request->path(), $prefix) && $request->isMethod('get')){
             $email = $request->query('email');
             if (!Verifikasi::whereRaw("BINARY link = ?", [$any])->exists()) {
-                // return response()->json(['status' => 'error', 'message' => 'Link invalid', 'code' => 400]);
                 return self::getView('resetPass', ['status' => 'error', 'message' => 'Link invalid', 'code' => 400], $prefix);
             }
             if (!Verifikasi::whereRaw("BINARY email = ?", [$email])->exists()) {
-                // return response()->json(['status' => 'error', 'message' => 'Email invalid', 'code' => 400]);
                 return self::getView('resetPass', ['status' => 'error', 'message' => 'Email invalid', 'code' => 400], $prefix);
             }
             if (!Verifikasi::whereRaw("BINARY email = ? AND BINARY link = ?", [$email, $any])->exists()) {
-                // return response()->json(['status' => 'error', 'message' => 'Link invalid', 'code' => 400]);
                 return self::getView('resetPass', ['status' => 'error', 'message' => 'Link invalid', 'code' => 400], $prefix);
             }
             $currentDateTime = Carbon::now();
             if (!Verifikasi::whereRaw("BINARY email = ?", [$email])->where('updated_at', '>=', $currentDateTime->subMinutes(1))->exists()) {
                 Verifikasi::whereRaw("BINARY email = ? AND deskripsi = 'password'", [$email])->delete();
-                // return response()->json(['status' => 'error', 'message' => 'Link Expired', 'code' => 400]);
                 return self::getView('resetPass', ['status' => 'error', 'message' => 'Link Expired', 'code' => 400], $prefix);
             }
-            // return response()->json(['status' => 'success', 'email' => $email, 'link' => $any]);
             return self::getView('resetPass', ['status' => 'success', 'email' => $email, 'link' => $any], $prefix);
         }else{
             $email = $request->input('email');
@@ -121,7 +116,7 @@ class UserController extends Controller
         }
     }
     public function changePassEmail(Request $request){
-        $validator = Validator::make($request->all(), [
+        $validator = Validator::make($request->only('email', 'nama', 'password', 'password_confirm', 'code', 'link'), [
             'email'=>'required|email',
             'nama'=>'nullable',
             'password' => [
@@ -181,7 +176,7 @@ class UserController extends Controller
                 DB::table('verifikasi')->whereRaw("BINARY email = ? AND deskripsi = 'password'",[$email])->delete();
                 return response()->json(['status'=>'error','message'=>'Token expired'], 400);
             }
-            if (is_null(DB::table('users')->whereRaw("BINARY email = ?",[$email])->update(['password'=>Hash::make($request->input("password"))]))) {
+            if (DB::table('users')->whereRaw("BINARY email = ?",[$email])->update(['password'=>Hash::make($request->input("password"))]) === 0) {
                 return response()->json(['status'=>'error','message'=>'Error updating password'], 500);
             }
             if (!DB::table('verifikasi')->whereRaw("BINARY email = ?",[$email])->delete()) {
@@ -203,7 +198,7 @@ class UserController extends Controller
                 DB::table('verifikasi')->whereRaw("BINARY email = ? AND deskripsi = ?", [$email, 'password'])->delete();
                 return response()->json(['status'=>'error', 'message'=>'Link expired'], 400);
             }
-            if (is_null(DB::table('users')->whereRaw("BINARY email = ?", [$email])->update(['password'=>Hash::make($request->input("password"))]))) {
+            if (DB::table('users')->whereRaw("BINARY email = ?", [$email])->update(['password'=>Hash::make($request->input("password"))]) === 0) {
                 return response()->json(['status'=>'error', 'message'=>'Error updating password'], 500);
             }
             if (!DB::table('verifikasi')->whereRaw("BINARY email = ? AND deskripsi = ?", [$email, 'password'])->delete()) {
@@ -213,8 +208,7 @@ class UserController extends Controller
         }
     }
     public function verifyEmail(Request $request, User $user, $any = null){
-        $email = $request->query('email');
-        $validator = Validator::make($request->all(), [
+        $validator = Validator::make($request->only('email', 'otp'), [
             'email'=>'required|email',
             'otp' =>'nullable'
         ],[
@@ -229,39 +223,39 @@ class UserController extends Controller
             }
             return response()->json(['status' => 'error', 'message' => implode(', ', $errors)], 400);
         }
-        $email = $request->input('email');
-        $code = $request->input('otp');
         //check email on table user
         $user = User::select('nama_lengkap')->whereRaw("BINARY email = ?",[$request->input('email')])->first();
         if (is_null($user)) {
             return response()->json(['status'=>'error','message'=>'Email tidak terdaftar !'],400);
         }
-        if(Str::startsWith($request->path(), 'verify/email') && $request->isMethod('get')){
+        $prefix = '/verify/email';
+        if(Str::startsWith('/' . $request->path(), $prefix) && $request->isMethod('get')){
             //check if user have create verify email
-            $verify = Verifikasi::select('link','send','updated_at')->whereRaw("BINARY email = ?",[$request->input('email')])->where('deskripsi', 'email')->first();
+            $email = $request->query('email');
+            $verify = Verifikasi::select('link', 'send', 'updated_at')->whereRaw("BINARY email = ?",[$email])->where('deskripsi', 'email')->first();
             if (is_null($verify)) {
-                return response()->json(['status'=>'error','message'=>'Email invalid'],400);
+                return self::getView('verifEmail', ['status' => 'error', 'message' => 'Email invalid', 'code' => 400], $prefix);
             }
             //check link
             if ($verify->link !== $any) {
-                return response()->json(['status'=>'error','message'=>'link invalid'],400);
+                return self::getView('verifEmail', ['status' => 'error', 'message' => 'Link invalid', 'code' => 400], $prefix);
             }
             //check if mail not expired
             $expTime = MailController::getConditionOTP()[($verify->send - 1)];
-            if (Carbon::parse($verify->updated_at)->diffInMinutes(Carbon::now()) >= $expTime) {
-                return response()->json(['status'=>'error','message'=>'link expired'],400);
+            if (Carbon::parse($verify->updated_at)->diffInMinutes(Carbon::now()) > $expTime) {
+                return self::getView('verifEmail', ['status' => 'error', 'message' => 'Link expired', 'code' => 400], $prefix);
             }
-            if(is_null(DB::table('users')->whereRaw("BINARY email = ?",[$email])->update(['verifikasi'=>true]))){
-                return response()->json(['status'=>'error','message'=>'error verify email'],500);
+            if(DB::table('users')->whereRaw("BINARY email = ?",[$email])->update(['email_verified'=>true]) === 0){
+                return self::getView('verifEmail', ['status' => 'error', 'message' => 'Error verifikasi Email', 'code' => 500], $prefix);
             }
             $deleted = DB::table('verifikasi')->whereRaw("BINARY email = ?",[$email])->delete();
             if(!$deleted){
-                return response()->json(['status'=>'error','message'=>'Error verifikasi Email'],500);
-            }else{
-                return response()->json(['status'=>'success','message'=>'verifikasi email berhasil silahkan login']);
+                return self::getView('resetPass', ['status' => 'error', 'message' => 'Error verifikasi Email4242', 'code' => 500], $prefix);
             }
+            return self::getView('resetPass', ['status' => 'success', 'message' => 'verifikasi email berhasil silahkan login'], $prefix);
         }else{
-            //check if user have create verify email
+            $code = $request->input('otp');
+            //check if user have otp verify email
             $verify = Verifikasi::select('kode_otp','send','updated_at')->whereRaw("BINARY email = ?",[$request->input('email')])->where('deskripsi', 'email')->first();
             if (is_null($verify)) {
                 return response()->json(['status'=>'error','message'=>'Email invalid'],400);
@@ -272,13 +266,13 @@ class UserController extends Controller
             }
             //check if mail not expired
             $expTime = MailController::getConditionOTP()[($verify->send - 1)];
-            if (Carbon::parse($verify->updated_at)->diffInMinutes(Carbon::now()) >= $expTime) {
+            if (Carbon::parse($verify->updated_at)->diffInMinutes(Carbon::now()) > $expTime) {
                 return response()->json(['status'=>'error','message'=>'kode otp expired'],400);
             }
-            // if(is_null(DB::table('users')->whereRaw("BINARY email = ?",[$email])->update(['verifikasi'=>true]))){
-            //     return response()->json(['status'=>'error','message'=>'error verifikasi email'],500);
-            // }
-            $deleted = DB::table('verifikasi')->whereRaw("BINARY email = ?",[$email])->delete();
+            if(DB::table('users')->whereRaw("BINARY email = ?",[$request->input('email')])->update(['email_verified'=>true]) === 0){
+                return response()->json(['status'=>'error','message'=>'error verifikasi email'],500);
+            }
+            $deleted = DB::table('verifikasi')->whereRaw("BINARY email = ?",[$request->input('email')])->delete();
             if(!$deleted){
                 return response()->json(['status'=>'error','message'=>'error verifikasi email'],500);
             }
@@ -287,7 +281,7 @@ class UserController extends Controller
     }
     //register user from google login
     public function createGoogleUser(Request $request, JWTController $jwtController, RefreshToken $refreshToken){
-        $validator = Validator::make($request->all(), [
+        $validator = Validator::make($request->only('email', 'nama', 'password', 'password_confirm', 'code', 'link'), [
             'email'=>'required|email',
             'nama'=>'nullable',
             'password' => [
@@ -451,7 +445,7 @@ class UserController extends Controller
             return response()->json(['status' => 'error', 'message' => 'Admin tidak ditemukan'], 400);
         }
         //check email on table user
-        if(!is_null($request->input('email_new') || !empty($request->input('email_new'))) &&User::select('role')->whereRaw("BINARY email = ?",[$request->input('email_new')])->first() && $request->input('email_new') != $request->input('user_auth')['email']){
+        if(!is_null($request->input('email_new') || !empty($request->input('email_new'))) && User::select('role')->whereRaw("BINARY email = ?",[$request->input('email_new')])->first() && $request->input('email_new') != $request->input('user_auth')['email']){
             return response()->json(['status' => 'error', 'message' => 'Email sudah digunakan'], 400);
         }
         //process file foto
@@ -503,7 +497,7 @@ class UserController extends Controller
     }
     //update from profile
     public function updatePassword(Request $request){
-        $validator = Validator::make($request->all(), [
+        $validator = Validator::make($request->only('password_old', 'password', 'password_confirm'), [
             'password_old' => [
                 'required',
                 'string',

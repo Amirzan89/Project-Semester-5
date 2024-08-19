@@ -39,7 +39,7 @@ export default () => {
         const req = async () => {
             try {
                 const response = await createInstance().request({ url, method, data, headers });
-                return { status: 'success', message: response.data.message, data: response.data };
+                return { status: 'success', message: response.data.message, data: response.data.data };
             } catch (err: any) {
                 if (err.response){
                     switch(err.response.status){

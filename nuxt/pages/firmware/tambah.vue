@@ -55,6 +55,7 @@ useHead({
     title:`Firmware Tambah | ${publicConfig.appName}`
 });
 const local = reactive({
+    isRequestInProgress: false,
     isDoneFetch: false,
     isTambah: false,
     fetchedViewData: null,
@@ -181,6 +182,7 @@ const inpChange = (div: string) => {
     local.isTambah = isFilled;
 };
 const tambahForm = async (event: Event) => {
+    if(local.isRequestInProgress) return;
     event.preventDefault();
     let errMessage = '';
     if(input.name === null || input.name === ''){
@@ -212,10 +214,12 @@ const tambahForm = async (event: Event) => {
         eventBus.emit('showRedPopup', errMessage);
         return;
     }
+    local.isRequestInProgress = true;
     eventBus.emit('showLoading');
     // let enc = await encrypt({file: input.file, name:'', });
     // let res = await TambahFirmware({ name: input.name, description: input.description, version: input.version, release_date: input.release_date, checksum: input.checksum, device: input.device, file: enc.file });
     // if(res.status === 'success'){
+    //     local.isRequestInProgress = false;
     //     eventBus.emit('closeLoading');
     //     eventBus.emit('showGreenPopup', res.message);
     //     local.isTambah = false;
@@ -223,6 +227,7 @@ const tambahForm = async (event: Event) => {
     //         navigateTo('/firmware');
     //     }, 1500);
     // }else if(res.status === 'error'){
+    //     local.isRequestInProgress = false;
     //     eventBus.emit('closeLoading');
     //     eventBus.emit('showRedPopup', res.message);
     // }

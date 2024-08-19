@@ -4,7 +4,7 @@ use Illuminate\Http\Request;
 use Closure;
 class DefaultCSR
 {
-    private static $exceptPage = ['/sanctum/csrf-cookie', '/auth/redirect', '/auth/google', '/verify/password'];
+    private static $exceptPage = ['/sanctum/csrf-cookie', '/auth/redirect', '/auth/google', '/verify/email', '/verify/password'];
     public function handle(Request $request, Closure $next){
         $path = '/' . ltrim($request->path(), '/');
         foreach (self::$exceptPage as $exceptPath) {

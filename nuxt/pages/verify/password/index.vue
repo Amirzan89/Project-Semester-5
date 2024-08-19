@@ -60,7 +60,6 @@ useAsyncData(async () => {
         return;
     }
     local.isValid = true;
-    console.log('isi local',local.fetchedUserAuth)
     Cookies.remove('__INITIAL_COSTUM_STATE__');
 });
 const inpChange = (div: string) => {

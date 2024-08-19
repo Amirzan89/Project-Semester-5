@@ -74,7 +74,7 @@ const showGreenPopup = (data: string, div = null) => {
         closePopup('green');
     }, 3000);
 };
-const closePopup = (opt: string, click = false, divInp = null) => {
+const closePopup = (opt: string, click = false) => {
     if(click){
         if (opt == 'green') {
             local.state = '';
@@ -98,13 +98,6 @@ const closePopup = (opt: string, click = false, divInp = null) => {
                 local.state = '';
                 local.message = '';
             }, 750);
-        }
-    }
-    if(divInp !== null){
-        if(divInp == 'login'){
-            loginPage();
-        }else{
-            showDiv(divInp);
         }
     }
 };

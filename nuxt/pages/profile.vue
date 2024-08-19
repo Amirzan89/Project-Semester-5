@@ -97,6 +97,7 @@ useHead({
     title:`Profile | ${publicConfig.appName}`
 });
 const local = reactive({
+    isRequestInProgress: false,
     isDoneFetch: false,
     fetchedUserAuth: null as any,
     fetchedViewData: null as any,
@@ -287,6 +288,7 @@ const updateProfileForm = async (event: Event) => {
     }
 }
 const updatePasswordForm = async() => {
+    if(local.isRequestInProgress) return;
     let errMessage = '';
     if(inputResetPass.pass_baru === null || inputResetPass.pass_baru === ''){
         inpPassBaru.value.classList.remove('border-black','hover:border-black','focus:border-black');
@@ -357,9 +359,11 @@ const updatePasswordForm = async() => {
             if(!errMessage) errMessage = 'Password harus sama !';
         }
     }
+    local.isRequestInProgress = true;
     eventBus.emit('showLoading');
     let res = await updatePassword({password_old:inputResetPass.pass_lama, password: inputResetPass.pass_baru, password_ulangi: inputResetPass.pass_baru_ulangi});
     if(res.status === 'success'){
+        local.isRequestInProgress = false;
         eventBus.emit('closeLoading');
         eventBus.emit('showGreenPopup', res.message);
         setTimeout(function(){
@@ -368,6 +372,7 @@ const updatePasswordForm = async() => {
             inputResetPass.pass_baru_ulangi = '';
         }, 1000);
     }else if(res.status === 'error'){
+        local.isRequestInProgress = false;
         eventBus.emit('closeLoading');
         eventBus.emit('showRedPopup', res.message);
     }

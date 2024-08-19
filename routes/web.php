@@ -50,6 +50,8 @@ Route::group(['middleware'=>'auth'],function(){
             Route::post('/','UserController@verifyEmail');
         });
         Route::group(['prefix'=>'/otp'],function(){
+            Route::post('/resend/password','Services\MailController@ResendOTP');
+            Route::post('/resend/email','Services\MailController@ResendOTP');
             Route::post('/password','UserController@getChangePass');
             Route::post('/email','UserController@verifyEmail');
         });

@@ -53,10 +53,10 @@
                 </span>
             </div>
         </template>
+        <!-- @change-popup="inpChangeOTP" -->
         <OTPComponent v-if="local.conOTP == 'verify'" 
             :data="getConOTP()"
             :timer="getTimer()"
-            @change-popup="inpChangePopup"
             @red-popup="showOTPRedPopup"
             @green-popup="successOTP"
             @countdown="startCountdown">
@@ -90,6 +90,14 @@ definePageMeta({
 useHead({
     title:`Register | ${publicConfig.appName}`
 });
+const local = reactive({
+    isRequestInProgress: false,
+    conOTP: 'register',
+    errMessage: '',
+    timer: null as NodeJS.Timeout | null,
+    timerMenit: 0 as number,
+    timerDetik: 0 as number,
+});
 const input = reactive({
     nama: '',
     email:'',
@@ -99,14 +107,6 @@ const input = reactive({
     isUlangiPasswordShow: false,
     checkboxValue:'',
 });
-const local = reactive({
-    conOTP: 'register',
-    errMessage: '',
-    timer: null as NodeJS.Timeout | null,
-    timerMenit: 0,
-    timerDetik: 0,
-});
-const errMessage: Ref = ref('');
 const popup: Ref = ref(null);
 const inpNama: Ref = ref(null);
 const inpEmail: Ref = ref(null);
@@ -116,23 +116,25 @@ const getConOTP = () => {
     return {'email':input.email,'condition':'email'};
 };
 const showOTPRedPopup = (message: string) => {
-    // popup.value.classList.remove('invisible');
+    popup.value.classList.remove('invisible');
     local.errMessage = message;
 };
-const successOTP = () => {
-    setTimeout(function(){
-        // router.push('/dashboard');
-    }, 2000);
-};
-const inpChangePopup = () => {
-    if(!popup.value.classList.contains('invisible')){
-        popup.value.classList.add('fade-out');
+const successOTP = (data: any) => {
+    if(data.cond == 'verifyEmail'){
         setTimeout(function(){
-            popup.value.classList.remove('fade-out');
-            popup.value.classList.add('invisible');
-        }, 750);
+            navigateTo('/login');
+        }, 2000);
     }
 };
+// const inpChangeOTP = () => {
+//     if(!popup.value.classList.contains('invisible')){
+//         popup.value.classList.add('fade-out');
+//         setTimeout(function(){
+//             popup.value.classList.remove('fade-out');
+//             popup.value.classList.add('invisible');
+//         }, 750);
+//     }
+// };
 const getTimer = () => {
     return {
         timer:local.timer,
@@ -141,7 +143,7 @@ const getTimer = () => {
     }
 };
 const startCountdown = (waktu: number) =>{
-    local.timer = setInterval(function() {
+    local.timer = setInterval(() => {
         var now = new Date().getTime();
         var distance = waktu - now;
         // Calculate time remaining
@@ -150,6 +152,7 @@ const startCountdown = (waktu: number) =>{
         if (distance < 0) {
             if(local.timer !== null){
                 clearInterval(local.timer);
+                local.timer = null;
             }
         }
     }, 1000);
@@ -199,8 +202,9 @@ const isValidEmail = (email: string) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return emailRegex.test(email);
 };
-const registerForm = async(event: Event)=>{
+const registerForm = async(event: Event) => {
     event.preventDefault();
+    if(local.isRequestInProgress) return;
     if(input.nama === null || input.nama === ''){
         inpNama.value.classList.remove('border-black','hover:border-black','focus:border-black');
         inpNama.value.classList.add('border-popup_error','hover:border-popup_error','focus:border-popup_error');
@@ -290,14 +294,17 @@ const registerForm = async(event: Event)=>{
         popup.value.classList.remove('invisible');
         return;
     }
+    local.isRequestInProgress = true;
     eventBus.emit('showLoading');
     let register = await Register({nama:input.nama, email: input.email, password: input.password, ulangiPassword:input.ulangiPassword});
     if(register.status === 'success'){
+        local.isRequestInProgress = false;
         eventBus.emit('closeLoading');
-        startCountdown(new Date(register.data.waktu).getTime());    
+        startCountdown(new Date(register.data.waktu).getTime());
         eventBus.emit('showGreenPopup', register.message);
         local.conOTP = 'verify';
     }else if(register.status === 'error'){
+        local.isRequestInProgress = false;
         eventBus.emit('closeLoading');
         popup.value.classList.remove('invisible');
         local.errMessage = register.message;

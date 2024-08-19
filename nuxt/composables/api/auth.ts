@@ -37,7 +37,7 @@ export async function VerifyChange(data: { nama?: string, email: string, link?: 
         password_confirm: data.ulangiPassword,
     }, true);
 }
-export async function SendOtp(data: { email: string, link: string, }){
+export async function ReSendOtp(data: { email: string, link: string, }){
     return reqData(data.link, 'post',{
         email: data.email,
     }, true);

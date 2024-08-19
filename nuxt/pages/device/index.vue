@@ -24,6 +24,7 @@ useHead({
     title:`List Device | ${publicConfig.appName}`
 });
 const local = reactive({
+    isRequestInProgress: false,
     fetchedViewData: null as any,
 });
 useAsyncData(async () => {
@@ -45,12 +46,16 @@ watch(() => local.fetchedViewData, () => {
 }, { immediate:true });
 const deleteForm = async (event: Event) => {
     event.preventDefault();
+    if(local.isRequestInProgress) return;
+    local.isRequestInProgress = true;
     eventBus.emit('showLoading');
     let res = await DeleteDevice({ id_device: route.params.id });
     if(res.status === 'success'){
+        local.isRequestInProgress = false;
         eventBus.emit('closeLoading');
         eventBus.emit('showGreenPopup', res.message);
     }else if(res.status === 'error'){
+        local.isRequestInProgress = false;
         eventBus.emit('closeLoading');
         eventBus.emit('showRedPopup', res.message);
     }

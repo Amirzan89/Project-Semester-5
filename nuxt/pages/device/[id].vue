@@ -48,6 +48,7 @@ useHead({
     title: `Detail Device | ${publicConfig.appName}`
 });
 const local = reactive({
+    isRequestInProgress: false,
     isDoneFetch: false,
     isChanging: false,
     isUpdated: false,
@@ -123,26 +124,35 @@ const inpChange = (div: string) => {
 };
 const updateForm = async(event: Event) => {
     event.preventDefault();
+    if(local.isRequestInProgress) return;
     let errMessage = '';
     if (input.name === local.fetchedViewData.name && input.device_id === local.fetchedViewData.device_id && input.token === local.fetchedViewData.token && input.activated === local.fetchedViewData.activated) if(errMessage == '') errMessage = 'Data belum diubah !';
+    local.isRequestInProgress = true;
+    eventBus.emit('showLoading');
     let res = await EditDevice({ id_device: route.params.id,  name: input.name, device_id: input.device_id, token: input.token, activated: input.activated });
     if(res.status === 'success'){
+        local.isRequestInProgress = false;
         eventBus.emit('closeLoading');
         local.isUpdated = false;
         eventBus.emit('showGreenPopup', res.message);
     }else if(res.status === 'error'){
+        local.isRequestInProgress = false;
         eventBus.emit('closeLoading');
         eventBus.emit('showRedPopup', res.message);
     }
 }
 const deleteForm = async (event: Event) => {
     event.preventDefault();
+    if(local.isRequestInProgress) return;
+    local.isRequestInProgress = true;
     eventBus.emit('showLoading');
     let res = await DeleteDevice({ id_device: route.params.id });
     if(res.status === 'success'){
+        local.isRequestInProgress = false;
         eventBus.emit('closeLoading');
         eventBus.emit('showGreenPopup', res.message);
     }else if(res.status === 'error'){
+        local.isRequestInProgress = false;
         eventBus.emit('closeLoading');
         eventBus.emit('showRedPopup', res.message);
     }
