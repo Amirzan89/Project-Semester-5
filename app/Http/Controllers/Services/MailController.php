@@ -24,6 +24,9 @@ class MailController extends Controller
     private static function getEmail($data, $cond){
         if (isset(self::$enCol[$cond])) return new self::$enCol[$cond]($data);
     }
+    private function deleteOldEmail(){
+        Verifikasi::where('updated_at', '<', Carbon::now()->subDays(3))->delete();
+    }
     public function createVerifyEmail(Request $request, Verifikasi $verify){
         $validator = Validator::make($request->only('email'), [
             'email'=>'required|email',
@@ -52,6 +55,7 @@ class MailController extends Controller
         //check if user have create verify email
         $verifyDb = Verifikasi::select('send','updated_at')->whereRaw("BINARY email = ?",[$request->input('email')])->where('deskripsi', 'email')->first();
         if ($verifyDb === null) {
+            self::deleteOldEmail();
             //for register
             $verificationCode = mt_rand(100000, 999999);
             $linkPath = Str::random(50);
@@ -109,6 +113,7 @@ class MailController extends Controller
         //checking process if user have create verify email or not
         $verifyDb = Verifikasi::select('send','updated_at')->whereRaw("BINARY email = ?",[$request->input('email')])->where('deskripsi', 'password')->first();
         if (is_null($verifyDb)) {
+            self::deleteOldEmail();
             //if user haven't create email forgot password
             $verificationCode = mt_rand(100000, 999999);
             $linkPath = Str::random(50);
@@ -158,12 +163,12 @@ class MailController extends Controller
             return response()->json(['status' => 'error', 'message' => implode(', ', $errors)], 400);
         }
         $laPath = last(explode('/', $request->path()));
-        if (in_array($laPath, self::$enCol)) {
+        if (in_array($laPath, array_keys(self::$enCol))) {
             return response()->json(['status' => 'error', 'message' => 'Link Invalid'], 400);
         }
         $verifyDb = Verifikasi::select('send', 'updated_at')->whereRaw("BINARY email = ?",[$request->input('email')])->where('deskripsi', $laPath)->first();
         if (is_null($verifyDb)) {
-            return response()->json(['status'=>'error','message'=>'Data verifikasi tidak ada'], 404);
+            return response()->json(['status'=>'error','message'=>'Data verifikasi tidak ada'], 400);
         }
         //checking if user have create verify email
         $expTime = self::$conditionOTP[($verifyDb['send'] - 1)];
