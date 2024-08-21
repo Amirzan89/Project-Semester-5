@@ -45,7 +45,7 @@ class UserController extends Controller
         if (!$referrer && $request->path() == 'public/download/foto') {
             abort(404);
         }
-        return response()->download(storage_path('app/' . 'admin/default.jpg'), 'foto.' . pathinfo('admin/default.jpg', PATHINFO_EXTENSION));
+        return response()->download(storage_path('app/' . 'user/default.jpg'), 'foto.' . pathinfo('user/default.jpg', PATHINFO_EXTENSION));
     }
     public function getFotoProfile(Request $request){
         $userAuth = $request->input('user_auth');
@@ -54,10 +54,10 @@ class UserController extends Controller
             abort(404);
         }
         if (empty($userAuth['foto']) || is_null($userAuth['foto'])) {
-            $defaultPhotoPath = 'admin/default.jpg';
+            $defaultPhotoPath = 'user/default.jpg';
             return response()->download(storage_path('app/' . $defaultPhotoPath), 'foto.' . pathinfo($defaultPhotoPath, PATHINFO_EXTENSION));
         } else {
-            $filePath = storage_path('app/admin/foto/' . $userAuth['foto']);
+            $filePath = storage_path('app/user/foto/' . $userAuth['foto']);
             if (!empty($userAuth['foto'] && !is_null($userAuth['foto'])) && file_exists($filePath) && is_file($filePath)) {
                 return response(Crypt::decrypt(file_get_contents($filePath)));
             }
@@ -318,22 +318,22 @@ class UserController extends Controller
             return response()->json(['status'=>'error','message'=>'Password Harus Sama'],400);
         }
         //process file foto
-        // if ($request->hasFile('foto')) {
-        //     $file = $request->file('foto');
-        //     if(!($file->isValid() && in_array($file->extension(), ['jpeg', 'png', 'jpg']))){
-        //         return response()->json(['status'=>'error','message'=>'Format Foto tidak valid. Gunakan format jpeg, png, jpg'], 400);
-        //     }
-        //     $destinationPath = storage_path('app/user/');
-        //     $fotoName = $file->hashName();
-        //     $fileData = Crypt::encrypt(file_get_contents($file));
-        //     Storage::disk('user')->put('/' . $fotoName, $fileData);
-        // }
+        if ($request->hasFile('foto')) {
+            $file = $request->file('foto');
+            if(!($file->isValid() && in_array($file->extension(), ['jpeg', 'png', 'jpg']))){
+                return response()->json(['status'=>'error','message'=>'Format Foto tidak valid. Gunakan format jpeg, png, jpg'], 400);
+            }
+            $fotoName = $file->hashName();
+            $fileData = Crypt::encrypt(file_get_contents($file));
+            Storage::disk('user')->put('foto/' . $fotoName, $fileData);
+        }
         $ins = User::insert([
             'uuid' => Str::uuid(),
             'email' => $request->input('email'),
             'nama_lengkap' => $request->input('nama'),
             'password' => Hash::make($request->input('password')),
             'email_verified' => true,
+            'foto' => $request->hasFile('foto') ? $fotoName : '',
             'role' => 'user',
             'created_at' => Carbon::now(),
             'updated_at' => Carbon::now(),
@@ -448,15 +448,15 @@ class UserController extends Controller
             if(!($file->isValid() && in_array($file->extension(), ['jpeg', 'png', 'jpg']))){
                 return response()->json(['status'=>'error','message'=>'Format Foto tidak valid. Gunakan format jpeg, png, jpg'], 400);
             }
-            $destinationPath = storage_path('app/admin/');
+            $destinationPath = storage_path('app/user/');
             $fileToDelete = $destinationPath . $user['foto'];
             if (file_exists($fileToDelete) && !is_dir($fileToDelete)) {
                 unlink($fileToDelete);
             }
-            Storage::disk('admin')->delete('foto/'.$user['foto']);
+            Storage::disk('user')->delete('foto/'.$user['foto']);
             $fotoName = $file->hashName();
             $fileData = Crypt::encrypt(file_get_contents($file));
-            Storage::disk('admin')->put('foto/' . $fotoName, $fileData);
+            Storage::disk('user')->put('foto/' . $fotoName, $fileData);
         }
         //update profile
         $updateProfile = User::whereRaw("BINARY email = ?",[$request->input('user_auth')['email']])->update([

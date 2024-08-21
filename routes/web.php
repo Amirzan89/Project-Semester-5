@@ -35,7 +35,8 @@ Route::group(['middleware'=>'auth'],function(){
         return getView('register');
     });
     Route::get('/auth/redirect', 'Auth\LoginController@redirectToProvider');
-    Route::get('/auth/google', 'Auth\LoginController@handleProviderCallback');
+    Route::get('/auth/google', 'Auth\LoginController@handleGoogleLogin');
+    Route::post('/auth/google-tap', 'Auth\LoginController@handleGoogleLogin');
     Route::group(["prefix"=>"/verify"],function(){
         Route::group(['prefix'=>'/create'],function(){
             Route::post('/password','Services\MailController@createForgotPassword');

@@ -13,6 +13,7 @@ export default defineNuxtConfig({
         public: {
             baseURL: process.env.APP_URL,
             appName: process.env.APP_NAME,
+            GoogleId: process.env.APP_GOOGLE_TAP,
             recaptchaKey: process.env.RECAPTCHA_SITE_KEY,
         },
     },

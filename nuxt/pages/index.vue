@@ -28,7 +28,8 @@
 </style>
 <script setup lang="ts">
 import { ref, reactive, onMounted, watch } from "vue";
-import { useFetchDataStore } from "~/store/FetchData";
+import useGoogleLoginTap from "~/composables/GooleLogin";
+// import { useFetchDataStore } from "~/store/FetchData";
 const publicConfig = useRuntimeConfig().public;
 const route = useRoute();
 definePageMeta({
@@ -36,13 +37,21 @@ definePageMeta({
     layout:'home',
 });
 useHead({
-    title:`Landing Page | ${publicConfig.appName}`
+    title:`Landing Page | ${publicConfig.appName}`,
+    script:[
+        {
+            src:'https://accounts.google.com/gsi/client',
+            async: true,
+            defer: true,
+            onload: useGoogleLoginTap().initializeGoogleOneTap,
+        },
+    ]
 });
 const local = reactive({
     fetchedData: null,
 });
 useAsyncData(async() => {
-    const res = await useFetchDataStore().fetchData();
+    // const res = await useFetchDataStore().fetchData();
 });
 onMounted(() => {
     if (route.hash) document.querySelector(route.hash)?.scrollIntoView({ behavior: "smooth" });

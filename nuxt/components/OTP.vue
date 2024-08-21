@@ -38,7 +38,7 @@
 </style>
 <script setup lang="ts">
 import { ref, defineEmits } from "vue";
-import { eventBus } from '../app/eventBus';
+import { eventBus } from '~/app/eventBus';
 import { ReSendOtp, VerifyOtp } from '~/composables/api/auth';
 import type { Props } from "nuxt/dist/head/runtime/types";
 const emit = defineEmits(['change-popup', 'green-popup', 'countdown']);

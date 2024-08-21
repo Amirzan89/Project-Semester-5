@@ -5,8 +5,10 @@ use App\Models\RefreshToken;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\DB;
 use Firebase\JWT\JWT;
+use Firebase\JWT\JWK;
 use Firebase\JWT\Key;
 use Firebase\JWT\SignatureInvalidException;
 use Firebase\JWT\BeforeValidException;
@@ -125,15 +127,10 @@ class JWTController extends Controller
                     $refreshToken->token = $Rtoken;
                     $payload = [ 'data' => $userData,'exp' => $exp];
                     $token = JWT::encode($payload, $secretKey,'HS512');
-                    $json = [
-                        'status'=>'success',
-                        'data'=>
-                        [
-                            'token' => $token,
-                            'refresh' => $Rtoken
-                        ],
-                        'number' => 1
-                    ];
+                    $json = ['status'=>'success', 'data'=> [
+                        'token' => $token,
+                        'refresh' => $Rtoken
+                    ],'number' => 1 ];
                 }else{
                     $userData['number'] = $number['data'] + 1;
                     $payloadRefresh = [ 'data' => $userData, 'exp' => $expRefresh];
@@ -170,17 +167,15 @@ class JWTController extends Controller
                 return ['status'=>'error','message'=>'option empty'];
             }else{
                 if($opt == 'token'){
-                    $decode = JWT::decode($token, new Key(env('JWT_SECRET'), 'HS512'));
-                    $decoded = json_decode(json_encode($decode), true);
+                    $decoded = json_decode(json_encode(JWT::decode($token, new Key(env('JWT_SECRET'), 'HS512'))), true);
                     if(strcmp($email,$decoded['data']['email'] ?? null) === 0){
-                        return ['status'=>'success','data'=>json_decode(json_encode($decode), true)];
+                        return ['status'=>'success','data'=>$decoded];
                     }
                     return ['status'=>'error','message'=>'invalid email'];
                 }else if($opt == 'refresh'){
-                    $decode = JWT::decode($token, new Key(env('JWT_SECRET_REFRESH_TOKEN'), 'HS512'));
-                    $decoded = json_decode(json_encode($decode), true);
+                    $decoded = json_decode(json_encode(JWT::decode($token, new Key(env('JWT_SECRET_REFRESH_TOKEN'), 'HS512'))), true);
                     if(strcmp($email,$decoded['data']['email'] ?? null) === 0){
-                        return ['status'=>'success','data'=>json_decode(json_encode($decode), true)];
+                        return ['status'=>'success','data'=>$decoded];
                     }
                     return ['status'=>'error','message'=>'invalid email'];
                 }else{
@@ -201,6 +196,20 @@ class JWTController extends Controller
             return ['status'=>'error','message'=>$e->getMessage()];
         } catch (\Exception $e) {
             return ['status'=>'error','message'=>$e->getMessage()];
+        }
+    }
+    public function decodeGoogleLogin($credential){
+        try {
+            $decodedToken = JWT::decode($credential, JWK::parseKeySet(Http::get('https://www.googleapis.com/oauth2/v3/certs')->json()));
+            if ($decodedToken->aud !== env('GOOGLE_CLIENT_ID')) {
+                return ['status' => 'error', 'message' => 'Invalid audience'];
+            }
+            if ($decodedToken->exp < time()) {
+                return ['status' => 'error', 'message' => 'Token has expired'];
+            }
+            return ['status' => 'success', 'data' => $decodedToken];
+        } catch (\Exception $e) {
+            return ['status' => 'error', 'message' => $e->getMessage()];
         }
     }
     public function updateTokenWebsite($data){

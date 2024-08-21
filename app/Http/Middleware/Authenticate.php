@@ -26,7 +26,7 @@ class Authenticate
             $tokenDecode1 = json_decode(base64_decode($token1),true);
             $email = $tokenDecode1['email'];
             $number = $tokenDecode1['number'];
-            $authPage = ['/','/login','/register','/password/reset', 'verify/password','verify/email','auth/redirect','auth/google'];
+            $authPage = ['/','/login','/register','/password/reset', 'verify/password','verify/email','auth/redirect','auth/google','/auth/google-tap'];
             if ((in_array($currentPath, $authPage) || strpos($currentPath, '/artikel/') === 0) && $request->isMethod('get')) {
                 if (in_array(ltrim($path), $authPage)) {
                     $response = $this->handleRedirect($request, 'success', '/dashboard');
@@ -148,8 +148,7 @@ class Authenticate
             $pagePrefix = ['/firmware', '/konsultasi/edit', '/admin/edit', '/acara/edit'];
             if(Str::startsWith($currentPath, $pagePrefix) || in_array($currentPath,$page)){
                 if($request->hasCookie("token1")){
-                    $token1 = $request->cookie('token1');
-                    $token1 = json_decode(base64_decode($token1),true);
+                    $token1 = json_decode(base64_decode($request->cookie('token1')),true);
                     $email = $token1['email'];
                     $number = $token1['number'];
                     $delete = $jwtController->deleteRefreshToken($email,$number, 'website');

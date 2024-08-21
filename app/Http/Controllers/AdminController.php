@@ -19,11 +19,11 @@ class AdminController extends Controller
             abort(404);
         }
         if (empty($userAuth['foto']) || is_null($userAuth['foto'])) {
-            $defaultPhotoPath = $userAuth['jenis_kelamin'] == 'laki-laki' ? 'admin/default_boy.jpg' : 'admin/default_girl.png';
+            $defaultPhotoPath = $userAuth['jenis_kelamin'] == 'laki-laki' ? 'user/default_boy.jpg' : 'user/default_girl.png';
             return response()->download(storage_path('app/' . $defaultPhotoPath), 'foto.' . pathinfo($defaultPhotoPath, PATHINFO_EXTENSION));
         } else {
-            $filePath = storage_path('app/admin/foto/' . $userAuth['foto']);
-            if (file_exists($filePath)) {
+            $filePath = storage_path('app/user/foto/' . $userAuth['foto']);
+            if (!empty($userAuth['foto'] && !is_null($userAuth['foto'])) && file_exists($filePath) && is_file($filePath)) {
                 return response(Crypt::decrypt(file_get_contents($filePath)));
             }
             abort(404);
@@ -39,11 +39,11 @@ class AdminController extends Controller
             return response()->json(['status' => 'error', 'message' => 'Data Admin tidak ditemukan'], 404);
         }
         if (empty($admin->foto) || is_null($admin->foto)) {
-            $defaultPhotoPath = $admin->jenis_kelamin == 'laki-laki' ? 'admin/default_boy.jpg' : 'admin/default_girl.png';
+            $defaultPhotoPath = $admin->jenis_kelamin == 'laki-laki' ? 'user/default_boy.jpg' : 'user/default_girl.png';
             return response()->download(storage_path('app/' . $defaultPhotoPath), 'foto.' . pathinfo($defaultPhotoPath, PATHINFO_EXTENSION));
         } else {
-            $filePath = storage_path('app/admin/foto/' . $admin['foto']);
-            if (file_exists($filePath)) {
+            $filePath = storage_path('app/user/foto/' . $admin['foto']);
+            if (!empty($admin->foto && !is_null($admin->foto)) && file_exists($filePath) && is_file($filePath)) {
                 return response(Crypt::decrypt(file_get_contents($filePath)));
             }
             abort(404);
@@ -113,7 +113,7 @@ class AdminController extends Controller
         }
         $fotoName = $file->hashName();
         $fileData = Crypt::encrypt(file_get_contents($file));
-        Storage::disk('admin')->put('foto/' . $fotoName, $fileData);
+        Storage::disk('user')->put('foto/' . $fotoName, $fileData);
         $ins = User::insert([
             'nama_lengkap'=>$request->input('nama_lengkap'),
             'no_telpon'=>$request->input('no_telpon'),
@@ -196,15 +196,15 @@ class AdminController extends Controller
             if(!($file->isValid() && in_array($file->extension(), ['jpeg', 'png', 'jpg']))){
                 return response()->json(['status'=>'error','message'=>'Format Foto tidak valid. Gunakan format jpeg, png, jpg'], 400);
             }
-            $destinationPath = storage_path('app/admin/');
+            $destinationPath = storage_path('app/user/');
             $fileToDelete = $destinationPath . $admin['foto'];
             if (file_exists($fileToDelete) && !is_dir($fileToDelete)) {
                 unlink($fileToDelete);
             }
-            Storage::disk('admin')->delete('foto/'.$admin['foto']);
+            Storage::disk('user')->delete('foto/'.$admin['foto']);
             $fotoName = $file->hashName();
             $fileData = Crypt::encrypt(file_get_contents($file));
-            Storage::disk('admin')->put('foto/' . $fotoName, $fileData);
+            Storage::disk('user')->put('foto/' . $fotoName, $fileData);
         }
         //update admin
         $updatedAdmin = User::whereRaw("BINARY email = ?",[$request->input('email_admin')])->update([
@@ -246,12 +246,12 @@ class AdminController extends Controller
             return response()->json(['status' => 'error', 'message' => 'Data Admin tidak ditemukan'], 404);
         }
         //delete foto
-        $destinationPath = storage_path('app/admin/');
+        $destinationPath = storage_path('app/user/');
         $fileToDelete = $destinationPath . $admin->foto;
         if (file_exists($fileToDelete) && !is_dir($fileToDelete)) {
             unlink($fileToDelete);
         }
-        Storage::disk('admin')->delete('foto/'.$admin->foto);
+        Storage::disk('user')->delete('foto/'.$admin->foto);
 
         if (!User::where('id_user',$request->input('emailID'))->delete()) {
             return response()->json(['status' => 'error', 'message' => 'Gagal menghapus data Admin'], 500);

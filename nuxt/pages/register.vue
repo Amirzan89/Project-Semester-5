@@ -1,5 +1,5 @@
 <template>
-    <div class="bg-primary1 h-screen flex items-center justify-center">
+    <div class="bg-primary1 h-screen flex items-center justify-center" id="root">
         <template v-if="local.conOTP == 'register'">
             <div class="relative flex flex-col items-center 2xl:w-250 xl:w-200 lg:w-150 md:w-150 sm:w-30 bg-white rounded-3xl">
                 <h1 class="relative w-2/4 top-5 2xl:text-6xl xl:text-4xl lg:text-4xl md:text-2xl sm:text-2xl text-center">Selamat datang</h1>
@@ -81,14 +81,22 @@
 import { ref, reactive } from "vue";
 import OTPComponent from '~/components/OTP.vue';
 import { eventBus } from '~/app/eventBus';
-import { Register } from '~/composables/api/auth';
+import useGoogleLoginTap from "~/composables/GooleLogin";
 const publicConfig = useRuntimeConfig().public;
 definePageMeta({
     name: 'Register',
     layout: 'default',
 })
 useHead({
-    title:`Register | ${publicConfig.appName}`
+    title:`Register | ${publicConfig.appName}`,
+    script:[
+        {
+            src:'https://accounts.google.com/gsi/client',
+            async: true,
+            defer: true,
+            onload: useGoogleLoginTap().initializeGoogleOneTap,
+        },
+    ]
 });
 const local = reactive({
     isRequestInProgress: false,
@@ -112,6 +120,9 @@ const inpNama: Ref = ref(null);
 const inpEmail: Ref = ref(null);
 const inpPassword:Ref = ref(null);
 const inpUlangiPassword: Ref = ref(null);
+onMounted(() => {
+    // initializeGoogleOneTap();
+});
 const getConOTP = () => {
     return {'email':input.email,'condition':'email'};
 };

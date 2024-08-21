@@ -48,67 +48,91 @@ class LoginController extends Controller
         }
         $jwtData = $jwtController->createJWTWebsite($email,$refreshToken);
         if($jwtData['status'] == 'error'){
-            return response()->json(['status'=>'error','message'=>$jwtData['message']],400);
+            return response()->json($jwtData, 400);
         }
         $data1 = ['email'=>$email,'number'=>$jwtData['number']];
-        $encoded = base64_encode(json_encode($data1));
         return response()->json(['status'=>'success','message'=>'login sukses silahkan masuk dashboard'])
-        ->cookie('token1',$encoded,time()+intval(env('JWT_ACCESS_TOKEN_EXPIRED')))
+        ->cookie('token1',base64_encode(json_encode($data1)),time()+intval(env('JWT_ACCESS_TOKEN_EXPIRED')))
         ->cookie('token2',$jwtData['data']['token'],time() + intval(env('JWT_ACCESS_TOKEN_EXPIRED')))
         ->cookie('token3',$jwtData['data']['refresh'],time() + intval(env('JWT_REFRESH_TOKEN_EXPIRED')));
     }
     public function redirectToProvider(){
         return Socialite::driver('google')->redirect();
     }
-    public function handleProviderCallback(Request $request){
-        $refreshToken = new RefreshToken();
-        $userController = new UserController();
-        $jwtController = new JWTController();
-        try {
-            $user_google = Socialite::driver('google')->stateless()->user();
-            if(User::select('email')->whereRaw("BINARY email = ?",[$user_google->getEmail()])->limit(1)->exists()){
-                if($request->hasCookie("token1") && $request->hasCookie("token2") && $request->hasCookie("token3")){
-                    $token1 = $request->cookie('token1');
-                    $token2 = $request->cookie('token2');
-                    $email = base64_decode($token1);
-                    $req = [
-                        'email'=>$email,
-                        'token'=>$token2
-                    ];
-                    $decoded = $jwtController->decode($req);
-                    if($decoded['status'] == 'error'){
-                        return redirect(self::$baseURL . "/dashboard")->with('json', new JsonResponse(['status'=>'success','data'=>$decoded['data'][0][0]]));
-                    }
-                    if($decoded['message'] == 'Expired token'){
-                        $updated = $jwtController->updateTokenWebsite($email);
-                        if($updated['status'] == 'error'){
-                            return response()->json(['status'=>'error','message'=>$updated['message']],500);
-                        }
-                        $data1 = ['email'=>$email,'number'=>$updated['number']];
-                        $encoded = base64_encode(json_encode($data1));
-                        return redirect(self::$baseURL . "/dashboard")->withCookies([cookie('token1',$encoded,time()+intval(env('JWT_ACCESS_TOKEN_EXPIRED'))),cookie('token2',$updated['data'],time() + intval(env('JWT_ACCESS_TOKEN_EXPIRED')))]);
-                    }
-                //if user exist in database and doesnt login
-                }else{
-                    if(User::select('nama_lengkap')->whereRaw("BINARY email = ? AND email_verified = 0",[$user_google->getEmail()])->limit(1)->exists()){
-                        DB::table('users')->whereRaw("BINARY email = ?",[$user_google->getEmail()])->update(['email_verified'=>true]);
-                    }
-                    $data = $jwtController->createJWTWebsite($user_google->getEmail(),$refreshToken);
-                    if(is_null($data)){
-                        return response()->json(['status'=>'error','message'=>'create token error'],500);
-                    }
-                    if($data['status'] == 'error'){
-                        return response()->json(['status'=>'error','message'=>$data['message']],400);
-                    }
-                    $encoded = base64_encode(json_encode(['email'=>$user_google->getEmail(), 'number'=>$data['number']]));
-                    return redirect(self::$baseURL . "/dashboard")->withCookies([cookie('token1',$encoded,time()+intval(env('JWT_ACCESS_TOKEN_EXPIRED'))),cookie('token2',$data['data']['token'],time() + intval(env('JWT_ACCESS_TOKEN_EXPIRED'))),cookie('token3',$data['data']['refresh'],time()+intval('JWT_REFRESH_TOKEN_EXPIRED'))]);
-                }
-            //if user dont exist in database
-            }else{
-                return $userController->getView('forgotPassword', ['email'=>$user_google->getEmail(), 'nama'=>$user_google->getName()], '/auth/google');
+    public function handleGoogleLogin(Request $request, UserController $userController, JWTController $jwtController, RefreshToken $refreshToken){
+        $cosRes = function($path, $data = null, $code = 200) use ($userController){
+            if($path == '/auth/google'){
+                return $userController->getView('dashboard', [], '/dashboard');
+            }else if($path == '/auth/google-tap'){
+                return response()->json($data, $code);
             }
-        } catch (\Exception $e) {
-            return response()->json('Error: ' . $e->getMessage() . ', Code: ' . $e->getCode() . ', File: ' . $e->getFile() . ', Line: ' . $e->getLine());
+        };
+        $result = null;
+        if('/' . $request->path() == '/auth/google'){
+            $result = ((array)Socialite::driver('google')->stateless()->user())['user'];
+        }else if('/' . $request->path() == '/auth/google-tap'){
+            $validator = Validator::make($request->only('credential'), [
+                'credential' => 'required',
+            ], [
+                'credential.required' => 'Credential wajib di isi',
+            ]);
+            if ($validator->fails()) {
+                $errors = [];
+                foreach ($validator->errors()->toArray() as $field => $errorMessages) {
+                    $errors[$field] = $errorMessages[0];
+                    break;
+                }
+                return response()->json(['status' => 'error', 'message' => implode(', ', $errors)], 400);
+            }
+            $result = $jwtController->decodeGoogleLogin($request->input('credential'));
+            if($result['status'] == 'error'){
+                return response()->json(['status'=>'error','message'=>$result['message']], 400);
+            }
+            $result = (array)$result['data'];
+        }else{
+            return response()->json(['status'=>'error','message'=> 'Invalid path'], 400);
+        }
+        if(User::select('email')->whereRaw("BINARY email = ?",[$result['email']])->limit(1)->exists()){
+            if($request->hasCookie("token1") && $request->hasCookie("token2") && $request->hasCookie("token3")){
+                $token1 = $request->cookie('token1');
+                $token2 = $request->cookie('token2');
+                $req = [
+                    'email'=>json_decode(base64_decode($token1), true)['email'],
+                    'token'=>$token2,
+                    'opt'=>'token',
+                ];
+                $decoded = $jwtController->decode($req);
+                if($decoded['status'] == 'error'){
+                    if($decoded['message'] == 'Expired token'){
+                        $updated = $jwtController->updateTokenWebsite($decoded);
+                        if($updated['status'] == 'error'){
+                            return $cosRes('/' . $request->path(), $updated, 500);
+                        }
+                        return $cosRes('/' . $request->path(), ['status'=>'success', 'message'=>'success login redirect to dashboard'])
+                        ->cookie('token1',$token1,time()+intval(env('JWT_ACCESS_TOKEN_EXPIRED')))
+                        ->cookie('token2',$updated['data'],time() + intval(env('JWT_ACCESS_TOKEN_EXPIRED')));
+                    }
+                    return $cosRes('/' . $request->path(), $decoded, 400);
+                }
+                return $cosRes('/' . $request->path(), ['status'=>'success', 'message'=>'success login redirect to dashboard']);
+                //if user exist in database and doesnt login
+            }else{
+                if(User::select('nama_lengkap')->whereRaw("BINARY email = ? AND email_verified = 0",[$result['email']])->limit(1)->exists()){
+                    DB::table('users')->whereRaw("BINARY email = ?",[$result['email']])->update(['email_verified'=>true]);
+                }
+                $jwtData = $jwtController->createJWTWebsite($result['email'],$refreshToken);
+                if($jwtData['status'] == 'error'){
+                    return $cosRes('/' . $request->path(), $jwtData, 500);
+                }
+                $encoded = base64_encode(json_encode(['email'=>$result['email'], 'number'=>$jwtData['number']]));
+                return $cosRes('/' . $request->path(), ['status'=>'success', 'message'=>'success login redirect to dashboard'])
+                ->cookie('token1',$encoded,time()+intval(env('JWT_ACCESS_TOKEN_EXPIRED')))
+                ->cookie('token2',$jwtData['data']['token'],time() + intval(env('JWT_ACCESS_TOKEN_EXPIRED')))
+                ->cookie('token3',$jwtData['data']['refresh'],time()+intval('JWT_REFRESH_TOKEN_EXPIRED'));
+            }
+        //if user dont exist in database
+        }else{
+            return $userController->getView('forgotPassword', ['email'=>$result['email'], 'nama'=>$result['name'], 'file'=>$result['picture']], '/auth/google');
         }
     }
 }

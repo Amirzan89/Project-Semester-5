@@ -1,4 +1,4 @@
-import { CheckAuth } from '../composables/api/auth';
+import { CheckAuth } from '~/composables/api/auth';
 const publicPage = ['/', '/auth/google/', '/login', '/register', '/password/reset']
 export default defineNuxtRouteMiddleware(async (to, from) => {
     if(publicPage.includes(to.fullPath)){

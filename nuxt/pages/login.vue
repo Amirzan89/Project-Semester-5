@@ -58,13 +58,22 @@ import { ref, reactive } from "vue";
 // import { useReCaptcha } from 'vue-recaptcha-v3';
 import { eventBus } from '~/app/eventBus';
 import { Login } from '~/composables/api/auth';
+import useGoogleLoginTap from "~/composables/GooleLogin";
 const publicConfig = useRuntimeConfig().public;
 definePageMeta({
     name: 'Login',
     layout: 'default',
 });
 useHead({
-    title:`Login | ${publicConfig.appName}`
+    title:`Login | ${publicConfig.appName}`,
+    script:[
+        {
+            src:'https://accounts.google.com/gsi/client',
+            async: true,
+            defer: true,
+            onload: useGoogleLoginTap().initializeGoogleOneTap,
+        },
+    ]
 });
 const errMessage = ref('');
 const local = reactive({

@@ -62,7 +62,7 @@ const inpChange = (div: string) => {
     }
 };
 const sendForm = async () => {
-    const res = await CreateLoginGoogle({email: local.fetchedUserAuth.email, nama: local.fetchedUserAuth.nama, password: input.password, password_confirm: input.passwordRepeat });
+    const res = await CreateLoginGoogle({email: local.fetchedUserAuth.email, nama: local.fetchedUserAuth.nama, password: input.password, password_confirm: input.passwordRepeat, file: local.fetchedUserAuth.file });
     if(res.status === 'success'){
         eventBus.emit('closeLoading');
         eventBus.emit('showGreenPopup', res.message);

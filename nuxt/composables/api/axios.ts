@@ -55,7 +55,7 @@ export default () => {
                             }
                     }
                 }
-                return { status: 'error', message: err.response ? err.response.data.message : err.message };
+                return { status: 'error', message: err.response ? err.response.data.message : err.message, link: err.response.data.link ?? '' };
             }
         };
         return req();

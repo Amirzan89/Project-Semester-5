@@ -91,7 +91,7 @@ import { useFetchDataStore } from '~/store/FetchData';
 const publicConfig = useRuntimeConfig().public;
 definePageMeta({
     name: 'Profile',
-    layout: 'authenticated',
+    layout: 'default',
 });
 useHead({
     title:`Profile | ${publicConfig.appName}`
@@ -122,15 +122,17 @@ const inputResetPass = reactive({
 const inpNama: Ref = ref(null);
 const inpEmail: Ref = ref(null);
 const inpJenisKelamin: Ref = ref(null);
-const inpRole: Ref = ref(null);
 const inpPassLama: Ref = ref(null);
 const inpPassBaru: Ref = ref(null);
 const inpPassBaruUlangi: Ref = ref(null);
 const fileInputProfile: Ref = ref(null);
 useAsyncData(async() => {
     const res = await useFetchDataStore().fetchData();
-    if(res.status == 'error'){
-        //
+    if(res ==  undefined || res.status == 'error'){
+        return;
+    }else{
+        local.isDoneFetch = true;
+        local.fetchedViewData = res.data.other;
     }
 });
 watch(() => local.fetchedUserAuth, () => {
@@ -240,6 +242,7 @@ const isValidEmail = (email: string) => {
 };
 const updateProfileForm = async (event: Event) => {
     event.preventDefault();
+    if(local.isRequestInProgress) return;
     let errMessage = '';
     if (inputProfile.nama === local.fetchedUserAuth.nama_lengkap && inputProfile.email === local.fetchedUserAuth.email && inputProfile.jenis_kelamin === local.fetchedUserAuth.jenis_kelamin && inputProfile.fileProfile === null) if(errMessage == '') errMessage = 'Data belum diubah !';
     if(inputProfile.nama === null || inputProfile.nama === ''){
@@ -267,6 +270,8 @@ const updateProfileForm = async (event: Event) => {
         eventBus.emit('showRedPopup', errMessage);
         return;
     }
+    local.isRequestInProgress = true;
+    eventBus.emit('showLoading');
     const formData = new FormData();
     formData.append('_method', 'PUT');
     if(inputProfile.email !== local.fetchedUserAuth.email){
@@ -277,12 +282,13 @@ const updateProfileForm = async (event: Event) => {
     if(inputProfile.fileProfile !== null){
         formData.append('foto', inputProfile.fileProfile);
     }
-    eventBus.emit('showLoading');
     let res = await updateProfile(formData);
     if(res.status === 'success'){
+        local.isRequestInProgress = false;
         eventBus.emit('closeLoading');
         eventBus.emit('showGreenPopup', res.message);
     }else if(res.status === 'error'){
+        local.isRequestInProgress = false;
         eventBus.emit('closeLoading');
         eventBus.emit('showRedPopup', res.message);
     }
