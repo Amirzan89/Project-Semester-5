@@ -1,13 +1,13 @@
 <?php
 namespace App\Http\Controllers\Services;
 use App\Http\Controllers\Controller;
-use App\Models\Device;
-use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Validator;
+use App\Models\Device;
+use App\Models\User;
 use Carbon\Carbon;
 class DeviceController extends Controller
 {

@@ -1,17 +1,15 @@
 <?php
 namespace App\Http\Controllers\Services;
 use App\Http\Controllers\Controller;
-use App\Models\User;
-use App\Models\Verifikasi;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\URL;
 use App\Jobs\SendResetPassword;
 use App\Jobs\SendVerifyEmail;
-use App\Mail\VerifyEmail;
+use App\Models\User;
+use App\Models\Verifikasi;
 use Carbon\Carbon;
 class MailController extends Controller
 {

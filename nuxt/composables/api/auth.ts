@@ -1,9 +1,10 @@
 import createAxios from './axios';
 const { reqData } = createAxios();
-export async function Login(data: { email: string, password: string }){
+export async function Login(data: { email: string, password: string, recaptcha: string }){
     return reqData('/users/login', 'post', {
         email: data.email,
         password: data.password,
+        recaptcha: data.recaptcha,
     }, true);
 }
 export async function CreateLoginGoogle(data: { email: string, nama: string, password: string, password_confirm: string, file: string }){

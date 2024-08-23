@@ -44,7 +44,8 @@ export const useFetchDataStore = defineStore('fetchData', {
             }catch(err: any){
                 if (err.response){
                     if(err.response.status === 401){
-                        return useNuxtApp().runWithContext(() => navigateTo('/login'));
+                        navigateTo('/login');
+                        // useNuxtApp().runWithContext(() => navigateTo('/login'));
                     }
                     if(err.response.status === 404){
                         this.processFetch = { isDone: 'error', message: 'not found'};

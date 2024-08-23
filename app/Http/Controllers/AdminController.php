@@ -8,7 +8,6 @@ use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Hash;
 use App\Models\User;
-use App\Models\RefreshToken;
 use Carbon\Carbon;
 class AdminController extends Controller
 {

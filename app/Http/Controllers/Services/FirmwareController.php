@@ -8,10 +8,10 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Crypt;
 use App\Models\Device;
 use App\Models\Firmware;
-use Carbon\Carbon;
-use ZipArchive;
 use phpseclib3\Crypt\RSA;
 use phpseclib3\Crypt\AES;
+use Carbon\Carbon;
+use ZipArchive;
 class FirmwareController extends Controller
 {
     private static $allDevice;

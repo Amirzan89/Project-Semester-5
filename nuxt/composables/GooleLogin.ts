@@ -9,27 +9,28 @@ export default function useGoogleLoginTap(){
             ux_mode: 'popup',
             callback: (response: any) => {
                 CreateLoginGoogleTap(response.credential).then((res: any) => {
-                    if(res.status == 'success'){
-                        setTimeout(() => {
-                            navigateTo('/dashboard');
-                        }, 1500);
+                    if(res.status == 'error'){
+                        console.error('Error logging in:', res.status)
                     }
+                    setTimeout(() => {
+                        navigateTo('/dashboard');
+                    }, 1500);
                 }).catch((error: any) => {
                     console.error('Error logging in:', error)
                 });
             },
             prompt_parent_id: "root",
         });
-        google.accounts.id.prompt((notification: any) => {
-            if (notification.isNotDisplayed()) {
-            console.log(notification.getNotDisplayedReason());
-            } else if (notification.isSkippedMoment()) {
-            console.log(notification.getSkippedReason());
-            } else if (notification.isDismissedMoment()) {
-            console.log(notification.getDismissedReason());
-            } else {
-            }
-        });
+        // google.accounts.id.prompt((notification: any) => {
+        //     if (notification.isNotDisplayed()) {
+        //     console.log(notification.getNotDisplayedReason());
+        //     } else if (notification.isSkippedMoment()) {
+        //     console.log(notification.getSkippedReason());
+        //     } else if (notification.isDismissedMoment()) {
+        //     console.log(notification.getDismissedReason());
+        //     } else {
+        //     }
+        // });
     }
     return { initializeGoogleOneTap }
 }
