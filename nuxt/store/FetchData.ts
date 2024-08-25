@@ -20,7 +20,7 @@ export const useFetchDataStore = defineStore('fetchData', {
         retryCount: 0 as number,
     }),
     actions: {
-        async fetchData(link?: string): Promise<Response> {
+        async fetchData(): Promise<Response> {
             try{
                 const routePath = useRoute().fullPath;
                 //search cache

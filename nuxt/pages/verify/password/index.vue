@@ -1,24 +1,26 @@
 <template>
-    <template v-if="local.isDoneFetch">
-        <template v-if="local.isValid">
-            <div>
-                <form>
-                    <div>
-                        <label for="">password</label>
-                        <input type="password" ref="inpPassword" v-model="input.password" @change="inpChange('password')">
-                    </div>
-                    <div>
-                        <label for="">repeat pasword</label>
-                        <input type="password" ref="inpUlangiPassword" v-model="input.ulangiPassword" @change="inpChange('password_repeat')">
-                    </div>
-                    <button @click.prevent="sendForm">Kirim</button>
-                </form>
-            </div>
+    <div>
+        <template v-if="local.isDoneFetch">
+            <template v-if="local.isValid">
+                <div>
+                    <form>
+                        <div>
+                            <label for="">password</label>
+                            <input type="password" ref="inpPassword" v-model="input.password" @change="inpChange('password')">
+                        </div>
+                        <div>
+                            <label for="">repeat pasword</label>
+                            <input type="password" ref="inpUlangiPassword" v-model="input.ulangiPassword" @change="inpChange('password_repeat')">
+                        </div>
+                        <button @click.prevent="sendForm">Kirim</button>
+                    </form>
+                </div>
+            </template>
+            <template v-else>
+                <div>{{ local.message }}</div>
+            </template>
         </template>
-        <template v-else>
-            <div>{{ local.message }}</div>
-        </template>
-    </template>
+    </div>
 </template>
 <style scoped lang="scss">
 </style>

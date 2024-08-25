@@ -21,9 +21,9 @@
 <style scoped lang="scss">
 </style>
 <script setup lang="ts">
+import Cookies from 'js-cookie'
 import { eventBus } from '~/app/eventBus';
 import { CreateLoginGoogle } from '~/composables/api/auth';
-import Cookies from 'js-cookie'
 const route = useRoute();
 const publicConfig = useRuntimeConfig().public;
 definePageMeta({

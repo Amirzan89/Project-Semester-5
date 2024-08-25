@@ -1,5 +1,5 @@
 <template>
-    <div class="bg-primary1 h-screen flex items-center justify-center">
+    <div class="bg-primary1 h-screen flex items-center justify-center" id="root">
         <form class="relative flex flex-col items-center 2xl:w-250 xl:w-200 lg:w-150 md:w-150 sm:w-30 bg-white rounded-3xl">
             <h1 class="relative w-2/4 top-5 2xl:text-6xl xl:text-4xl lg:text-4xl md:text-2xl sm:text-2xl text-center">Selamat datang</h1>
             <div ref="popup" class="invisible relative flex items-center justify-center bg-popup_error mt-5 md:top-5 xl:w-70 lg:w-80 md:w-50 xl:h-10 lg:h-10 mdh-7 rounded-2xl">
@@ -54,6 +54,7 @@
 }
 </style>
 <script setup lang="ts">
+import Cookies from 'js-cookie'
 import { ref, reactive } from "vue";
 import { eventBus } from '~/app/eventBus';
 import { Login } from '~/composables/api/auth';
@@ -96,6 +97,21 @@ const input = reactive({
 const popup: Ref = ref(null);
 const inpEmail: Ref = ref(null);
 const inpPassword: Ref = ref(null);
+useAsyncData(async () => {
+    let cookieData = Cookies.get('__INITIAL_COSTUM_STATE__');
+    if (cookieData) {
+        try {
+            const decodedData = atob(cookieData);
+            const parsedData = JSON.parse(decodedData);
+            console.log('isi ', parsedData);
+            // eventBus.emit('showGreenPopup', login.);
+        } catch (error) {
+            console.error('Error parsing cookie data:', error);
+        } finally {
+            Cookies.remove('__INITIAL_COSTUM_STATE__');
+        }
+    }
+});
 const showPass = () => {
     if(input.isPasswordShow){
         inpPassword.value.type = 'password';

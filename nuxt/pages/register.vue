@@ -79,8 +79,9 @@
 </style>
 <script setup lang="ts">
 import { ref, reactive } from "vue";
-import OTPComponent from '~/components/OTP.vue';
 import { eventBus } from '~/app/eventBus';
+import OTPComponent from '~/components/OTP.vue';
+import { Register } from '~/composables/api/auth';
 import useGoogleLoginTap from "~/composables/GooleLogin";
 const publicConfig = useRuntimeConfig().public;
 definePageMeta({
@@ -94,7 +95,9 @@ useHead({
             src:'https://accounts.google.com/gsi/client',
             async: true,
             defer: true,
-            onload: useGoogleLoginTap().initializeGoogleOneTap,
+            onload: () => {
+                if(local.conOTP == 'register') useGoogleLoginTap().initializeGoogleOneTap;
+            },
         },
     ]
 });

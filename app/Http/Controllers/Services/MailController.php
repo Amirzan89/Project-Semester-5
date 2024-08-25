@@ -14,7 +14,8 @@ use Carbon\Carbon;
 class MailController extends Controller
 {
     // private static $conditionOTP = [ 1, 15, 30, 60];
-    private static $conditionOTP = [ 5, 15, 30, 60];
+    // private static $conditionOTP = [ 5, 15, 30, 60];
+    private static $conditionOTP = [ 60, 15, 30, 60];
     private static $enCol = ['email' => SendVerifyEmail::class, 'password' => SendResetPassword::class];
     public static function getConditionOTP(){
         return self::$conditionOTP;

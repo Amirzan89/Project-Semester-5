@@ -6,12 +6,10 @@ use App\Http\Controllers\UserController;
 use App\Models\User;
 use App\Models\Verifikasi;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
-use Illuminate\Http\JsonResponse;
 class RegisterController extends Controller
 {
-    public function Register(Request $request, User $user, UserController $userController,MailController $mailController, Verifikasi $verify){
+    public function Register(Request $request, UserController $userController,MailController $mailController, Verifikasi $verify){
         $validator = Validator::make($request->all(), [
             'email'=>'required | email',
             'password' => [

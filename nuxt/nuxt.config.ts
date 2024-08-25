@@ -1,7 +1,7 @@
 import cosRouter from './app/cosRouter'
 export default defineNuxtConfig({
     // devServer:{
-    //     port: 8000,
+    //     port: 3500,
     // },
     devtools: {
         enabled: true,
@@ -53,5 +53,5 @@ export default defineNuxtConfig({
             
         },
         dir: 'assets/images',
-    }
+    },
 })

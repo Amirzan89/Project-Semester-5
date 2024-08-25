@@ -9,6 +9,7 @@ use App\Models\RefreshToken;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Cookie;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\File;
@@ -17,7 +18,7 @@ use Illuminate\Support\Str;
 use Carbon\Carbon;
 class UserController extends Controller
 {
-    public function getView($name = null, $data = [], $url = ''){
+    public function getView($name = null, $data = [], $url = '', $cond = ''){
         $env = env('APP_VIEW', 'blade');
         if($env == 'blade'){
             return view($name);
@@ -36,6 +37,9 @@ class UserController extends Controller
                 }
             }else{
                 setCookie('__INITIAL_COSTUM_STATE__', base64_encode(json_encode($data)), 0, '/', null, false, false);
+                if($cond == 'json'){
+                    return response()->json(['status' => 'success', 'data' => $url]);
+                }
                 return redirect(env('FRONTEND_URL', 'http://localhost:3000') . $url);
             }
         }
@@ -556,11 +560,20 @@ class UserController extends Controller
         }
         return response()->json(['status' =>'success','message'=>'Password Admin berhasil di perbarui']);
     }
-    public function logout(Request $request){
-        $userAuth = $request->input('user_auth');
-        if (!RefreshToken::whereRaw("BINARY email = ?",[$userAuth['email']])->where('number',$userAuth['number'])->delete()) {
-            return response()->json(['status' => 'error', 'message' => 'Gagal Logout'], 500);
+    public function logout(Request $request, JWTController $jwtController){
+        $email = $request->input('email');
+        $number = $request->input('number');
+        if(empty($email) || is_null($email)){
+            return response()->json(['status'=>'error','message'=>'email empty'],400);
+        }else if(empty($number) || is_null($number)){
+            return response()->json(['status'=>'error','message'=>'token empty'],400);
+        }else{
+            $deleted = $jwtController->deleteRefreshWebsite($email,$number);
+            if($deleted['status'] == 'error'){
+                return response()->json(['status'=>'error','message'=>'Logout gagal']);
+            }else{
+                return response()->json(['status'=>'success','message'=>'Logout berhasil'])->withCookie(Cookie::forget('token1'))->withCookie(Cookie::forget('token2'))->withCookie(Cookie::forget('token3'))->withCookie(Cookie::forget('cart'));
+            }
         }
-        return response()->json(['status' => 'success', 'message' => 'Logout berhasil silahkan login kembali']);
     }
 }

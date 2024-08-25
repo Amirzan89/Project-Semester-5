@@ -135,7 +135,7 @@ class LoginController extends Controller
             }
         //if user dont exist in database
         }else{
-            return $userController->getView('forgotPassword', ['email'=>$result['email'], 'nama'=>$result['name'], 'file'=>$result['picture']], '/auth/google');
+            return $userController->getView('forgotPassword', ['email'=>$result['email'], 'nama'=>$result['name'], 'file'=>$result['picture']], '/auth/google', '/' . $request->path() == '/auth/google-tap' ? 'json' : '');
         }
     }
 }

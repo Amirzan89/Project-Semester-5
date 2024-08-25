@@ -19,10 +19,13 @@
                 Konfirmasi
             </template>    
         </button>
-        <span class="text-lg mt-5">Tidak Menerima Kode OTP ? <button type="button" @click="sendOtp" class="hover:text-red-500 font-medium">kirim ulang</button></span>
+        <span class="text-lg mt-5">Tidak Menerima Kode OTP ? <button type="button" @click="ResendOtp" class="hover:text-red-500 font-medium">kirim ulang</button></span>
     </form>
 </template>
-<style scoped>
+<style scoped lang="scss">
+input{
+    outline: none;
+}
 .fade-out{
     animation: fadeOut 0.75s ease forwards;
 }
@@ -63,31 +66,28 @@ const handleInput = (index: number, event: any) => {
     }
     if (val.length > 1) {
         inpOtp.value[index] = val[val.length - 1];
-        return;
     }
-    if (val !== "") {
-        const nextIndex = index + 1;
-        if (nextIndex < inpOtp.value.length) {
-            inpOtpRefs.value[nextIndex].focus()
-        }
+    const nextIndex = index + 1;
+    if(nextIndex < inpOtp.value.length && inpOtp.value[nextIndex] == ''){
+        inpOtpRefs.value[nextIndex].focus();
     }
 };
 const handleKeyUp = (index: number, event: any) => {
     const key = event.key.toLowerCase();
     if (key == "backspace" || key == "delete") {
-        inpOtp.value[index] = "";
         const prevIndex = index - 1;
-        if (prevIndex >= 0) {
-            inpOtpRefs.value[prevIndex].focus()
+        if (prevIndex >= 0 && inpOtp.value[prevIndex] != '') {
+            inpOtpRefs.value[prevIndex].focus();
+            inpOtp.value[prevIndex] = '';
         }
         return;
     }
     if (key === "arrowleft" || key === "arrowright") {
         const direction = key === "arrowleft" ? "previousElementSibling" : "nextElementSibling";
-            const nextInput = inpOtpRefs.value[index][direction];
-            if (nextInput) {
-                nextInput.focus();
-            }
+        const nextInput = inpOtpRefs.value[index][direction];
+        if (nextInput) {
+            nextInput.focus();
+        }
     }
 };
 const showTimerPopup = () => {
@@ -96,12 +96,12 @@ const showTimerPopup = () => {
         eventBus.emit('showCountDown', `sisa waktu ${props.timer.timerMenit} menit ${props.timer.timerDetik} detik untuk kirim kembali`);
         second++;
         if (second >= 3) {
-            clearInterval(intervalId); 
+            clearInterval(intervalId);
             eventBus.emit('closePopup','red');
         }
     }, 1000);
 };
-const sendOtp = async () => {
+const ResendOtp = async () => {
     if(local.isReSend) return;
     if (!props.data.email || props.data.email.trim() == '') return;
     if(props.timer.timer){

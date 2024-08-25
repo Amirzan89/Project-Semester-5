@@ -26,11 +26,13 @@ class Authenticate
             $tokenDecode1 = json_decode(base64_decode($token1),true);
             $email = $tokenDecode1['email'];
             $number = $tokenDecode1['number'];
-            $authPage = ['/','/login','/register','/password/reset', 'verify/password','verify/email','auth/redirect','auth/google','/auth/google-tap'];
+            $authPage = ['/','/login','/register','/password/reset', '/verify/password','/verify/email','/auth/redirect','/auth/google','/auth/google-tap'];
             if ((in_array($currentPath, $authPage) || strpos($currentPath, '/artikel/') === 0) && $request->isMethod('get')) {
                 if (in_array(ltrim($path), $authPage)) {
+                    // return response()->json('otherr kekekk', 400);
                     $response = $this->handleRedirect($request, 'success', '/dashboard');
                 } else {
+                    // return response()->json('gkkk kekekk', 400);
                     $response = $this->handleRedirect($request, 'success', $path);
                 }
                 $cookies = $response->headers->getCookies();
@@ -64,6 +66,7 @@ class Authenticate
             ];
             //check user is exist in database
             if(!User::select('email')->whereRaw("BINARY email = ?",[$email])->limit(1)->exists()){
+                // return response()->json('mantappp mboohhh', 400);
                 return $this->handleRedirect($request, 'error');
             }
             //check token if exist in database
@@ -71,18 +74,23 @@ class Authenticate
                 //if token is not exist in database
                 $delete = $jwtController->deleteRefreshToken($email,$number, 'website');
                 if($delete['status'] == 'error'){
+                    // return response()->json('mantappp gk kenek', 400);
                     return $this->handleRedirect($request, 'error');
                 }
+                // return response()->json('dahlahhh mantappp', 400);
                 return $this->handleRedirect($request, 'error');
             }
             //if token exist
             $decodedRefresh = $jwtController->decode($decodeRefresh);
             if($decodedRefresh['status'] == 'error'){
                 if($decodedRefresh['message'] == 'Expired token'){
+                    // return response()->json('dahlahhh kekekk', 400);
                     return $this->handleRedirect($request, 'error');
                 }else if($decodedRefresh['message'] == 'invalid email'){
+                    // return response()->json('dahlahhh', 400);
                     return $this->handleRedirect($request, 'error');
                 }
+                // return response()->json('karepppp', 400);
                 return $this->handleRedirect($request, 'error');
             }
             //if token refresh success decoded and not expired
@@ -155,9 +163,11 @@ class Authenticate
                     if($delete['status'] == 'error'){
                         return response()->json(['status'=>'error','message'=>'delete token error'],500);
                     }else{
+                        // return response()->json('mnohhhh kekekk', 400);
                         return $this->handleRedirect($request, 'error');
                     }
                 }else{
+                    // return response()->json('mbohhh kekekk', 400);
                     return $this->handleRedirect($request, 'error');
                 }
             }
