@@ -174,6 +174,10 @@ class MailController extends Controller
         if (Carbon::parse($verifyDb->updated_at)->diffInMinutes(Carbon::now()) < $expTime) {
             return response()->json(['status'=>'success','message'=>'Kami sudah mengirim email ','data'=>['waktu' => Carbon::now()->addMinutes(self::$conditionOTP[min($verifyDb['send'], count(self::$conditionOTP)) - 1])]]);
         }
+        $user = User::select('id_user', 'name', 'role')->whereRaw("BINARY email = ?",[$request->input('email')])->first();
+        if (is_null($user)) {
+            return response()->json(['status'=>'error','message'=>'Email tidak terdaftar !'], 400);
+        }
         //if after desired time then update code
         $verificationCode = mt_rand(100000, 999999);
         $linkPath = Str::random(50);

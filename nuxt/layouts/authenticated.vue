@@ -1,83 +1,67 @@
 <template>
-    <template v-if="useNotFoundStore().isNotFound">
-            <NotFoundComponent/>
+    <template v-if="useNotFoundStore().isNotFound || fetchDataS.processFetch.isDone != 'success'">
+        <NuxtPage/>
     </template>
     <template v-else>
-        <div class="layout-wrapper" :class="containerClass">
-            <app-topbar></app-topbar>
-            <div class="layout-sidebar">
-                <app-sidebar></app-sidebar>
-            </div>
-            <div class="layout-main-container">
-                <div class="layout-main">
-                    <slot/>
-                    <!-- <NuxtPage></NuxtPage> -->
+        <div class="layout-wrapper layout-static">
+            <HeaderComponent @menu-toggled="onNavToggle"/>
+            <NavbarComponent/>
+            <div class="tw-min-h-screen tw-flex tw-flex-col tw-justify-between tw-pt-28 tw-pr-8 tw-pb-8 tw-pl-4" style="transition: margin-left 0.2s ease-out;" :style="checkNav">
+                <div class="tw-flex-1">
+                    <NuxtPage/>
                 </div>
-                <app-footer></app-footer>
+                <FooterComponent/>
             </div>
-            <app-config></app-config>
-            <div class="layout-mask"></div>
         </div>
+        <Loading/>
         <Toast/>
+        <Toast position="bottom-right" group="br" />
     </template>
 </template>
-<style lang="scss" scoped></style>
-<script setup>
-import NotFoundComponent from '~/components/NotFound.vue';
-import { computed, watch, ref } from 'vue';
-import AppTopbar from './AppTopbar.vue';
-import AppFooter from './AppFooter.vue';
-import AppSidebar from './AppSidebar.vue';
-import AppConfig from './AppConfig.vue';
-import { useLayout } from '@/layouts/composables/layout';
+<style>
+.page-left-enter-active,
+.page-right-enter-active,
+.page-left-leave-active,
+.page-right-leave-active{
+    transition: all 0.3s linear;
+}
+.page-left-enter-from, .page-right-leave-to{
+    transform: translateX(100%);
+    opacity: 0;
+}
+.page-left-leave-to, .page-right-enter-from{
+    transform: translateX(-100%);
+    opacity: 0;
+}
+.page-left-enter-to, .page-right-enter-to{
+    transform: translateX(0);
+    opacity: 1;
+}
+</style>
+<script setup lang="ts">
+import HeaderComponent from '~/components/HeaderAuth.vue';
+import NavbarComponent from '~/components/Navbar.vue';
+import FooterComponent from '~/components/Footer.vue';
+import Loading from '~/components/Loading.vue';
 import { useNotFoundStore } from '~/store/NotFound';
-
-const { layoutConfig, layoutState, isSidebarActive } = useLayout();
-
-const outsideClickListener = ref(null);
-
-watch(isSidebarActive, (newVal) => {
-    if (newVal) {
-        bindOutsideClickListener();
-    } else {
-        unbindOutsideClickListener();
+import { useFetchDataStore } from "~/store/FetchData";
+const fetchDataS = useFetchDataStore();
+const route = useRoute();
+const isNavInactive: Ref = ref(false);
+watch(() => route.fullPath, async() => {
+    const res = await fetchDataS.fetchPage();
+    if(res ==  undefined || res.status == 'error'){
+        return;
     }
-});
-
-const containerClass = computed(() => {
+}, { immediate:true });
+const onNavToggle = () => {
+    document.querySelector('body')?.classList.toggle('nav-inactive', !isNavInactive.value);
+    isNavInactive.value = !isNavInactive.value;
+};
+const checkNav = computed(() => {
     return {
-        'layout-theme-light': layoutConfig.darkTheme.value === 'light',
-        'layout-theme-dark': layoutConfig.darkTheme.value === 'dark',
-        'layout-overlay': layoutConfig.menuMode.value === 'overlay',
-        'layout-static': layoutConfig.menuMode.value === 'static',
-        'layout-static-inactive': layoutState.staticMenuDesktopInactive.value && layoutConfig.menuMode.value === 'static',
-        'layout-overlay-active': layoutState.overlayMenuActive.value,
-        'layout-mobile-active': layoutState.staticMenuMobileActive.value,
-        'p-ripple-disabled': layoutConfig.ripple.value === false
+        marginLeft: isNavInactive.value ? '0' : '200px',
+        paddingLeft: isNavInactive.value ? '2rem' : ''
     };
 });
-const bindOutsideClickListener = () => {
-    if (!outsideClickListener.value) {
-        outsideClickListener.value = (event) => {
-            if (isOutsideClicked(event)) {
-                layoutState.overlayMenuActive.value = false;
-                layoutState.staticMenuMobileActive.value = false;
-                layoutState.menuHoverActive.value = false;
-            }
-        };
-        document.addEventListener('click', outsideClickListener.value);
-    }
-};
-const unbindOutsideClickListener = () => {
-    if (outsideClickListener.value) {
-        document.removeEventListener('click', outsideClickListener);
-        outsideClickListener.value = null;
-    }
-};
-const isOutsideClicked = (event) => {
-    const sidebarEl = document.querySelector('.layout-sidebar');
-    const topbarEl = document.querySelector('.layout-menu-button');
-
-    return !(sidebarEl.isSameNode(event.target) || sidebarEl.contains(event.target) || topbarEl.isSameNode(event.target) || topbarEl.contains(event.target));
-};
 </script>

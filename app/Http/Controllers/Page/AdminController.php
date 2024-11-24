@@ -1,29 +1,11 @@
 <?php
 namespace App\Http\Controllers\Page;
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\UtilityController;
 use Illuminate\Http\Request;
 use App\Models\User;
-use Illuminate\Support\Facades\File;
-use Inertia\Inertia;
-class HomeController extends Controller
+class AdminController extends Controller
 {
-    private function getView($name = null, $dataShow = null){
-        $env = env('APP_VIEW', 'blade');
-        if($env == 'blade'){
-            return view($name);
-        }else if($env == 'inertia'){
-            return Inertia::render('app', $dataShow);
-        }else if($env == 'nuxt'){
-            $indexPath = public_path('dist/index.html');
-            if (File::exists($indexPath)) {
-                $htmlContent = File::get($indexPath);
-                $htmlContent = str_replace('<body>', '<body>' . '<script>const csrfToken = "' . csrf_token() . '";</script>', $htmlContent);
-                return response($htmlContent)->cookie('XSRF-TOKEN', csrf_token(), 0, '/', null, false, true);
-            } else {
-                return response()->json(['error' => 'Page not found'], 404);
-            }
-        }
-    }
     public function showAdmin(Request $request){
         $userAuth = $request->input('user_auth');
         $adminData = User::select('uuid', 'nama_lengkap', 'email', 'role')->limit(10)->get();
@@ -35,10 +17,7 @@ class HomeController extends Controller
             'userAuth' => $userAuth,
             'viewData' => $adminData,
         ];
-        if ($request->wantsJson()) {
-            return response()->json($dataShow);
-        }
-        return $this->getView();
+        return UtilityController::getView('', $dataShow, $request->wantsJson() ? 'json' : ['cond' => ['view', 'redirect'], 'redirect' => '/' . $request->path()]);
     }
     public function showTambah(Request $request){
         $userAuth = $request->input('user_auth');
@@ -46,10 +25,7 @@ class HomeController extends Controller
         $dataShow = [
             'userAuth' => $userAuth,
         ];
-        if ($request->wantsJson()) {
-            return response()->json($dataShow);
-        }
-        return $this->getView();
+        return UtilityController::getView('', $dataShow, $request->wantsJson() ? 'json' : ['cond' => ['view', 'redirect'], 'redirect' => '/' . $request->path()]);
     }
     public function detailAdmin(Request $request, $link){
         $userAuth = $request->input('user_auth');
@@ -62,9 +38,6 @@ class HomeController extends Controller
             'userAuth' => $userAuth,
             'viewData' => $adminDetail,
         ];
-        if ($request->wantsJson()) {
-            return response()->json($dataShow);
-        }
-        return $this->getView();
+        return UtilityController::getView('', $dataShow, $request->wantsJson() ? 'json' : ['cond' => ['view', 'redirect'], 'redirect' => '/' . $request->path()]);
     }
 }

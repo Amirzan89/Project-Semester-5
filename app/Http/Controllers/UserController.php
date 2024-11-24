@@ -1,6 +1,7 @@
 <?php
 namespace App\Http\Controllers;
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\UtilityController;
 use App\Http\Controllers\Auth\JWTController;
 use App\Http\Controllers\Services\MailController;
 use App\Models\User;
@@ -12,38 +13,11 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Cookie;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Carbon\Carbon;
 class UserController extends Controller
 {
-    public function getView($name = null, $data = [], $url = '', $cond = ''){
-        $env = env('APP_VIEW', 'blade');
-        if($env == 'blade'){
-            return view($name);
-        }else if($env == 'inertia'){
-            return inertia($name);
-        }else if($env == 'nuxt'){
-            if(env('APP_DOMAIN', 'same') == 'same'){
-                $indexPath = public_path('dist/index.html');
-                if (File::exists($indexPath)) {
-                    $htmlContent = File::get($indexPath);
-                    $htmlContent = str_replace('<body>', '<body>' . '<script>const csrfToken = "' . csrf_token() . '";</script>', $htmlContent);
-                    $htmlContent = str_replace('</head>', '<script>window.__INITIAL_STATE__ = ' . json_encode($data) . '</script></head>', $htmlContent);
-                    return response($htmlContent)->cookie('XSRF-TOKEN', csrf_token(), 0, '/', null, false, true);
-                } else {
-                    return response()->json(['error' => 'Page not found'], 404);
-                }
-            }else{
-                setCookie('__INITIAL_COSTUM_STATE__', base64_encode(json_encode($data)), 0, '/', null, false, false);
-                if($cond == 'json'){
-                    return response()->json(['status' => 'success', 'data' => $url]);
-                }
-                return redirect(env('FRONTEND_URL', 'http://localhost:3000') . $url);
-            }
-        }
-    }
     public function getDefaultFoto(Request $request){
         $referrer = $request->headers->get('referer');
         if (!$referrer && $request->path() == 'public/download/foto') {
@@ -68,6 +42,13 @@ class UserController extends Controller
             abort(404);
         }
     }
+    public static function checkEmail($email){
+        $userDB = User::select('id_user', 'role')->whereRaw("BINARY email = ?", [$email])->limit(1)->get();
+            if ($userDB->isEmpty()) {
+                return ['status'=>'error','message'=>'User not found','code'=>404];
+            }
+            return ['status'=>'success','data' =>json_decode($userDB, true)[0]];
+    }
     public function getChangePass(Request $request, User $user, $any = null){
         $validator = Validator::make($request->only('email', 'code'), [
             'email'=>'required|email',
@@ -88,19 +69,19 @@ class UserController extends Controller
         if(Str::startsWith('/' . $request->path(), $prefix) && $request->isMethod('get')){
             $email = $request->query('email');
             if (!Verifikasi::whereRaw("BINARY link = ?", [$any])->exists()) {
-                return self::getView('resetPass', ['status' => 'error', 'message' => 'Link invalid', 'code' => 400], $prefix);
+                return UtilityController::getView('resetPass', ['status' => 'error', 'message' => 'Link invalid', 'code' => 400], ['cond' => ['view', 'redirect'],'redirect' => $prefix]);
             }
             if (!Verifikasi::whereRaw("BINARY email = ?", [$email])->exists()) {
-                return self::getView('resetPass', ['status' => 'error', 'message' => 'Email invalid', 'code' => 400], $prefix);
+                return UtilityController::getView('resetPass', ['status' => 'error', 'message' => 'Email invalid', 'code' => 400], ['cond' => ['view', 'redirect'],'redirect' => $prefix]);
             }
             if (!Verifikasi::whereRaw("BINARY email = ? AND BINARY link = ?", [$email, $any])->exists()) {
-                return self::getView('resetPass', ['status' => 'error', 'message' => 'Link invalid', 'code' => 400], $prefix);
+                return UtilityController::getView('resetPass', ['status' => 'error', 'message' => 'Link invalid', 'code' => 400], ['cond' => ['view', 'redirect'],'redirect' => $prefix]);
             }
             $currentDateTime = Carbon::now();
             if (!Verifikasi::whereRaw("BINARY email = ?", [$email])->where('updated_at', '>=', $currentDateTime->subMinutes(1))->exists()) {
-                return self::getView('resetPass', ['status' => 'error', 'message' => 'Link Expired', 'code' => 400], $prefix);
+                return UtilityController::getView('resetPass', ['status' => 'error', 'message' => 'Link Expired', 'code' => 400], ['cond' => ['view', 'redirect'],'redirect' => $prefix]);
             }
-            return self::getView('resetPass', ['status' => 'success', 'email' => $email, 'link' => $any], $prefix);
+            return UtilityController::getView('resetPass', ['status' => 'success', 'email' => $email, 'link' => $any], ['cond' => ['view', 'redirect'],'redirect' => $prefix]);
         }else{
             $email = $request->input('email');
             $code = $request->input('otp');
@@ -234,24 +215,24 @@ class UserController extends Controller
             $email = $request->query('email');
             $verify = Verifikasi::select('link', 'send', 'updated_at')->whereRaw("BINARY email = ?",[$email])->where('deskripsi', 'email')->first();
             if (is_null($verify)) {
-                return self::getView('verifEmail', ['status' => 'error', 'message' => 'Email invalid', 'code' => 400], $prefix);
+                return UtilityController::getView('verifEmail', ['status' => 'error', 'message' => 'Email invalid', 'code' => 400], ['cond' => ['view', 'redirect'], 'redirect' => $prefix]);
             }
             //check link
             if ($verify->link !== $any) {
-                return self::getView('verifEmail', ['status' => 'error', 'message' => 'Link invalid', 'code' => 400], $prefix);
+                return UtilityController::getView('verifEmail', ['status' => 'error', 'message' => 'Link invalid', 'code' => 400], ['cond' => ['view', 'redirect'], 'redirect' => $prefix]);
             }
             //check if mail not expired
             $expTime = MailController::getConditionOTP()[($verify->send - 1)];
             if (Carbon::parse($verify->updated_at)->diffInMinutes(Carbon::now()) > $expTime) {
-                return self::getView('verifEmail', ['status' => 'error', 'message' => 'Link expired', 'code' => 400], $prefix);
+                return UtilityController::getView('verifEmail', ['status' => 'error', 'message' => 'Link expired', 'code' => 400], ['cond' => ['view', 'redirect'], 'redirect' => $prefix]);
             }
             if(DB::table('users')->whereRaw("BINARY email = ?",[$email])->update(['email_verified'=>true]) === 0){
-                return self::getView('verifEmail', ['status' => 'error', 'message' => 'Error verifikasi Email', 'code' => 500], $prefix);
+                return UtilityController::getView('verifEmail', ['status' => 'error', 'message' => 'Error verifikasi Email', 'code' => 500], ['cond' => ['view', 'redirect'], 'redirect' => $prefix]);
             }
             if(!DB::table('verifikasi')->whereRaw("BINARY email = ?",[$email])->delete()){
-                return self::getView('resetPass', ['status' => 'error', 'message' => 'Error verifikasi Email', 'code' => 500], $prefix);
+                return UtilityController::getView('resetPass', ['status' => 'error', 'message' => 'Error verifikasi Email', 'code' => 500], ['cond' => ['view', 'redirect'], 'redirect' => $prefix]);
             }
-            return self::getView('resetPass', ['status' => 'success', 'message' => 'verifikasi email berhasil silahkan login'], $prefix);
+            return UtilityController::getView('resetPass', ['status' => 'success', 'message' => 'verifikasi email berhasil silahkan login'], ['cond' => ['view', 'redirect'], 'redirect' => $prefix]);
         }else{
             $code = $request->input('otp');
             //check if user have otp verify email
@@ -568,7 +549,7 @@ class UserController extends Controller
         }else if(empty($number) || is_null($number)){
             return response()->json(['status'=>'error','message'=>'token empty'],400);
         }else{
-            $deleted = $jwtController->deleteRefreshWebsite($email,$number);
+            $deleted = $jwtController->deleteRefreshToken($email,$number);
             if($deleted['status'] == 'error'){
                 return response()->json(['status'=>'error','message'=>'Logout gagal']);
             }else{

@@ -1,28 +1,30 @@
 <template>
-    <div>
-        iki delok + edit device
-        <form>
-            <div>
-                <label for="name">Name</label>
-                <input type="text" v-model="input.name" @input="inpChange('name')">
-            </div>
-            <div>
-                <label for="name">Name</label>
-                <input type="text" v-model="input.device_id" @input="inpChange('device_id')">
-            </div>
-            <div>
-                <label for="name">Name</label>
-                <input type="text" v-model="input.token" @input="inpChange('token')">
-            </div>
-            <div>
-                <label for="name">Active</label>
-                <input type="radio" value="active" v-model="input.activated" @input="inpChange('activated')">
-                <input type="radio" value="nonactive" v-model="input.activated" @input="inpChange('activated')">
-            </div>
-            <button @click.prevent="deleteForm">Hapus</button>
-            <button @click.prevent="updateForm">Edit</button>
-        </form>
-    </div>
+    <template v-if="local.isDoneFetch">
+        <div>
+            iki delok + edit device
+            <form>
+                <div>
+                    <label for="name">Name</label>
+                    <input type="text" v-model="input.name" @input="inpChange('name')">
+                </div>
+                <div>
+                    <label for="name">Name</label>
+                    <input type="text" v-model="input.device_id" @input="inpChange('device_id')">
+                </div>
+                <div>
+                    <label for="name">Name</label>
+                    <input type="text" v-model="input.token" @input="inpChange('token')">
+                </div>
+                <div>
+                    <label for="name">Active</label>
+                    <input type="radio" value="active" v-model="input.activated" @input="inpChange('activated')">
+                    <input type="radio" value="nonactive" v-model="input.activated" @input="inpChange('activated')">
+                </div>
+                <button @click.prevent="deleteForm">Hapus</button>
+                <button @click.prevent="updateForm">Edit</button>
+            </form>
+        </div>
+    </template>
 </template>
 <script setup lang="ts">
 import { ref } from "vue";
@@ -66,11 +68,10 @@ const inpToken: Ref = ref(null);
 const inpActivated: Ref = ref(null);
 useAsyncData(async () => {
     const res = await useFetchDataStore().fetchData();
-    if(res.status == 'error'){
-        if(res.code === 404){
-            return useNotFoundStore().setIsNotFound(true, '/firmware','Detail Device not found');
-        }
+    if(res ==  undefined || res.status == 'error'){
+        return;
     }
+    local.isDoneFetch = true;
     local.fetchedViewData = res.data.other;
 });
 onBeforeRouteUpdate(() => {

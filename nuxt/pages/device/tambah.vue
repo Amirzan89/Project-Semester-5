@@ -1,27 +1,29 @@
 <template>
-    <div>
-        iki tambah device
-        <form>
-            <div>
-                <label for="name">Name</label>
-                <input type="text" v-model="input.name" @input="inpChange('name')">
-            </div>
-            <div>
-                <label for="name">Device id</label>
-                <input type="text" v-model="input.device_id" @input="inpChange('device_id')">
-            </div>
-            <div>
-                <label for="name">Token</label>
-                <input type="text" v-model="input.token" @input="inpChange('token')">
-            </div>
-            <div>
-                <label for="name">Active</label>
-                <input type="radio" value="active" v-model="input.activated" @input="inpChange('activated')">
-                <input type="radio" value="nonactive" v-model="input.activated" @input="inpChange('activated')">
-            </div>
-            <button @click.prevent="tambahForm">tambah</button>
-        </form>
-    </div>
+    <template v-if="local.isDoneFetch">
+        <div>
+            iki tambah device
+            <form>
+                <div>
+                    <label for="name">Name</label>
+                    <input type="text" v-model="input.name" @input="inpChange('name')">
+                </div>
+                <div>
+                    <label for="name">Device id</label>
+                    <input type="text" v-model="input.device_id" @input="inpChange('device_id')">
+                </div>
+                <div>
+                    <label for="name">Token</label>
+                    <input type="text" v-model="input.token" @input="inpChange('token')">
+                </div>
+                <div>
+                    <label for="name">Active</label>
+                    <input type="radio" value="active" v-model="input.activated" @input="inpChange('activated')">
+                    <input type="radio" value="nonactive" v-model="input.activated" @input="inpChange('activated')">
+                </div>
+                <button @click.prevent="tambahForm">tambah</button>
+            </form>
+        </div>
+    </template>
 </template>
 <script setup lang="ts">
 import { eventBus } from '~/app/eventBus';
@@ -55,10 +57,9 @@ useAsyncData(async () => {
     const res = await useFetchDataStore().fetchData();
     if(res ==  undefined || res.status == 'error'){
         return;
-    }else{
-        local.isDoneFetch = true;
-        local.fetchedViewData = res.data.other;
     }
+    local.isDoneFetch = true;
+    local.fetchedViewData = res.data.other;
 });
 onBeforeRouteUpdate(() => {
     if(local.isTambah){

@@ -1,3 +1,4 @@
+import Cookies from 'js-cookie';
 import { CreateLoginGoogleTap } from './api/auth';
 const publicConfig = useRuntimeConfig().public;
 export default function useGoogleLoginTap(){
@@ -12,11 +13,24 @@ export default function useGoogleLoginTap(){
                     if(res.status == 'error'){
                         return console.error('Error logging in:', res.status)
                     }
+                    let redir = '';
+                    let coDat = Cookies.get('__INITIAL_COSTUM_STATE__');
+                    if(coDat != null && coDat != '' && coDat != undefined){
+                        let deC = atob(coDat as string);
+                        if(deC == null || deC == ''){
+                            console.log('error decoded');
+                            return;
+                        }
+                        let dataC = JSON.parse(deC);
+                        redir = dataC.url ?? '/dashboard'
+                    }else{
+                        redir = res.data;
+                    }
                     setTimeout(() => {
-                        navigateTo(res.data ? res.data : '/dashboard');
+                        navigateTo(redir);
                     }, 1500);
                 }).catch((error: any) => {
-                    console.error('Error logging in:', error)
+                    console.log('Error logging in:', error)
                 });
             },
             prompt_parent_id: "root",

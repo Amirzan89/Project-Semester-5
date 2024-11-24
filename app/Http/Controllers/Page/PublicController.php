@@ -1,30 +1,12 @@
 <?php
 namespace App\Http\Controllers\Page;
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\UtilityController;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\File;
 use App\Models\Firmware;
 use App\Models\Device;
-use Inertia\Inertia;
-class HomeController extends Controller
+class PublicController extends Controller
 {
-    private function getView($name = null, $dataShow = null){
-        $env = env('APP_VIEW', 'blade');
-        if($env == 'blade'){
-            return view($name);
-        }else if($env == 'inertia'){
-            return Inertia::render('app', $dataShow);
-        }else if($env == 'nuxt'){
-            $indexPath = public_path('dist/index.html');
-            if (File::exists($indexPath)) {
-                $htmlContent = File::get($indexPath);
-                $htmlContent = str_replace('<body>', '<body>' . '<script>const csrfToken = "' . csrf_token() . '";</script>', $htmlContent);
-                return response($htmlContent)->cookie('XSRF-TOKEN', csrf_token(), 0, '/', null, false, true);
-            } else {
-                return response()->json(['error' => 'Page not found'], 404);
-            }
-        }
-    }
     public function showHome(Request $request){
         $allDevice = Device::select('foto')->where('uuid',$request->input('uuid'))->first();
         if (is_null($allDevice)) {
@@ -33,10 +15,7 @@ class HomeController extends Controller
         $dataShow = [
             'viewData' => $allDevice,
         ];
-        if ($request->wantsJson()) {
-            return response()->json($dataShow);
-        }
-        return $this->getView();
+        return UtilityController::getView('', $dataShow, $request->wantsJson() ? 'json' : ['cond' => ['view', 'redirect'], 'redirect' => '/' . $request->path()]);
     }
     public function showFirmware(Request $request){
         $allDevice = Device::select('foto')->where('uuid',$request->input('uuid'))->first();
@@ -46,9 +25,6 @@ class HomeController extends Controller
         $dataShow = [
             'viewData' => $allDevice,
         ];
-        if ($request->wantsJson()) {
-            return response()->json($dataShow);
-        }
-        return $this->getView();
+        return UtilityController::getView('', $dataShow, $request->wantsJson() ? 'json' : ['cond' => ['view', 'redirect'], 'redirect' => '/' . $request->path()]);
     }
 }

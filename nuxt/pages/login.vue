@@ -5,20 +5,28 @@
             <div ref="popup" class="invisible relative flex items-center justify-center bg-popup_error mt-5 md:top-5 xl:w-70 lg:w-80 md:w-50 xl:h-10 lg:h-10 mdh-7 rounded-2xl">
                 <p class="text-white text-3xl xl:text-xl lg:text-2xl md:text-xl sm:text-xl">{{ errMessage }}</p>
             </div>
-            <div class="row relative mt-5 flex flex-col w-7/8">
-                <label class="relative left-3 xl:text-2xl lg:text-xl md:text-md sm:text-lg">Email</label>
-                <input ref="inpEmail" type="email" class="relative top-1 border-black lg:border-2 md:border-1 hover:border-4 md:hover:border-2 focus:outline-none rounded-xl w-full xl:h-10 lg:h-8 md:h-7 sm:h-5 pl-3 font-medium 2xl:text-2xl xl:text-2xl lg:text-2xl md:text-xl sm:text-lg" required @input="inpChange('email')" v-model="input.email">
-            </div>
-            <div class="row relative mt-5 flex flex-col w-7/8">
+            <!-- <div class="row relative mt-5 flex flex-col w-7/8"> -->
+            <!-- <FloatLabel class="row relative mt-5 flex flex-col w-7/8"> -->
+                <!-- <label class="relative left-3 xl:text-2xl lg:text-xl md:text-md sm:text-lg">Email</label> -->
+            <FloatLabel class="w-7/8">
+                <label class="">Email</label>
+                <InputText/>
+                <!-- <InputText ref="inpEmail" type="email" class="relative top-1 border-black lg:border-2 md:border-1 hover:border-4 md:hover:border-2 focus:outline-none rounded-xl w-full xl:h-10 lg:h-8 md:h-7 sm:h-5 pl-3 font-medium 2xl:text-2xl xl:text-2xl lg:text-2xl md:text-xl sm:text-lg" required @input="inpChange('email')" v-model="input.email"/> -->
+            <!-- </div> -->
+            </FloatLabel>
+            <!-- <div class="row relative mt-5 flex flex-col w-7/8"> -->
+            <FloatLabel class="row relative mt-5 flex flex-col w-7/8">
                 <label class="relative left-3 xl:text-2xl lg:text-xl md:text-md sm:text-lg">Password</label>
                 <div class="relative flex items-center top-1">
-                    <input ref="inpPassword" type="password" class="relative border-black lg:border-2 md:border-1 hover:border-4 md:hover:border-2 focus:outline-none rounded-xl w-full xl:h-10 lg:h-8 md:h-7 sm:h-5 pl-3 font-medium 2xl:text-2xl xl:text-2xl lg:text-2xl md:text-xl sm:text-lg pr-8" required @input="inpChange('password')" v-model="input.password">
+                    <!-- <input ref="inpPassword" type="password" class="relative border-black lg:border-2 md:border-1 hover:border-4 md:hover:border-2 focus:outline-none rounded-xl w-full xl:h-10 lg:h-8 md:h-7 sm:h-5 pl-3 font-medium 2xl:text-2xl xl:text-2xl lg:text-2xl md:text-xl sm:text-lg pr-8" required @input="inpChange('password')" v-model="input.password"> -->
+                    <InputText ref="inpPassword" type="password" class="relative border-black lg:border-2 md:border-1 hover:border-4 md:hover:border-2 focus:outline-none rounded-xl w-full xl:h-10 lg:h-8 md:h-7 sm:h-5 pl-3 font-medium 2xl:text-2xl xl:text-2xl lg:text-2xl md:text-xl sm:text-lg pr-8" required @input="inpChange('password')" />
                     <div class="eye absolute top-1/2 -translate-y-1/2 right-3 cursor-pointer" @click="showPass">
-                        <img src="~assets/icon/eye-slash.svg" alt="" class="xl:!w-8 lg:!w-7" :class="input.password === '' || (input.password !== '' && input.isPasswordShow) ? 'hidden' : ''">
-                        <img src="~assets/icon/eye.svg" alt="" class="xl:!w-8 lg:!w-7" :class="input.password === '' || (input.password !== '' && !input.isPasswordShow) ? 'hidden' : ''">
+                        <!-- <img src="~assets/icon/eye-slash.svg" alt="" class="xl:!w-8 lg:!w-7" :class="input.password === '' || (input.password !== '' && input.isPasswordShow) ? 'hidden' : ''">
+                        <img src="~assets/icon/eye.svg" alt="" class="xl:!w-8 lg:!w-7" :class="inpurt.password === '' || (input.password !== '' && !input.isPasswordShow) ? 'hidden' : ''"> -->
                     </div>
                 </div>
-            </div>
+            <!-- </div> -->
+            </FloatLabel>
             <div class="row relative mt-5 flex flex-row items-center w-4/5 text-3xl xl:text-2xl lg:text-xl md:text-lg sm:text-base">
                 <div class="col-12 md:col-4">
                     <div class="field-checkbox mb-0">

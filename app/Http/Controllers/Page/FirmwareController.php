@@ -2,36 +2,18 @@
 namespace App\Http\Controllers\Page;
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\Services\FirmwareController as ServiceFirmware;
+use App\Http\Controllers\UtilityController;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Validator;
 use App\Models\Firmware;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
-use Illuminate\Support\Facades\File;
-use Inertia\Inertia;
 class FirmwareController extends Controller
 {
     private static $allDevice;
     public function __construct(){
         self::$allDevice = ['arduino', 'esp32'];
-    }
-    private function getView($name = null, $dataShow = null){
-        $env = env('APP_VIEW', 'blade');
-        if($env == 'blade'){
-            return view($name);
-        }else if($env == 'inertia'){
-            return Inertia::render('app', $dataShow);
-        }else if($env == 'nuxt'){
-            $indexPath = public_path('dist/index.html');
-            if (File::exists($indexPath)) {
-                $htmlContent = File::get($indexPath);
-                $htmlContent = str_replace('<body>', '<body>' . '<script>const csrfToken = "' . csrf_token() . '";</script>', $htmlContent);
-                return response($htmlContent)->cookie('XSRF-TOKEN', csrf_token(), 0, '/', null, false, true);
-            } else {
-                return response()->json(['error' => 'Page not found'], 404);
-            }
-        }
     }
     public function showFirmware(Request $request){
         $userAuth = $request->input('user_auth');
@@ -44,10 +26,7 @@ class FirmwareController extends Controller
             'userAuth' => $userAuth,
             'viewData' => $allDevice,
         ];
-        if ($request->wantsJson()) {
-            return response()->json($dataShow);
-        }
-        return $this->getView();
+        return UtilityController::getView('', $dataShow, $request->wantsJson() ? 'json' : ['cond' => ['view', 'redirect'], 'redirect' => '/' . $request->path()]);
     }
     public function showTambah(Request $request){
         $userAuth = $request->input('user_auth');
@@ -55,10 +34,7 @@ class FirmwareController extends Controller
         $dataShow = [
             'userAuth' => $userAuth,
         ];
-        if ($request->wantsJson()) {
-            return response()->json($dataShow);
-        }
-        return $this->getView();
+        return UtilityController::getView('', $dataShow, $request->wantsJson() ? 'json' : ['cond' => ['view', 'redirect'], 'redirect' => '/' . $request->path()]);
     }
     public function detailFirmware(Request $request){
         $userAuth = $request->input('user_auth');
@@ -71,10 +47,7 @@ class FirmwareController extends Controller
             'userAuth' => $userAuth,
             'viewData' => $allDevice,
         ];
-        if ($request->wantsJson()) {
-            return response()->json($dataShow);
-        }
-        return $this->getView();
+        return UtilityController::getView('', $dataShow, $request->wantsJson() ? 'json' : ['cond' => ['view', 'redirect'], 'redirect' => '/' . $request->path()]);
     }
     public function downloadFirmware(Request $request){
         $validator = Validator::make($request->only('id_device', 'device'), [

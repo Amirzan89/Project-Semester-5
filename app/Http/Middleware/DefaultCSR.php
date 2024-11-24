@@ -1,5 +1,6 @@
 <?php
 namespace App\Http\Middleware;
+use App\Http\Controllers\UtilityController;
 use Illuminate\Http\Request;
 use Closure;
 class DefaultCSR
@@ -13,9 +14,9 @@ class DefaultCSR
             }
         }
         if ($request->header('Accept') !== 'application/json' && !in_array($path, self::$exceptPage)) {
-            return response()->file(public_path() . '/index.html');
-        }else if($request->isMethod('get') && $request->header('Accept') !== 'application/json'){
             return $next($request)->header('Cache-Control', 'no-cache, no-store, must-revalidate')->header('Pragma', 'no-cache')->header('Expires', '0');
+        }else if(!$request->isMethod('get')){
+            return UtilityController::getView('notfound', ['status'=>'error', 'message'=>'Not Found', 'code' => 404], ['cond' => ['view', 'redirect'], 'redirect' => '/' . $request->path()]);
         }
         return $next($request);
     }

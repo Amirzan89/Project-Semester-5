@@ -20,6 +20,23 @@ use Carbon\Carbon;
 class JWTController extends Controller
 {
     //cek jumlah login di database
+    public static function calculateExpiration($input){
+        if (is_numeric($input)) {
+            return intval($input);
+        }
+        $total = 0;
+        if (strpos($input, '*') !== false) {
+            $parts = explode('*', $input);
+            foreach ($parts as $part) {
+                if (!is_numeric($part)) {
+                    return $total;
+                }
+                $total *= intval($part);
+            }
+            return $total;
+        }
+        return $total;
+    }
     public function checkTotalLogin($data, $cond){
         $email = $data['email'];
         if(empty($email) || is_null($email)){
@@ -251,11 +268,8 @@ class JWTController extends Controller
     }
 
     //delete refresh token website 
-    public function deleteRefreshToken($email,$number = null, $cond){
+    public function deleteRefreshToken($email,$number = null){
         try{
-            if(empty($email) || is_null($email)){
-                return ['status'=>'error','message'=>'email empty','code'=>400];
-            }
             if($number == null){
                 if(!DB::table('refresh_token')->whereRaw("BINARY email = ?",[$email])->delete()){
                     return ['status'=>'error','message'=>'failed delete refresh token','code'=>500];

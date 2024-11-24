@@ -11,7 +11,6 @@
     "noImplicitThis": true,
     "paths": {
       "~/*": ["./*"],
-      "vue-recaptcha-v3": ["./node_modules/vue-recaptcha-v3/dist/ReCaptchaVuePlugin"],
     }
   }
 }

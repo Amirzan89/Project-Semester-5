@@ -37,9 +37,6 @@
             </form>
         </div>
     </template>
-    <template v-else>
-        <div>iki detaill</div>
-    </template>
 </template>
 <style scoped lang="scss"></style>
 <script setup lang="ts">
@@ -105,24 +102,23 @@ onBeforeRouteUpdate(() => {
     }
     useFetchDataStore().resetFetchData();
 });
-type InputKeys = 'name' | 'description' | 'version' | 'release_date' | 'device' | 'file';
 const inpChange = (div: string) => {
-    const inputs: any = {
+    const inpElement: any = {
         name: inpName,
         description: inpDescription,
         version: inpVersion,
         release_date: inpReleaseDate,
         device: inpDevice,
     };
-    inputs[div].value?.classList.remove('border-popup_error', 'hover:border-popup_error', 'focus:border-popup_error');
-    inputs[div].value?.classList.add('border-black', 'hover:border-black', 'focus:border-black');
+    inpElement[div].value?.classList.remove('border-popup_error', 'hover:border-popup_error', 'focus:border-popup_error');
+    inpElement[div].value?.classList.add('border-black', 'hover:border-black', 'focus:border-black');
     let isFilled = true;
-    for (const key of Object.keys(inputs)) {
-        if (input[key as InputKeys] === null || input[key as InputKeys] === '') { 
+    inpElement.forEach((key: string) => {
+        if (inpElement[key] === null || inpElement[key] === '') { 
             isFilled = false;
-            inputs[key].value.classList.remove('border-orange-500', 'dark:border-blue-600');
+            inpElement[key].value.classList.remove('border-orange-500', 'dark:border-blue-600');
         }
-    }
+    });
     local.isUpdated = isFilled;
 };
 const handleFormClick = () => {

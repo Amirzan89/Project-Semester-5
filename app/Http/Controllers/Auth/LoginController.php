@@ -1,8 +1,8 @@
 <?php
 namespace App\Http\Controllers\Auth;
 use App\Http\Controllers\Controller;
-use App\Http\Controllers\UserController;
 use App\Http\Controllers\Auth\JWTController;
+use App\Http\Controllers\UtilityController;
 use App\Models\User;
 use App\Models\RefreshToken;
 use Illuminate\Http\Request;
@@ -62,10 +62,10 @@ class LoginController extends Controller
     public function redirectToProvider(){
         return Socialite::driver('google')->redirect();
     }
-    public function handleGoogleLogin(Request $request, UserController $userController, JWTController $jwtController, RefreshToken $refreshToken){
-        $cosRes = function($path, $data = null, $code = 200) use ($userController){
+    public function handleGoogleLogin(Request $request, JWTController $jwtController, RefreshToken $refreshToken){
+        $cosRes = function($path, $data = null, $code = 200){
             if($path == '/auth/google'){
-                return $userController->getView('dashboard', [], '/dashboard');
+                return UtilityController::getView('dashboard', [], ['redirect' => '/dashboard']);
             }else if($path == '/auth/google-tap'){
                 return response()->json($data, $code);
             }
@@ -128,14 +128,14 @@ class LoginController extends Controller
                     return $cosRes('/' . $request->path(), $jwtData, 500);
                 }
                 $encoded = base64_encode(json_encode(['email'=>$result['email'], 'number'=>$jwtData['number']]));
-                return $cosRes('/' . $request->path(), ['status'=>'success', 'message'=>'success login redirect to dashboard'])
+                return $cosRes('/' . $request->path(), ['status'=>'success', 'message'=>'success login redirect to dashboard', 'data'=>'/dashboard'])
                 ->cookie('token1',$encoded,time()+intval(env('JWT_ACCESS_TOKEN_EXPIRED')))
                 ->cookie('token2',$jwtData['data']['token'],time() + intval(env('JWT_ACCESS_TOKEN_EXPIRED')))
                 ->cookie('token3',$jwtData['data']['refresh'],time()+intval('JWT_REFRESH_TOKEN_EXPIRED'));
             }
         //if user dont exist in database
         }else{
-            return $userController->getView('forgotPassword', ['email'=>$result['email'], 'nama'=>$result['name'], 'file'=>$result['picture']], '/auth/google', '/' . $request->path() == '/auth/google-tap' ? 'json' : '');
+            return UtilityController::getView('forgotPassword', ['email'=>$result['email'], 'nama'=>$result['name'], 'file'=>$result['picture'], 'url'=>'/auth/google'], '/' . $request->path() == '/auth/google' ? ['cond' => ['view', 'redirect'], 'redirect' => '/auth/google'] : 'only_cookie');
         }
     }
 }

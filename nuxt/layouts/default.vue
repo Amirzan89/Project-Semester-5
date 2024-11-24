@@ -1,20 +1,16 @@
 <template>
-    <div>
-        <template v-if="useNotFoundStore().isNotFound" >
-            <NotFoundComponent/>
-        </template>
-        <template v-else>
-            <template v-if="useFetchDataStore().processFetch.isDone == 'success' || useFetchDataStore().processFetch.isDone == 'loading'">
-                <NuxtPage/>
-            </template>
-            <template v-else-if="useFetchDataStore().processFetch.isDone  == 'error'">
-                <NotFoundComponent/>
-            </template>
-        </template>
-    </div>
+    <template v-if="useNotFoundStore().isNotFound || fetchDataS.processFetch.isDone != 'success'">
+        <NuxtPage/>
+    </template>
+    <template v-else>
+        <NuxtPage/>
+        <LoadingComponent/>
+        <Toast/>
+        <Toast position="bottom-right" group="br" />
+    </template>
 </template>
 <style>
-.page-left-enter-active,
+/* .page-left-enter-active,
 .page-right-enter-active,
 .page-left-leave-active,
 .page-right-leave-active{
@@ -31,10 +27,18 @@
 .page-left-enter-to, .page-right-enter-to{
     transform: translateX(0);
     opacity: 1;
-}
+} */
 </style>
-<script setup>
-import NotFoundComponent from '~/components/NotFound.vue';
+<script setup lang="ts">
+import LoadingComponent from "~/components/Loading.vue";
 import { useNotFoundStore } from '~/store/NotFound';
 import { useFetchDataStore } from '~/store/FetchData';
+const fetchDataS = useFetchDataStore();
+const route = useRoute();
+watch(() => route.fullPath, async() => {
+    const res = await fetchDataS.fetchPage();
+    if(res ==  undefined || res.status == 'error'){
+        return;
+    }
+}, { immediate:true });
 </script>

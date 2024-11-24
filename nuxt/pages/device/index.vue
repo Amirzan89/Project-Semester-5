@@ -1,14 +1,16 @@
 <template>
-    <div>
-        <ul>
-            <template v-for="(item, index) in local?.fetchedViewData" :key="index">
-                <li>
-                    <div></div>
-                </li>
-            </template>
-        </ul>
-        iki list device
-    </div>
+    <template v-if="local.isDoneFetch">
+        <div>
+            <ul>
+                <template v-for="(item, index) in local?.fetchedViewData" :key="index">
+                    <li>
+                        <div></div>
+                    </li>
+                </template>
+            </ul>
+            iki list device
+        </div>
+    </template>
 </template>
 <script setup lang="ts">
 import { eventBus } from '~/app/eventBus';
@@ -25,11 +27,16 @@ useHead({
 });
 const local = reactive({
     isRequestInProgress: false,
+    isDoneFetch: false,
     fetchedViewData: null as any,
 });
 useAsyncData(async () => {
     const res = await useFetchDataStore().fetchData();
-    if(res.status == 'success') local.fetchedViewData = res.data.viewData;
+    if(res ==  undefined || res.status == 'error'){
+        return;
+    }
+    local.isDoneFetch = true;
+    local.fetchedViewData = res.data.viewData;
 });
 onBeforeRouteUpdate(() => {
     useFetchDataStore().resetFetchData();

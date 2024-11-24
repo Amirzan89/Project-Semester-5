@@ -35,9 +35,6 @@
             </form>
         </div>
     </template>
-    <template v-else>
-        <div>iki tambah</div>
-    </template>
 </template>
 <style scoped lang="scss"></style>
 <script setup lang="ts">
@@ -79,10 +76,9 @@ useAsyncData(async () => {
     const res = await useFetchDataStore().fetchData();
     if(res ==  undefined || res.status == 'error'){
         return;
-    }else{
-        local.isDoneFetch = true;
-        local.fetchedViewData = res.data.other;
     }
+    local.isDoneFetch = true;
+    local.fetchedViewData = res.data.other;
 });
 onBeforeRouteUpdate(() => {
     if(local.isTambah){
